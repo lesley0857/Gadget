@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<h2>My Profile</h2>
+
+<h3>Orders</h3>
+
+{% for item in orders %}
+<div class="order-card">
+    <p>{{ item.product.name }}</p>
+    <p>Status: {{ item.status }}</p>
+</div>
+{% endfor %}
+
+</html>

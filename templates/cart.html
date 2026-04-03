@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .cart-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 120px;
+        gap: 20px;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .cart-image img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .cart-details h3 {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+
+    .unit-price {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .item-total {
+        font-weight: bold;
+        color: #D10024;
+    }
+
+    .qty-controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .qty-controls button {
+        padding: 4px 10px;
+        border: none;
+        background: #eee;
+        cursor: pointer;
+    }
+
+    .remove-btn {
+        margin-top: 8px;
+        color: red;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .cart-subtotal {
+        font-weight: bold;
+        color: #D10024;
+    }
+
+
+    @media (max-width: 768px) {
+        .cart-row {
+            grid-template-columns: 80px 1fr;
+        }
+
+        .cart-subtotal {
+            grid-column: span 2;
+            text-align: right;
+        }
+    }
+</style>
+
+
+<div class="cart-page">
+
+    <!-- LEFT: CART ITEMS -->
+    <div class="cart-items-section">
+        <h2>Your Cart</h2>
+
+        <div id="cart-container"></div> <!-- JS FILLS THIS -->
+    </div>
+
+    <!-- RIGHT: SUMMARY -->
+    <div class="cart-summary">
+
+        <h3>Cart Summary</h3>
+
+        <div class="summary-row">
+            <span>Total</span>
+            <span id="cart-total">₦{{ total }}</span>
+        </div>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'checkout' %}" class="checkout-btn">
+            Proceed to Checkout
+        </a>
+        {% else %}
+        <a href="{% url 'account_login' %}" class="checkout-btn">
+            Login to Checkout
+        </a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<script>
+    const cartContainer = document.getElementById("cart-container");
+    const cartTotal = document.getElementById("cart-total");
+
+
+    // 🔥 INITIAL LOAD
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchCart();
+    });
+
+
+    // 🔥 FETCH CURRENT CART STATE
+    function fetchCart() {
+        fetch("/cart/update/", {   // reuse endpoint or create /cart/data/
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: "" // no action → just return current cart
+        })
+            .then(res => res.json())
+            .then(data => {
+                renderCartPage(data);
+            });
+    }
+
+
+    // 🔥 RENDER CART PAGE UI
+    function renderCartPage(data) {
+        cartContainer.innerHTML = "";
+
+        if (!data.cart_items || data.cart_items.length === 0) {
+            cartContainer.innerHTML = "<p>Your cart is empty</p>";
+            cartTotal.innerText = "₦0";
+            return;
+        }
+
+        data.cart_items.forEach(item => {
+            cartContainer.innerHTML += `
+            <div class="cart-row">
+
+                <div class="cart-image">
+                    <img src="${item.image || '/static/img/hotdeal.png'}">
+                </div>
+
+                <div class="cart-details">
+                    <h3>${item.name}</h3>
+
+                    <p class="unit-price">Unit: ₦${item.price}</p>
+                    <p class="item-total">Total: ₦${item.subtotal}</p>
+
+                    <div class="qty-controls">
+                        <button class="cart-action" data-id="${item.id}" data-action="decrement">−</button>
+                        <span>${item.quantity}</span>
+                        <button class="cart-action" data-id="${item.id}" data-action="increment">+</button>
+                    </div>
+
+                    <button class="remove-btn cart-action" data-id="${item.id}" data-action="remove">
+                        Remove
+                    </button>
+                </div>
+
+                <div class="cart-subtotal">
+                    ₦${item.subtotal}
+                </div>
+
+            </div>
+        `;
+        });
+
+        cartTotal.innerText = `₦${data.total}`;
+    }
+
+
+    // 🔥 HANDLE ALL BUTTON CLICKS (EVENT DELEGATION)
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".cart-action");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        updateCart(id, action);
+    });
+
+
+    // 🔥 UPDATE CART (NO RELOAD)
+    function updateCart(id, action) {
+        fetch("/cart/update/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: `product_id=${id}&action=${action}`
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    renderCartPage(data); // 🔥 REAL-TIME UPDATE
+                }
+            });
+    }
+
+
+    // 🔐 CSRF
+    function getCSRFToken() {
+        return document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken'))
+            ?.split('=')[1];
+    }
+</script>
+{% endblock %}

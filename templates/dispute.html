@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<h2>Report an Issue</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <textarea name="reason" placeholder="Describe the issue..." required></textarea>
+    <button type="submit">Submit Dispute</button>
+</form>
+
+</html>
