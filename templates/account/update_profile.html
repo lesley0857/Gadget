@@ -1,0 +1,19 @@
+<h2>Update Profile</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="phone" value="{{ profile.phone }}" placeholder="Phone"><br>
+
+    <textarea name="address" placeholder="Address">{{ profile.address }}</textarea><br>
+
+    <input type="text" name="city" value="{{ profile.city }}" placeholder="City"><br>
+
+    <input type="text" name="state" value="{{ profile.state }}" placeholder="State"><br>
+
+    <input type="text" name="latitude" value="{{ profile.latitude }}" placeholder="Latitude"><br>
+
+    <input type="text" name="longitude" value="{{ profile.longitude }}" placeholder="Longitude"><br>
+
+    <button type="submit">Save</button>
+</form>

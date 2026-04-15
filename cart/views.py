@@ -1,12 +1,19 @@
 
 # Create your views here.
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Cart, CartItem
 from catalog.models import ProductListing
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-
-
+from collections import defaultdict
+from datetime import timedelta
+from django.utils import timezone
+from .utils import *
+from cart.models import Cart
+from orders.models import *
+from logistics.services.aggregator import LogisticsAggregator
+from decimal import Decimal
 
 def add_to_cart(request, listing_id):
     if request.method == "POST":
@@ -145,6 +152,12 @@ def update_cart(request):
     if request.user.is_authenticated:
         cart = Cart.objects.get(user=request.user)
 
+        if cart.status == "locked":
+            return JsonResponse({
+                "success": False,
+                "error": "Cart is locked. Complete payment."
+            }, status=400)
+
         try:
             item = CartItem.objects.get(cart=cart, product_listing_id=listing_id)
         except CartItem.DoesNotExist:
@@ -218,84 +231,154 @@ def update_cart(request):
 
         total += subtotal
 
+    cart_count = sum([item["quantity"] for item in cart_items_data])
     return JsonResponse({
         "success": True,
         "cart_items": cart_items_data,
-        "total": float(total)
+        "total": float(total),
+        "cart_count":cart_count,
     })
 
 
-from collections import defaultdict
-from datetime import timedelta
-from django.utils import timezone
-from cart.models import CartItem
+def cart_summary(request):
+
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+
+        if not cart:
+            return JsonResponse({
+                "cart_count": 0,
+                "total": 0,
+                "cart_items": []
+            })
+
+        items = cart.items.all()
+
+        cart_items_data = []
+        total = 0
+        count = 0
+
+        for item in items:
+            listing = item.product_listing
+            price = listing.calculate_price()
+            subtotal = price * item.quantity
+
+            cart_items_data.append({
+                "id": listing.id,
+                "name": listing.product.name,
+                "price": float(price),
+                "quantity": item.quantity,
+                "subtotal": float(subtotal),
+                "image": listing.media.first().file.url if listing.media.exists() else ""
+            })
+
+            total += subtotal
+            count += 1
+
+    else:
+        cart = request.session.get("cart", {})
+
+        cart_items_data = []
+        total = 0
+        count = 0
+
+        for id, item in cart.items():
+            listing = ProductListing.objects.get(id=id)
+            price = listing.calculate_price()
+            subtotal = price * item["quantity"]
+
+            cart_items_data.append({
+                "id": listing.id,
+                "name": listing.product.name,
+                "price": float(price),
+                "quantity": item["quantity"],
+                "subtotal": float(subtotal),
+                "image": listing.media.first().file.url if listing.media.exists() else ""
+            })
+
+            total += subtotal
+            count += 1
+
+    return JsonResponse({
+        "cart_items": cart_items_data,
+        "total": float(total),
+        "cart_count": count
+    })
 
 def checkout_view(request):
-
     user = request.user
-    items = CartItem.objects.filter(cart__user=user)
 
-    vendor_groups = defaultdict(list)
-
-    # GROUP ITEMS BY VENDOR
-    for item in items:
-        vendor = item.product_listing.vendor
-        vendor_groups[vendor].append(item)
-
-    vendors_data = []
-    subtotal = 0
-    total_shipping = 0
-
-    for vendor, v_items in vendor_groups.items():
-
-        vendor_subtotal = 0
-
-        for item in v_items:
-            price = item.product_listing.calculate_price()
-            item.unit_price = price
-            item.subtotal = price * item.quantity
-
-            vendor_subtotal += item.subtotal
-
-        subtotal += vendor_subtotal
-
-        # 🚚 SHIPPING PER VENDOR
-        if user.city and vendor.city and user.city.lower() == vendor.city.lower():
-            shipping_fee = 2000
-            delivery_days = (1, 2)
-            same_city = True
-        else:
-            shipping_fee = 5000
-            delivery_days = (3, 7)
-            same_city = False
-
-        total_shipping += shipping_fee
-
-        delivery_start = timezone.now() + timedelta(days=delivery_days[0])
-        delivery_end = timezone.now() + timedelta(days=delivery_days[1])
-
-        vendors_data.append({
-            "vendor": vendor,
-            "items": v_items,
-            "vendor_subtotal": vendor_subtotal,
-            "shipping_fee": shipping_fee,
-            "delivery_start": delivery_start,
-            "delivery_end": delivery_end,
-            "same_city": same_city
+    # =========================
+    # CART SAFETY CHECK
+    # =========================
+    cart = Cart.objects.filter(user=user).first()
+    if not cart or cart.items.count() == 0:
+        return render(request, "checkout.html", {
+            "items": [],
+            "vendors_data": [],
+            "subtotal": 0,
+            "shipping": 0,
+            "vat": 0,
+            "total": 0,
+            "shipping_options": []
         })
 
-    # 🧾 VAT
-    vat = subtotal * int(0.075)
+    items = cart.items.all()
 
-    # 💰 TOTAL
-    total = subtotal + total_shipping + vat
+    profile = getattr(user, "userprofile", None)
 
+    if not profile or not profile.address or not profile.phone:
+        return redirect("update_profile")
+
+    # =========================
+    # CORE BUILD (DO ALL LOGIC HERE)
+    # =========================
+    data = build_vendor_checkout(user)
+
+    # =========================
+    # CANCEL OLD PROCESSING ORDER SAFELY
+    # =========================
+    Order.objects.filter(
+        customer=user,
+        status="processing"
+    ).update(status="cancelled")
+
+    # =========================
+    # SAFE SHIPPING EXTRACTION
+    # =========================
+    shipping_options = data.get("shipping_options") or []
+
+    # =========================
+    # CONTEXT (NO OVERWRITES)
+    # =========================
     context = {
-        "vendors_data": vendors_data,
-        "subtotal": subtotal,
-        "shipping": total_shipping,
-        "vat": vat,
-        "total": total,
+        "items": items,
+        "vendors_data": data.get("vendors_data", []),
+
+        "subtotal": data.get("subtotal", 0),
+        "shipping": data.get("shipping", 0),
+        "vat": data.get("vat", 0),
+        "total": data.get("total", 0),
+
+        "shipping_options": shipping_options,
     }
 
     return render(request, "checkout.html", context)
+
+
+def update_checkout(request):
+    data = json.loads(request.body)
+    shipping_choices = data.get("shipping", {})
+
+    user = request.user
+    checkout = build_vendor_checkout(user, shipping_choices)
+
+    return JsonResponse({
+        "shipping": checkout["shipping"],
+        "total": checkout["total"]
+    })
+def save_shipping(request):
+    data = json.loads(request.body)
+    request.session["shipping_option"] = data["option"]
+
+    return JsonResponse({"success": True})

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 <style>
@@ -105,6 +106,16 @@
 
     </div>
 
+    <!-- Order Banner -->
+    <div id="orders-banner" class="cart-banner">
+        <div class="cart-header">
+            <h3>Your Orders</h3>
+            <button id="close-orders">✖</button>
+        </div>
+        <div id="orders-list" class="cart-items"></div>
+        <!-- Order Banner -->
+    </div>
+
 </div>
 
 
@@ -208,16 +219,70 @@
             .then(data => {
                 if (data.success) {
                     renderCartPage(data); // 🔥 REAL-TIME UPDATE
+                } else {
+                    alert(data.error); // 🔒 show locked message
                 }
             });
     }
-
-
     // 🔐 CSRF
     function getCSRFToken() {
         return document.cookie.split('; ')
             .find(row => row.startsWith('csrftoken'))
             ?.split('=')[1];
     }
+
+
+    function loadOrders() {
+
+        fetch("/orders/json/")
+            .then(res => res.json())
+            .then(data => {
+                console.log(data)
+                ordersList.innerHTML = "";
+
+                if (!data.orders || data.orders.length === 0) {
+                    ordersList.innerHTML = "<p>No orders yet</p>";
+                    return;
+                }
+
+                data.orders.forEach(item => {
+
+                    ordersList.innerHTML += `
+                    <div class="cart-item">
+
+                        <img src="${item.image}" class="cart-img"/>
+
+                        <div class="cart-info">
+                            <p><strong>${item.name}</strong></p>
+                            <p>₦${item.price}</p>
+                            <p>Qty: ${item.quantity}</p>
+                            <p>Status: ${item.status}</p>
+
+                            <a href="/orders/dispute/${item.id}/" 
+                               style="color:red; font-size:12px;">
+                               Report Issue
+                            </a>
+                        </div>
+
+                    </div>
+                `;
+                });
+            });
+    }
+
+    const ordersBanner = document.getElementById("orders-banner");
+    const ordersList = document.getElementById("orders-list");
+
+    // OPEN
+    document.getElementById("open-orders-btn").onclick = () => {
+        loadOrders();
+        ordersBanner.classList.add("active");
+    };
+
+    // CLOSE
+    document.getElementById("close-orders").onclick = () => {
+        ordersBanner.classList.remove("active");
+    };
+
 </script>
 {% endblock %}

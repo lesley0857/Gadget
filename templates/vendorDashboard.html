@@ -28,5 +28,25 @@
     {% endif %}
 </div>
 {% endfor %}
+<h2>{{ request.user.vendor.store_name }} Dashboard</h2>
+
+<p>Total Sales: ₦{{ total_sales }}</p>
+<p>Total Orders: {{ total_orders }}</p>
+
+<table>
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Status</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item.product_listing.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
 </html>

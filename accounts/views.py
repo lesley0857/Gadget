@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 
 # Create your views here.
 from rest_framework import generics, permissions
@@ -56,19 +56,36 @@ def logout_view(request):
 
 def home(request):
     productList = ProductListing.objects.all()  # Featured products
-    return render(request, 'base.html', {'productList': productList})
+    return render(request, 'base.html', {'productList': productList,
+                                         "categories": Category.objects.all()})
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     return render(request, 'product_detail.html', {'product': product})
 
-@login_required
-def profile(request):
-    orders = OrderItem.objects.filter(order__customer=request.user)
 
-    return render(request, "profile.html", {
-        "orders": orders
-    })
+@login_required
+def profile_view(request):
+    profile = request.user.userprofile
+    return render(request, "account/profile.html", {"profile": profile})
+
+
+@login_required
+def update_profile(request):
+    profile = request.user.userprofile
+
+    if request.method == "POST":
+        profile.phone = request.POST.get("phone")
+        profile.address = request.POST.get("address")
+        profile.city = request.POST.get("city")
+        profile.state = request.POST.get("state")
+        profile.latitude = request.POST.get("latitude")
+        profile.longitude = request.POST.get("longitude")
+        profile.save()
+
+        return redirect("profile")
+
+    return render(request, "account/update_profile.html", {"profile": profile})
 
 class VendorProfileView(generics.RetrieveAPIView):
     serializer_class = VendorSerializer
@@ -78,6 +95,23 @@ class VendorProfileView(generics.RetrieveAPIView):
         return Vendor.objects.get(user=self.request.user)
 
 
+def vendor_signup(request):
+    if request.method == "POST":
+        store_name = request.POST.get("store_name")
+
+        vendor = Vendor.objects.create(
+            user=request.user,
+            store_name=store_name,
+            state=request.user.state
+        )
+
+        request.user.is_vendor = True
+        request.user.save()
+
+        return redirect("vendor_dashboard")
+
+    return render(request, "vendor_signup.html")
+
 @login_required
 def vendor_dashboard(request):
     vendor = request.user.vendor
@@ -85,10 +119,35 @@ def vendor_dashboard(request):
     items = OrderItem.objects.filter(vendor=vendor)
     wallet, _ = VendorWallet.objects.get_or_create(vendor=vendor)
 
-    return render(request, "vendorDashboard.html", {
+    total_sales = items.aggregate(total=Sum("total"))["total"] or 0
+    total_orders = items.count()
+
+    return render(request, "accounts/vendor_dashboard.html", {
         "items": items,
-        "wallet": wallet
-    })
+        "total_sales": total_sales,
+        "wallet": wallet,
+        "total_orders": total_orders})
+
+def vendor_update(request):
+    vendor = request.user.vendor
+
+    if request.method == "POST":
+        vendor.store_name = request.POST.get("store_name")
+        vendor.save()
+        return redirect("vendor_dashboard")
+
+    return render(request, "vendor_update.html", {"vendor": vendor})
+
+def vendor_delete(request):
+    vendor = request.user.vendor
+
+    if request.method == "POST":
+        vendor.delete()
+        request.user.is_vendor = False
+        request.user.save()
+        return redirect("home")
+
+    return render(request, "vendor_delete.html")
 
 def mark_shipped(request, item_id):
     item = OrderItem.objects.get(id=item_id)

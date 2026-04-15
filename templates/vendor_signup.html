@@ -1,0 +1,7 @@
+<h2>Become a Vendor</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="store_name" placeholder="Store Name" required>
+    <button type="submit">Register</button>
+</form>

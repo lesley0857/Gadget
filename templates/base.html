@@ -1,5 +1,7 @@
 {% load static %}
+{% load humanize%}
 <!DOCTYPE html>
+{% include 'partials/header.html' %}
 <html lang="en">
 
 <head>
@@ -37,6 +39,7 @@
 
 
 </head>
+
 
 <body>
     <style>
@@ -288,8 +291,30 @@
                 }
             }
         }
+
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f8f8;
+        }
     </style>
-    {% include 'partials/header.html' %}
+
 
     <!-- MAIN CONTENT -->
 
@@ -357,7 +382,8 @@
                                             <div class="product-body">
                                                 <p class="product-category">{{product.category}}</p>
                                                 <h3 class="product-name"><a href="#">{{product.product.name}}</a></h3>
-                                                <h4 class="product-price">${{product.calculate_price}}
+                                                <h4 class="product-price">
+                                                    N{{product.calculate_price|floatformat:2|intcomma}}
                                                     <!-- if there is discount
                                                     <del class="product-old-price">${{product.base_price}}</del> -->
                                                 </h4>
@@ -432,7 +458,7 @@
                         </h3>
 
                         <h4 class="product-price">
-                            ₦{{ product.calculate_price }}
+                            ₦{{ product.calculate_price|floatformat:2|intcomma }}
                         </h4>
                     </div>
 
@@ -552,60 +578,96 @@
         });
     </script>
 
-    <script>
-        const cartBanner = document.getElementById("cart-banner");
-        const cartItems = document.getElementById("cart-items");
-        const cartTotal = document.getElementById("cart-total");
+    {% block extra_js %}{% endblock %}
+</body>
 
-        // OPEN CART
-        function openCart() {
-            cartBanner.classList.add("active");
-            cartItems.scrollTop = 0;
+
+<script>
+
+
+    function updateCartUI(data) {
+
+        const countElements = document.querySelectorAll("#cart-count");
+        const totalElements = document.querySelectorAll("#cart-total");
+
+        countElements.forEach(el => {
+            el.innerText = data.cart_count;
+        });
+
+        totalElements.forEach(el => {
+            el.innerText = data.total;
+        });
+
+        if (typeof renderCart === "function") {
+            renderCart(data);
+        }
+    }
+
+    function loadCart() {
+        fetch("/cart/summary/")
+            .then(res => res.json())
+            .then(data => {
+                updateCartUI(data);
+            });
+    }
+
+    // 🔥 RUN ON EVERY PAGE LOAD
+    document.addEventListener("DOMContentLoaded", loadCart);
+
+    const cartBanner = document.getElementById("cart-banner");
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+
+    // OPEN CART
+    function openCart() {
+        cartBanner.classList.add("active");
+        cartItems.scrollTop = 0;
+    }
+
+    // CLOSE CART
+    document.getElementById("close-cart").onclick = () => {
+        cartBanner.classList.remove("active");
+    };
+
+    // ADD TO CART CLICK
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const id = btn.dataset.id;
+            console.log("CLICKED");
+            console.log(btn.dataset.id);
+
+            fetch(`/cart/add/${id}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.cart_items) {
+                        updateCartUI(data);
+                        openCart();
+                        console.log("DATA:", data);
+                    }
+                });
+        });
+    });
+    // RENDER CART
+
+    function renderCart(data) {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = "";
+
+        if (!data.cart_items || data.cart_items.length === 0) {
+            cartItems.innerHTML = "<p>Your cart is empty</p>";
+            document.getElementById("cart-total").innerText = "0";
+            document.getElementById("cart-count").innerText = "0";
+            return;
         }
 
-        // CLOSE CART
-        document.getElementById("close-cart").onclick = () => {
-            cartBanner.classList.remove("active");
-        };
-
-        // ADD TO CART CLICK
-        document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const id = btn.dataset.id;
-                console.log("CLICKED");
-                console.log(btn.dataset.id);
-
-                fetch(`/cart/add/${id}/`, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": getCSRFToken()
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-
-                        if (data.cart_items) {
-                            renderCart(data);
-                            openCart();
-                            console.log("DATA:", data);
-                        }
-                    });
-            });
-        });
-        // RENDER CART
-
-        function renderCart(data) {
-            const cartItems = document.getElementById("cart-items");
-            cartItems.innerHTML = "";
-
-            if (!data.cart_items || data.cart_items.length === 0) {
-                cartItems.innerHTML = "<p>Your cart is empty</p>";
-                document.getElementById("cart-total").innerText = "0";
-                return;
-            }
-
-            data.cart_items.forEach(item => {
-                cartItems.innerHTML += `
+        data.cart_items.forEach(item => {
+            cartItems.innerHTML += `
             <div class="cart-item">
                 <img src="${item.image}" class="cart-img"/>
                 <div class="cart-info">
@@ -622,51 +684,52 @@
                 </div>
             </div>
         `;
+        });
+
+        document.getElementById("cart-total").innerText = data.total;
+        document.getElementById("cart-count").innerText = data.cart_count;
+    }
+
+    function updateCart(id, action) {
+        fetch("/cart/update/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: `product_id=${id}&action=${action}`
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data);  // 🔥 MUST RUN
+                }
             });
+    }
 
-            document.getElementById("cart-total").innerText = data.total;
-        }
+    // CSRF
+    function getCSRFToken() {
+        return document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken'))
+            ?.split('=')[1];
+    }
 
-        function updateCart(id, action) {
-            fetch("/cart/update/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": getCSRFToken()
-                },
-                body: `product_id=${id}&action=${action}`
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        renderCart(data);  // 🔥 MUST RUN
-                    }
-                });
-        }
+    function loadOrders() {
 
-        // CSRF
-        function getCSRFToken() {
-            return document.cookie.split('; ')
-                .find(row => row.startsWith('csrftoken'))
-                ?.split('=')[1];
-        }
+        fetch("/orders/json/")
+            .then(res => res.json())
+            .then(data => {
+                console.log(data)
+                ordersList.innerHTML = "";
 
-        function loadOrders() {
+                if (!data.orders || data.orders.length === 0) {
+                    ordersList.innerHTML = "<p>No orders yet</p>";
+                    return;
+                }
 
-            fetch("/orders/json/")
-                .then(res => res.json())
-                .then(data => {
-                    console.log(data)
-                    ordersList.innerHTML = "";
+                data.orders.forEach(item => {
 
-                    if (!data.orders || data.orders.length === 0) {
-                        ordersList.innerHTML = "<p>No orders yet</p>";
-                        return;
-                    }
-
-                    data.orders.forEach(item => {
-
-                        ordersList.innerHTML += `
+                    ordersList.innerHTML += `
                     <div class="cart-item">
 
                         <img src="${item.image}" class="cart-img"/>
@@ -685,28 +748,24 @@
 
                     </div>
                 `;
-                    });
                 });
-        }
+            });
+    }
 
+    const ordersBanner = document.getElementById("orders-banner");
+    const ordersList = document.getElementById("orders-list");
 
-        const ordersBanner = document.getElementById("orders-banner");
-        const ordersList = document.getElementById("orders-list");
+    // OPEN
+    document.getElementById("open-orders-btn").onclick = () => {
+        loadOrders();
+        ordersBanner.classList.add("active");
+    };
 
-        // OPEN
-        document.getElementById("open-orders-btn").onclick = () => {
-            loadOrders();
-            ordersBanner.classList.add("active");
-        };
+    // CLOSE
+    document.getElementById("close-orders").onclick = () => {
+        ordersBanner.classList.remove("active");
+    };
 
-        // CLOSE
-        document.getElementById("close-orders").onclick = () => {
-            ordersBanner.classList.remove("active");
-        };
-
-    </script>
-
-    {% block extra_js %}{% endblock %}
-</body>
+</script>
 
 </html>

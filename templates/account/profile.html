@@ -1,0 +1,8 @@
+<h2>My Profile</h2>
+
+<p><strong>Phone:</strong> {{ profile.phone }}</p>
+<p><strong>Address:</strong> {{ profile.address }}</p>
+<p><strong>City:</strong> {{ profile.city }}</p>
+<p><strong>State:</strong> {{ profile.state }}</p>
+
+<a href="{% url 'update_profile' %}">Edit Profile</a>

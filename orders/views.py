@@ -6,6 +6,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import OrderCreateSerializer
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Order
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Order
+
 class CreateOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -17,15 +24,6 @@ class CreateOrderView(APIView):
         order = serializer.save()
         return Response({"order_id": order.id})
 
-
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import Order
-
-
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import Order
 
 @login_required
 def user_orders_json(request):

@@ -11,3 +11,4 @@ class VendorAdmin(admin.ModelAdmin):
     search_fields = ["store_name", "user__email"]
 
 admin.site.register(User)
+admin.site.register(UserProfile)

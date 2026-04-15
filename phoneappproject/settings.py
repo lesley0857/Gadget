@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'django.contrib.humanize',
 
     'django.contrib.sites',
     'allauth',
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     'accounts',
     'cart',
     'catalog',
+    'locations',
+    'logistics',
     'pricing',
     'orders',
     'payments',
@@ -53,6 +57,8 @@ INSTALLED_APPS = [
     'withdrawals',
     'disputes',
     'webhooks',
+
+    
 ]
 
 MIDDLEWARE = [
@@ -82,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
             ],
         },
     },
@@ -196,6 +203,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SITE_ID = 1
 
+KWIK_TOKEN = "test_token"
+KWIK_VENDOR_ID = "123456"
+KWIK_DOMAIN = "yourapp.com"
+
+
+SHIPPING_MARGIN_PERCENT = 0.15   # 15% profit
+GROUPING_RADIUS_KM = 3           # vendors within 3km grouped
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -212,3 +227,5 @@ ACCOUNT_SIGNUP_FIELDS = [
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_REDIRECT_URL = '/'
+
+USE_L10N = True
