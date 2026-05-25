@@ -55,3 +55,5 @@ class OrderItem(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     delivery_start = models.DateTimeField(null=True, blank=True)
     delivery_end = models.DateTimeField(null=True, blank=True)
+
+    

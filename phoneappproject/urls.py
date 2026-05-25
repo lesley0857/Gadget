@@ -49,6 +49,24 @@ urlpatterns = [
 
     path("orders/create/", CreateOrderView.as_view()),
 
+    path(
+        "shipping/request/",
+        request_shipping_negotiation,
+        name="request_shipping_negotiation"
+    ),
+
+    path(
+        "shipping/negotiated/<str:code>/",
+        negotiated_checkout,
+        name="negotiated_checkout"
+    ),
+
+    path(
+        "shipping/pay/<str:code>/",
+        pay_negotiated_shipping,
+        name="pay_negotiated_shipping"
+    ),
+
     path("webhooks/paystack/", paystack_webhook),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

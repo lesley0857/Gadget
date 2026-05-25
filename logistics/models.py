@@ -1,9 +1,7 @@
+import uuid
 from django.db import models
-
 # Create your models here.
-
-from django.db import models
-
+from django.conf import settings
 
 class Hub(models.Model):
     name = models.CharField(max_length=100)
@@ -36,9 +34,6 @@ class ShippingOption(models.Model):
 
     def __str__(self):
         return f"{self.provider.name} - {self.name}"
-
-
-
 
 class Shipment(models.Model):
     STATUS = [
@@ -90,7 +85,89 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f"{self.order.id} - {self.vendor}-{self.provider}"
-    
+
+
+class ShippingNegotiation(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("paid", "Paid"),
+    ]
+
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shipping_negotiations"
+    )
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        editable=False
+    )
+
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    vat = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    shipping_fee = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    final_total = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    locked_data = models.JSONField()
+
+    admin_note = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def save(self, *args, **kwargs):
+
+        if not self.code:
+            self.code = f"NEG-{uuid.uuid4().hex[:8].upper()}"
+
+        self.final_total = (
+            self.subtotal +
+            self.vat +
+            self.shipping_fee
+        )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.code  
 
 
 

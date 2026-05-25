@@ -4,6 +4,10 @@ from pathlib import Path
 from datetime import timedelta
 import dj_database_url
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api	
+
 load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -21,6 +25,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": "djxoeirbo",
+    "API_KEY": "994877198429841",
+    "API_SECRET": "PIcYa2IzNtmrCvSrQWWUxynowpA",
+
+    "TRANSFORMATION": {
+        "quality": "auto",
+        "fetch_format": "auto",
+    }
+}
 
 # Application definition
 
@@ -106,11 +121,29 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-# print(os.environ['POSTGRES_DB'])
+#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
+print(os.environ['POSTGRES_DB'])
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'neondb',
+#         'USER': 'your_user',
+#         'PASSWORD': 'your_password',
+#         'HOST': 'ep-gentle-wave-aplz2z82.us-east-1.aws.neon.tech',  # Remove '-pooler' for direct connection
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'connect_timeout': 10,  # Recommended by Neon Docs
+#         },
+#     }
+# }
+
+
 # DATABASES = {
 #     'default': dj_database_url.parse(
        
-#         url="postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i",
+#         url="postgresql://neondb_owner:npg_TJ02eojwrcXZ@ep-gentle-wave-aplz2z82-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+#         url = "postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i",
 #         conn_max_age=600,    # optional: connection pooling
 #         ssl_require=True     # forces SSL
 #     )
@@ -169,6 +202,10 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+DEFAULT_FILE_STORAGE = (
+    "cloudinary_storage.storage.MediaCloudinaryStorage"
+)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (

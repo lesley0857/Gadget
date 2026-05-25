@@ -4,6 +4,7 @@ async-timeout==5.0.1
 billiard==4.2.4
 celery==5.6.1
 certifi==2025.11.12
+cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.1.8
 click-didyoumean==0.3.1
@@ -12,8 +13,10 @@ click-repl==0.3.0
 cloudinary==1.44.1
 colorama==0.4.6
 cron_descriptor==2.0.6
+cryptography==46.0.5
 dj-database-url==3.0.1
 Django==4.2.27
+django-allauth==65.14.3
 django-celery-beat==2.8.1
 django-cloudinary-storage==0.3.0
 django-filter==25.1
@@ -30,6 +33,7 @@ packaging==25.0
 pillow==11.3.0
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.11
+pycparser==2.23
 PyJWT==2.10.1
 python-crontab==3.3.0
 python-dateutil==2.9.0.post0
@@ -44,5 +48,5 @@ tzlocal==5.3.1
 urllib3==2.6.2
 vine==5.1.0
 wcwidth==0.2.14
-whitenoise
+whitenoise==6.11.0
 zipp==3.23.0

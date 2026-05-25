@@ -85,11 +85,16 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     readonly_fields = [
-        "locked_data_table",
-        "total_commission_display",
-        "platform_profit_display",
-        "shipment_summary"
-    ]
+    "locked_data_table",
+    "total_commission_display",
+    "platform_profit_display",
+    "shipment_summary",
+
+    "billing_address",
+    "shipping_address",
+    "shipping_city",
+    "phone",
+]
 
     # =========================
     # PERFORMANCE
@@ -142,33 +147,95 @@ class OrderAdmin(admin.ModelAdmin):
             return "No shipments"
 
         html = """
-        <table border="1" style="border-collapse: collapse;">
+
+        <h3>CUSTOMER DETAILS</h3>
+
+        <table border="1" cellpadding="6"
+            style="border-collapse: collapse; width:100%;">
+
             <tr>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Billing Address</th>
+                <th>Shipping Address</th>
+            </tr>
+
+            <tr>
+                <td>{customer}</td>
+                <td>{phone}</td>
+                <td>{billing}</td>
+                <td>{shipping}</td>
+            </tr>
+
+        </table>
+
+        <br><br>
+
+        <h3>SHIPMENTS</h3>
+
+        <table border="1" cellpadding="6"
+            style="border-collapse: collapse; width:100%;">
+
+            <tr>
+                <th>Stage</th>
                 <th>Vendor</th>
                 <th>Provider</th>
-                <th>Pickup</th>
-                <th>Delivery</th>
+
+                <th>Pickup Address</th>
+                <th>Delivery Address</th>
+
+                <th>Origin Hub</th>
+                <th>Destination Hub</th>
+
                 <th>Weight</th>
-                <th>Fee</th>
+                <th>Shipping Fee</th>
+
+                <th>Status</th>
+                <th>Tracking ID</th>
             </tr>
-        """
+
+        """.format(
+            customer=obj.customer,
+            phone=obj.phone,
+            billing=obj.billing_address,
+            shipping=obj.shipping_address,
+        )
 
         for s in shipments:
+
             html += f"""
+
             <tr>
+
+                <td>{s.stage}</td>
+
                 <td>{s.vendor}</td>
+
                 <td>{s.provider}</td>
+
                 <td>{s.pickup_address}</td>
+
                 <td>{s.delivery_address}</td>
+
+                <td>{s.origin_hub}</td>
+
+                <td>{s.destination_hub}</td>
+
                 <td>{s.weight}</td>
-                <td>{s.shipping_fee}</td>
+
+                <td>₦{s.shipping_fee}</td>
+
+                <td>{s.status}</td>
+
+                <td>{s.tracking_id}</td>
+
             </tr>
+
             """
 
         html += "</table>"
 
         return format_html(html)
-
     shipment_summary.short_description = "Shipment Breakdown"
 
     # =========================

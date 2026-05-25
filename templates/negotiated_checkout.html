@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="container" style="padding:40px;">
+
+    <h2>Negotiated Shipping Checkout</h2>
+
+    <h3>Code: {{ negotiation.code }}</h3>
+
+    <hr>
+
+    {% for vendor in vendors_data %}
+
+    <h4>{{ vendor.vendor_name }}</h4>
+
+    <table class="table">
+
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+        </tr>
+
+        {% for item in vendor.items %}
+
+        <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>
+                ₦{{ item.line_total|intcomma }}
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% endfor %}
+
+    <hr>
+
+    <h4>
+        Subtotal:
+        ₦{{ subtotal|intcomma }}
+    </h4>
+
+    <h4>
+        VAT:
+        ₦{{ vat|intcomma }}
+    </h4>
+
+    <h4>
+        Negotiated Shipping:
+        ₦{{ shipping|intcomma }}
+    </h4>
+
+    <h2>
+        Total:
+        ₦{{ total|intcomma }}
+    </h2>
+
+    <a href="{% url 'pay_negotiated_shipping' negotiation.code %}" class="btn btn-danger">
+        Pay Now
+    </a>
+
+</div>
+
+{% endblock %}

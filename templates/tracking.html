@@ -1,0 +1,9 @@
+<h2>Order Tracking</h2>
+
+{% for s in shipments %}
+<div class="card">
+    <h4>{{ s.get_stage_display }}</h4>
+    <p>Status: {{ s.get_status_display }}</p>
+    <p>Tracking ID: {{ s.tracking_id }}</p>
+</div>
+{% endfor %}

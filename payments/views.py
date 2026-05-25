@@ -21,14 +21,16 @@ from datetime import timedelta
 from django.db import transaction
 from wallets.models import VendorWallet, WalletTransaction, Commission
 from logistics.services.router import *
+from logistics.services.router import route_order, get_central_hub
+
 
 
 def initiate_payment(request):
 
     user = request.user
     selected_shipping = request.POST.get("shipping_global")
-    shipping_choice = request.POST.get("shipping_option")
-    data = build_vendor_checkout(user, shipping_choice=shipping_choice)
+    shipping_choice = request.POST.get("shipping_global")
+    data = build_vendor_checkout(user, shipping_choices=shipping_choice)
     required_fields = ["address", "city", "state", "phone"]
 
     for field in required_fields:
@@ -60,7 +62,7 @@ def initiate_payment(request):
             "error": "Some vendors are not properly configured"
         })
 
-    total = Decimal(data["total"])
+    total = Decimal(str(data["subtotal"])) + Decimal(str(data["vat"])) + Decimal(str(data["shipping"]))
     reference = str(uuid.uuid4())
     
     order = Order.objects.create(
@@ -109,6 +111,7 @@ def initiate_payment(request):
     order.save()
 
     order.selected_shipping_option = selected_shipping
+    order.selected_provider = data.get("selected_provider")
     order.save()
 
     return JsonResponse({
@@ -162,96 +165,156 @@ def payment_success(request):
     return render(request, "success.html")
 
 
-from logistics.services.router import route_order, get_central_hub
-
 @transaction.atomic
 def verify_payment(request):
 
     reference = request.GET.get("reference")
+
     order = Order.objects.get(reference=reference)
 
-    # ✅ VERIFY PAYMENT FIRST (unchanged)
+    # ======================================
+    # PREVENT DOUBLE CREDIT
+    # ======================================
 
     if order.status == "paid":
         return redirect("payment_success")
 
+    # ======================================
+    # VERIFY PAYSTACK
+    # ======================================
+
+    response = requests.get(
+        f"https://api.paystack.co/transaction/verify/{reference}",
+        headers={
+            "Authorization":
+                "Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
+        }
+    )
+
+    paystack_data = response.json()
+
+    if (
+        not paystack_data.get("status")
+        or paystack_data["data"]["status"] != "success"
+    ):
+        return JsonResponse({
+            "error": "Payment verification failed"
+        }, status=400)
+
+    # ======================================
+    # MARK ORDER PAID
+    # ======================================
+
     order.status = "paid"
+    order.paid_at = timezone.now()
     order.save()
 
     data = json.loads(order.locked_data)
 
-    total_weight = Decimal(data.get("total_weight", "1"))
-    shipping_total = Decimal(data.get("shipping", "0"))
+    total_weight = Decimal(
+        data.get("total_weight", "1")
+    )
 
     central_hub = get_central_hub()
 
-    # =========================
+    # ======================================
     # VENDOR → HUB SHIPMENTS
-    # =========================
-    vendor_to_hub_total = Decimal("0.00")
+    # ======================================
 
     for v in data["vendors_data"]:
 
-        vendor = Vendor.objects.get(id=v["vendor_id"])
+        vendor = Vendor.objects.get(
+            id=v["vendor_id"]
+        )
 
-        # 🔥 Replace with real provider later
-        vendor_fee = Decimal("2000")
+        skip_vendor_to_hub = v.get(
+            "skip_vendor_to_hub",
+            False
+        )
 
-        vendor_to_hub_total += vendor_fee
+        if skip_vendor_to_hub:
+            continue
+
+        fee = Decimal(
+            v.get("vendor_to_hub_fee", "0")
+        )
 
         Shipment.objects.create(
             order=order,
+
             vendor=vendor,
-            pickup_address=vendor.address,
-            delivery_address=central_hub.address,
-            origin_hub=vendor.hub,
-            destination_hub=central_hub,
-            stage="vendor_to_hub",
+
             provider="GIGL",
+
+            pickup_address=vendor.address,
+
+            delivery_address=central_hub.address,
+
+            origin_hub=vendor.hub,
+
+            destination_hub=central_hub,
+
+            stage="vendor_to_hub",
+
+            weight=Decimal(
+                v.get("vendor_weight", "1")
+            ),
+
+            shipping_fee=fee,
+
+            total_shipping=fee,
+
             tracking_id=str(uuid.uuid4()),
-            weight=total_weight,
-            shipping_fee=vendor_fee,
-            total_shipping=vendor_fee
+
+            status="processing"
         )
 
-    # =========================
-    # HUB → CUSTOMER
-    # =========================
-    hub_to_customer_fee = shipping_total - vendor_to_hub_total
+    # ======================================
+    # HUB → CUSTOMER SHIPMENT
+    # ======================================
+
+    hub_fee = Decimal(
+        data.get("hub_to_customer_fee", "0")
+    )
 
     Shipment.objects.create(
         order=order,
+
         vendor=None,
-        pickup_address=central_hub.address,
-        delivery_address=order.shipping_address,
-        origin_hub=central_hub,
-        stage="hub_to_customer",
+
         provider=data.get("selected_provider"),
-        tracking_id=str(uuid.uuid4()),
+
+        pickup_address=central_hub.address,
+
+        delivery_address=order.shipping_address,
+
+        origin_hub=central_hub,
+
+        destination_hub=None,
+
+        stage="hub_to_customer",
+
         weight=total_weight,
-        shipping_fee=hub_to_customer_fee,
-        total_shipping=hub_to_customer_fee
+
+        shipping_fee=hub_fee,
+
+        total_shipping=hub_fee,
+
+        tracking_id=str(uuid.uuid4()),
+
+        status="processing"
     )
 
-    # =========================
-    # COMMISSIONS (FIXED)
-    # =========================
-    PLATFORM_PERCENT = Decimal("0.05")
+    # ======================================
+    # CLEAR CART
+    # ======================================
 
-    for item in order.items.all():
+    cart = Cart.objects.get(user=order.customer)
 
-        product_commission = item.total * PLATFORM_PERCENT
+    cart.items.all().delete()
 
-        # 🔥 DISTRIBUTE SHIPPING PROFIT
-        shipping_commission = (shipping_total * PLATFORM_PERCENT) / order.items.count()
+    cart.status = "active"
 
-        Commission.objects.create(
-            order=order,
-            order_item=item,
-            vendor=item.vendor,
-            product_commission=product_commission,
-            shipping_commission=shipping_commission,
-            total_commission=product_commission + shipping_commission
-        )
+    cart.save()
 
     return redirect("payment_success")

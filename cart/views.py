@@ -359,7 +359,8 @@ def checkout_view(request):
         "shipping": data.get("shipping", 0),
         "vat": data.get("vat", 0),
         "total": data.get("total", 0),
-
+        "vendor_to_hub_total":
+            data.get("vendor_to_hub_total", 0),
         "shipping_options": shipping_options,
     }
 

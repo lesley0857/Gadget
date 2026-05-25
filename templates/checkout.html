@@ -200,9 +200,13 @@
                                             {% endfor %}
                                         </select>
 
+                                        <button type="button" id="negotiation-btn" class="btn btn-warning">
+                                            Negotiate Shipping
+                                        </button>
                                     </div>
 
                                     <!-- =========================
+                                   
                      SUMMARY
                 ========================== -->
                                     <div class="summary-box">
@@ -250,23 +254,110 @@
     </div>
     <script>
 
+
+
+        // ✅ BACKEND CALCULATED VALUES
+        const vendorToHubTotal = parseFloat("{{ vendor_to_hub_total|default:'0' }}");
+
+        const subtotal = parseFloat("{{ subtotal|default:'0' }}");
+
+        const vat = parseFloat("{{ vat|default:'0' }}");
+
+
         function updateTotals() {
 
-            let shippingSelect = document.getElementById("global-shipping-select");
+            let shippingSelect = document.getElementById(
+                "global-shipping-select"
+            );
 
             if (!shippingSelect) return;
 
-            let selectedOption = shippingSelect.options[shippingSelect.selectedIndex];
-            let shippingFee = parseFloat(selectedOption.dataset.fee || 0);
+            let selectedOption =
+                shippingSelect.options[
+                shippingSelect.selectedIndex
+                ];
 
-            let subtotal = parseFloat("{{ subtotal }}");
-            let vat = parseFloat("{{ vat }}");
+            // ✅ HUB → CUSTOMER ONLY
+            let hubFee = parseFloat(
+                selectedOption.dataset.fee || 0
+            );
 
-            let total = subtotal + vat + shippingFee;
+            // ✅ FULL SHIPPING
+            let totalShipping =
+                vendorToHubTotal + hubFee;
 
-            document.getElementById("total_shipping").innerText = shippingFee.toFixed(2);
-            document.getElementById("total_amount").innerText = total.toFixed(2);
+            // ✅ FINAL TOTAL
+            let total =
+                subtotal +
+                vat +
+                totalShipping;
+
+            // =========================
+            // UPDATE UI
+            // =========================
+
+            document.getElementById(
+                "total_shipping"
+            ).innerText =
+                totalShipping.toFixed(2);
+
+            document.getElementById(
+                "total_amount"
+            ).innerText =
+                total.toFixed(2);
         }
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                let select = document.getElementById(
+                    "global-shipping-select"
+                );
+
+                if (select) {
+                    select.addEventListener(
+                        "change",
+                        updateTotals
+                    );
+                }
+
+                updateTotals();
+            }
+        );
+
+
+
+        document.getElementById("negotiation-btn").addEventListener("click", function () {
+            fetch("/shipping/request/", {
+
+                method: "POST",
+
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.success) {
+
+                        alert(
+                            "Send this code to admin: "
+                            + data.code
+                        );
+
+                    } else {
+
+                        alert("Failed");
+
+                    }
+
+                });
+
+        });
+
 
         document.addEventListener("DOMContentLoaded", function () {
 
