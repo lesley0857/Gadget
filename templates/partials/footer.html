@@ -1,0 +1,660 @@
+{%load static%}
+<!-- =========================================
+PROFESSIONAL FOOTER
+========================================= -->
+
+<footer class="main-footer">
+    <style>
+        /* =========================================
+FOOTER
+========================================= */
+
+        .main-footer {
+
+            background:
+                linear-gradient(135deg,
+                    #0F172A,
+                    #111827);
+
+            color: white;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        /* =========================================
+TOP FOOTER
+========================================= */
+
+        .footer-top {
+
+            padding: 90px 0 60px;
+        }
+
+        /* =========================================
+GRID
+========================================= */
+
+        .footer-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                1.2fr 1fr 1fr 1.2fr;
+
+            gap: 50px;
+        }
+
+        /* =========================================
+LOGO
+========================================= */
+
+        .footer-logo {
+
+            display: inline-flex;
+
+            flex-direction: column;
+
+            text-decoration: none;
+
+            margin-bottom: 24px;
+        }
+
+        .footer-logo-main {
+
+            font-size: 34px;
+
+            font-weight: 800;
+
+            color: #DC2626;
+
+            line-height: 1;
+        }
+
+        .footer-logo-sub {
+
+            color: rgba(255, 255, 255, 0.75);
+
+            font-size: 12px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+            margin-top: 8px;
+        }
+
+        /* =========================================
+ABOUT
+========================================= */
+
+        .footer-about {
+
+            color: rgba(255, 255, 255, 0.72);
+
+            line-height: 1.9;
+
+            font-size: 15px;
+
+            margin-bottom: 28px;
+        }
+
+        /* =========================================
+SOCIALS
+========================================= */
+
+        .footer-socials {
+
+            display: flex;
+
+            gap: 14px;
+        }
+
+        .footer-socials a {
+
+            width: 44px;
+            height: 44px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255, 255, 255, 0.06);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: white;
+
+            font-size: 18px;
+
+            transition: 0.3s ease;
+        }
+
+        .footer-socials a:hover {
+
+            background: #DC2626;
+
+            transform: translateY(-4px);
+        }
+
+        /* =========================================
+TITLES
+========================================= */
+
+        .footer-title {
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+            margin-bottom: 28px;
+
+            position: relative;
+        }
+
+        .footer-title::after {
+
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            bottom: -12px;
+
+            width: 55px;
+            height: 3px;
+
+            border-radius: 10px;
+
+            background: #DC2626;
+        }
+
+        /* =========================================
+LINKS
+========================================= */
+
+        .footer-links {
+
+            list-style: none;
+
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+
+            color: rgba(255, 255, 255, 0.72);
+
+            text-decoration: none;
+
+            transition: 0.3s ease;
+
+            font-size: 15px;
+        }
+
+        .footer-links a:hover {
+
+            color: #DC2626;
+
+            padding-left: 6px;
+        }
+
+        /* =========================================
+CONTACT
+========================================= */
+
+        .footer-contact {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 22px;
+        }
+
+        .footer-contact-item {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 16px;
+        }
+
+        .footer-contact-icon {
+
+            min-width: 48px;
+            height: 48px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(220, 38, 38, 0.12);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #DC2626;
+
+            font-size: 18px;
+        }
+
+        .footer-contact-item h4 {
+
+            font-size: 16px;
+
+            margin-bottom: 6px;
+        }
+
+        .footer-contact-item p {
+
+            color: rgba(255, 255, 255, 0.72);
+
+            line-height: 1.7;
+
+            font-size: 14px;
+        }
+
+        /* =========================================
+BOTTOM FOOTER
+========================================= */
+
+        .footer-bottom {
+
+            border-top:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            padding: 24px 0;
+        }
+
+        .footer-bottom-wrapper {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .footer-copyright {
+
+            color: rgba(255, 255, 255, 0.65);
+
+            font-size: 14px;
+
+            margin: 0;
+        }
+
+        .footer-bottom-links {
+
+            display: flex;
+
+            gap: 22px;
+        }
+
+        .footer-bottom-links a {
+
+            color: rgba(255, 255, 255, 0.65);
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            transition: 0.3s ease;
+        }
+
+        .footer-bottom-links a:hover {
+
+            color: #DC2626;
+        }
+
+        /* =========================================
+RESPONSIVE
+========================================= */
+
+        @media(max-width: 1200px) {
+
+            .footer-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 768px) {
+
+            .footer-top {
+
+                padding: 70px 0 50px;
+            }
+
+            .footer-grid {
+
+                grid-template-columns: 1fr;
+
+                gap: 45px;
+            }
+
+            .footer-bottom-wrapper {
+
+                flex-direction: column;
+
+                text-align: center;
+            }
+
+            .footer-bottom-links {
+
+                justify-content: center;
+
+                flex-wrap: wrap;
+            }
+        }
+
+        @media(max-width: 480px) {
+
+            .footer-logo-main {
+
+                font-size: 28px;
+            }
+
+            .footer-title {
+
+                font-size: 20px;
+            }
+
+            .footer-socials {
+
+                flex-wrap: wrap;
+            }
+
+        }
+    </style>
+    <!-- TOP FOOTER -->
+    <div class="footer-top">
+
+        <div class="container">
+
+            <div class="footer-grid">
+
+                <!-- COMPANY INFO -->
+                <div class="footer-column footer-company">
+
+                    <a href="/" class="footer-logo">
+
+                        <span class="footer-logo-main">
+
+                            REMAROBE
+
+                        </span>
+
+                        <span class="footer-logo-sub">
+
+                            Electrical Engineering
+
+                        </span>
+
+                    </a>
+
+                    <p class="footer-about">
+
+                        Professional industrial electrical engineering,
+                        earthing installation, cathodic protection,
+                        switchgear supply and automation solutions
+                        across Nigeria.
+
+                    </p>
+
+                    <!-- SOCIALS -->
+                    <div class="footer-socials">
+
+                        <a href="#">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+
+                        <a href="#">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+
+                        <a href="#">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+
+                        <a href="#">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- QUICK LINKS -->
+                <div class="footer-column">
+
+                    <h3 class="footer-title">
+
+                        Quick Links
+
+                    </h3>
+
+                    <ul class="footer-links">
+
+                        <li>
+                            <a href="/">
+                                Home
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Products
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Services
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                RFQ Portal
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                About Us
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Contact
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                <!-- SERVICES -->
+                <div class="footer-column">
+
+                    <h3 class="footer-title">
+
+                        Our Services
+
+                    </h3>
+
+                    <ul class="footer-links">
+
+                        <li>
+                            <a href="#">
+                                Electrical Earthing
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Control Panels
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Industrial Wiring
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Cathodic Protection
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                CNG Electrical Systems
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                Industrial Automation
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                <!-- CONTACT -->
+                <div class="footer-column">
+
+                    <h3 class="footer-title">
+
+                        Contact Us
+
+                    </h3>
+
+                    <div class="footer-contact">
+
+                        <div class="footer-contact-item">
+
+                            <div class="footer-contact-icon">
+
+                                <i class="fa fa-map-marker"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h4>
+                                    Address
+                                </h4>
+
+                                <p>
+                                    Satellite Town,
+                                    Lagos, Nigeria
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="footer-contact-item">
+
+                            <div class="footer-contact-icon">
+
+                                <i class="fa fa-phone"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h4>
+                                    Phone
+                                </h4>
+
+                                <p>
+                                    +2348100911189
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="footer-contact-item">
+
+                            <div class="footer-contact-icon">
+
+                                <i class="fa fa-envelope"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h4>
+                                    Email
+                                </h4>
+
+                                <p>
+                                    nwekelesley@gmail.com
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER BOTTOM -->
+    <div class="footer-bottom">
+
+        <div class="container footer-bottom-wrapper">
+
+            <p class="footer-copyright">
+
+                © 2026 REMAROBE Electrical Engineering.
+                All Rights Reserved.
+
+            </p>
+
+            <div class="footer-bottom-links">
+
+                <a href="#">
+                    Privacy Policy
+                </a>
+
+                <a href="#">
+                    Terms & Conditions
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>

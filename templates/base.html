@@ -41,7 +41,6 @@
 
 </head>
 
-
 <body>
     <style>
         .product-img {
@@ -348,158 +347,11 @@
 
     <main>
         {% block content %}
-        <div class="section">
-            <!-- container -->
-            <div class="container">
-                <!-- row -->
-                <div class="row">
-
-                    <!-- section title -->
-                    <div class="col-md-12">
-                        <div class="section-title">
-                            <h3 class="title">New Products</h3>
-                            <div class="section-nav">
-                                <ul class="section-tab-nav tab-nav">
-                                    <li class="active"><a data-toggle="tab" href="#tab1">Laptops</a></li>
-                                    <li><a data-toggle="tab" href="#tab1">Smartphones</a></li>
-                                    <li><a data-toggle="tab" href="#tab1">Cameras</a></li>
-                                    <li><a data-toggle="tab" href="#tab1">Accessories</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /section title -->
-
-                    <!-- Products tab & slick -->
-                    <div class="col-md-12">
-                        <div class="row">
-                            <div class="products-tabs">
-                                <!-- tab -->
-                                <div id="tab1" class="tab-pane active">
-                                    <div class="products-slick" data-nav="#slick-nav-1">
-                                        <!-- product -->
-                                        {% for product in productList %}
-                                        <div class="product">
-                                            <div class="product-img">
-                                                {% with primary_media=product.media.all %}
-                                                {% for media in primary_media %}
-                                                {% if media.is_primary and media.media_type == "image" %}
-                                                <img class="product-image" src="{{ media.file.url }}"
-                                                    alt="{{ product.product.name }}">
-                                                {% endif %}
-                                                {% empty %}
-                                                <!-- FALLBACK IMAGE -->
-                                                <img class="product-image" src="{% static 'img/hotdeal.png' %}"
-                                                    alt="No image">
-                                                {% endfor %}
-
-                                                {% for media in product.media.all %}
-                                                {% if media.media_type == "video" %}
-                                                <video class="product-video" muted loop>
-                                                    <source src="{{ media.file.url }}">
-                                                </video>
-                                                {% endif %}
-                                                {% endfor %}
-
-                                                {% endwith %}
-                                                <div class="product-label">
-                                                    <span class="sale">-30%</span>
-                                                    <span class="new">NEW</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">{{product.category}}</p>
-                                                <h3 class="product-name"><a href="#">{{product.product.name}}</a></h3>
-                                                <h4 class="product-price">
-                                                    N{{product.calculate_price|floatformat:2|intcomma}}
-                                                    <!-- if there is discount
-                                                    <del class="product-old-price">${{product.base_price}}</del> -->
-                                                </h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <a class="add-to-cart-btn" data-id="{{ product.id }}">🛒
-                                                    Add to Cart</a>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                        <!-- /product -->
-                                    </div>
-                                    <div id="slick-nav-1" class="products-slick-nav"></div>
-                                </div>
-                                <!-- /tab -->
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Products tab & slick -->
-                </div>
-                <!-- /row -->
-            </div>
-            <!-- /container -->
-
-            <div class="products-grid">
-
-                {% for product in productList %}
-                <div class="product-card">
-
-                    <div class="product-img">
-                        {% with primary_media=product.media.all %}
-                        {% for media in primary_media %}
-                        {% if media.is_primary and media.media_type == "image" %}
-
-                        <img class="product-image" src="{{ media.file.url }}" alt="{{ product.product.name }}">
-                        {% endif %}
-                        {% empty %}
-                        <!-- FALLBACK IMAGE -->
-                        <img class="product-image" src="{% static 'img/hotdeal.png' %}" alt="No image">
-                        {% endfor %}
-
-                        {% for media in product.media.all %}
-                        {% if media.media_type == "video" %}
-                        <video class="product-video" muted loop playsinline>
-                            <source src="{{ media.file.url }}">
-                        </video>
-                        {% endif %}
-                        {% endfor %}
-
-                        {% endwith %}
-                    </div>
-
-                    <div class="product-body">
-                        <p class="product-category">{{ product.product.category }}</p>
-
-                        <h3 class="product-name">
-                            {{ product.product.name }}
-                        </h3>
-
-                        <h4 class="product-price">
-                            ₦{{ product.calculate_price|floatformat:2|intcomma }}
-                        </h4>
-                    </div>
-
-                    <a class="add-to-cart-btn" data-id="{{ product.id }}">
-                        🛒 Add to Cart
-                    </a>
-
-                </div>
-                {% endfor %}
-
-            </div>
-        </div>
+        {% include 'partials/products.html' %}
+        {% include 'partials/services.html' %}
+        {% include 'partials/product_category.html' %}
+        {% include 'partials/rfq.html' %}
+        {% include 'partials/footer.html' %}
         {% endblock %}
     </main>
 
@@ -534,35 +386,6 @@
         <!-- Order Banner -->
     </div>
 
-    <!-- FOOTER -->
-    <footer class="site-footer">
-        <div class="container footer-container">
-            <div class="footer-about">
-                <h3>About Our Store</h3>
-                <p>We sell the latest laptops, phones, and accessories with secure payments and fast delivery.</p>
-            </div>
-            <div class="footer-links">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'products' %}">Products</a></li>
-                    <li><a href="">Contact</a></li>
-                    <li><a href="">About</a></li>
-                </ul>
-            </div>
-            <div class="footer-social">
-                <h3>Follow Us</h3>
-                <ul>
-                    <li><a href="#"><img src="{% static 'images/facebook.png' %}" alt="Facebook"></a></li>
-                    <li><a href="#"><img src="{% static 'images/twitter.png' %}" alt="Twitter"></a></li>
-                    <li><a href="#"><img src="{% static 'images/instagram.png' %}" alt="Instagram"></a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; {{ current_year }} Phone & Laptop Store. All rights reserved.</p>
-        </div>
-    </footer>
     <!-- jQuery Plugins -->
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
@@ -612,8 +435,6 @@
 
 
 <script>
-
-
     function updateCartUI(data) {
 
         const countElements = document.querySelectorAll("#cart-count");
@@ -659,31 +480,41 @@
     };
 
     // ADD TO CART CLICK
-    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = btn.dataset.id;
-            console.log("CLICKED");
-            console.log(btn.dataset.id);
+    document.addEventListener("click", function (e) {
 
-            fetch(`/cart/add/${id}/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCSRFToken()
+        const btn = e.target.closest(".add-to-cart-btn");
+
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+
+        fetch(`/cart/add/${id}/`, {
+
+            method: "POST",
+
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+
+        })
+
+            .then(res => res.json())
+
+            .then(data => {
+
+                if (data.success) {
+
+                    updateCartUI(data);
+
+                    openCart();
+
                 }
-            })
-                .then(res => res.json())
-                .then(data => {
 
-                    if (data.cart_items) {
-                        updateCartUI(data);
-                        openCart();
-                        console.log("DATA:", data);
-                    }
-                });
-        });
+            });
+
     });
-    // RENDER CART
 
+    // RENDER CART
     function renderCart(data) {
         const cartItems = document.getElementById("cart-items");
         cartItems.innerHTML = "";

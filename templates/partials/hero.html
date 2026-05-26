@@ -1,0 +1,675 @@
+{% load static %}
+
+<!-- =========================================
+HERO SECTION
+========================================= -->
+
+<section class="hero-section">
+
+    <style>
+        /* =========================================
+HERO SECTION
+========================================= */
+
+        .hero-section {
+
+            background:
+                linear-gradient(135deg,
+                    #F9FAFB 0%,
+                    #EEF2F7 100%);
+
+            padding: 70px 0;
+        }
+
+        /* GRID */
+
+        .hero-grid {
+
+            display: grid;
+
+            grid-template-columns: 1.1fr 1fr;
+
+            gap: 50px;
+
+            align-items: center;
+        }
+
+        /* =========================================
+LEFT
+========================================= */
+
+        .hero-badge {
+
+            display: inline-block;
+
+            background: rgba(220, 38, 38, 0.08);
+
+            color: #DC2626;
+
+            padding: 10px 18px;
+
+            border-radius: 40px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 24px;
+        }
+
+        .hero-title {
+
+            font-size: 58px;
+
+            font-weight: 800;
+
+            line-height: 1.1;
+
+            color: #111827;
+
+            margin-bottom: 24px;
+        }
+
+        .hero-description {
+
+            font-size: 17px;
+
+            line-height: 1.8;
+
+            color: #4B5563;
+
+            margin-bottom: 35px;
+
+            max-width: 620px;
+        }
+
+        /* BUTTONS */
+
+        .hero-buttons {
+
+            display: flex;
+
+            gap: 18px;
+
+            flex-wrap: wrap;
+
+            margin-bottom: 45px;
+        }
+
+        .hero-btn {
+
+            padding: 15px 28px;
+
+            border-radius: 8px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            transition: 0.3s ease;
+        }
+
+        .primary-btn {
+
+            background: #DC2626;
+
+            color: white;
+        }
+
+        .primary-btn:hover {
+
+            background: #B91C1C;
+
+            color: white;
+        }
+
+        .secondary-btn {
+
+            background: white;
+
+            border: 1px solid #D1D5DB;
+
+            color: #111827;
+        }
+
+        .secondary-btn:hover {
+
+            background: #F3F4F6;
+
+            color: #111827;
+        }
+
+        /* STATS */
+
+        .hero-stats {
+
+            display: flex;
+
+            gap: 45px;
+
+            flex-wrap: wrap;
+        }
+
+        .hero-stat h3 {
+
+            font-size: 32px;
+
+            font-weight: 800;
+
+            margin-bottom: 5px;
+
+            color: #111827;
+        }
+
+        .hero-stat span {
+
+            color: #6B7280;
+
+            font-size: 14px;
+        }
+
+        /* =========================================
+RIGHT
+========================================= */
+
+        .hero-right {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 25px;
+        }
+
+        /* SERVICE CARDS */
+
+        .service-cards {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 18px;
+        }
+
+        .service-card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 22px;
+
+            display: flex;
+
+            gap: 18px;
+
+            align-items: flex-start;
+
+            box-shadow:
+                0 6px 20px rgba(0, 0, 0, 0.05);
+
+            transition: 0.3s ease;
+        }
+
+        .service-card:hover {
+
+            transform: translateY(-4px);
+        }
+
+        .service-icon {
+
+            width: 60px;
+            height: 60px;
+
+            min-width: 60px;
+
+            border-radius: 14px;
+
+            background: rgba(220, 38, 38, 0.08);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #DC2626;
+
+            font-size: 24px;
+        }
+
+        .service-card h3 {
+
+            font-size: 18px;
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+
+            color: #111827;
+        }
+
+        .service-card p {
+
+            color: #6B7280;
+
+            line-height: 1.7;
+
+            font-size: 14px;
+        }
+
+        /* =========================================
+PRODUCT SLIDER
+========================================= */
+
+        .hero-products {
+
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 6px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero-products-header {
+
+            margin-bottom: 18px;
+        }
+
+        .hero-products-header h3 {
+
+            font-size: 20px;
+
+            font-weight: 700;
+
+            color: #111827;
+        }
+
+        /* SLIDER */
+
+        .hero-product-slider {
+
+            display: flex;
+
+            gap: 18px;
+
+            overflow-x: auto;
+
+            scroll-snap-type: x mandatory;
+
+            padding-bottom: 10px;
+        }
+
+        .hero-product-slider::-webkit-scrollbar {
+
+            height: 6px;
+        }
+
+        .hero-product-slider::-webkit-scrollbar-thumb {
+
+            background: #D1D5DB;
+
+            border-radius: 10px;
+        }
+
+        /* PRODUCT CARD */
+
+        .hero-product-card {
+
+            min-width: 220px;
+
+            background: #F9FAFB;
+
+            border-radius: 14px;
+
+            overflow: hidden;
+
+            scroll-snap-align: start;
+        }
+
+        .hero-product-card img {
+
+            width: 100%;
+            height: 170px;
+
+            object-fit: cover;
+        }
+
+        .hero-product-info {
+
+            padding: 15px;
+        }
+
+        .hero-product-info h4 {
+
+            font-size: 17px;
+
+            margin-bottom: 6px;
+
+            color: #111827;
+        }
+
+        .hero-product-info p {
+
+            font-size: 13px;
+
+            color: #6B7280;
+        }
+
+        /* =========================================
+RESPONSIVE
+========================================= */
+
+        @media(max-width: 992px) {
+
+            .hero-grid {
+
+                grid-template-columns: 1fr;
+
+                gap: 40px;
+            }
+
+            .hero-title {
+
+                font-size: 46px;
+            }
+        }
+
+        @media(max-width: 768px) {
+
+            .hero-section {
+
+                padding: 50px 0;
+            }
+
+            .hero-title {
+
+                font-size: 34px;
+
+                line-height: 1.2;
+            }
+
+            .hero-description {
+
+                font-size: 15px;
+            }
+
+            .hero-buttons {
+
+                flex-direction: column;
+            }
+
+            .hero-btn {
+
+                width: 100%;
+
+                text-align: center;
+            }
+
+            .hero-stats {
+
+                gap: 25px;
+            }
+
+            .hero-product-card {
+
+                min-width: 180px;
+            }
+        }
+    </style>
+
+    <div class="container">
+
+        <div class="hero-grid">
+
+            <!-- =========================================
+            LEFT CONTENT
+            ========================================= -->
+
+            <div class="hero-left">
+
+                <span class="hero-badge">
+
+                    Industrial Electrical • Earthing • Automation
+
+                </span>
+
+                <h1 class="hero-title">
+
+                    Professional Electrical Engineering
+                    & Earthing Solutions
+
+                </h1>
+
+                <p class="hero-description">
+
+                    Supply and installation of earthing materials,
+                    contactors, breakers, control panels,
+                    cable accessories and industrial power systems
+                    for commercial and industrial facilities.
+
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="#" class="hero-btn primary-btn">
+
+                        Shop Products
+
+                    </a>
+
+                    <a href="#" class="hero-btn secondary-btn">
+
+                        Request Installation
+
+                    </a>
+
+                </div>
+
+                <!-- STATS -->
+
+                <div class="hero-stats">
+
+                    <div class="hero-stat">
+
+                        <h3>500+</h3>
+
+                        <span>Electrical Products</span>
+
+                    </div>
+
+                    <div class="hero-stat">
+
+                        <h3>100+</h3>
+
+                        <span>Projects Completed</span>
+
+                    </div>
+
+                    <div class="hero-stat">
+
+                        <h3>24/7</h3>
+
+                        <span>Support</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =========================================
+            RIGHT SIDE
+            ========================================= -->
+
+            <div class="hero-right">
+
+                <!-- SERVICE CARDS -->
+
+                <div class="service-cards">
+
+                    <!-- CARD -->
+
+                    <div class="service-card">
+
+                        <div class="service-icon">
+
+                            <i class="fa fa-bolt"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Industrial Electrical
+                            </h3>
+
+                            <p>
+                                Power systems, installations,
+                                troubleshooting and maintenance.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- CARD -->
+
+                    <div class="service-card">
+
+                        <div class="service-icon">
+
+                            <i class="fa fa-plug"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Earthing Systems
+                            </h3>
+
+                            <p>
+                                Copper rods, earth mats,
+                                grounding and lightning protection.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- CARD -->
+
+                    <div class="service-card">
+
+                        <div class="service-icon">
+
+                            <i class="fa fa-cogs"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Control Panels
+                            </h3>
+
+                            <p>
+                                Industrial control panels,
+                                automation and motor control systems.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- PRODUCT SLIDER -->
+
+                <div class="hero-products">
+
+                    <div class="hero-products-header">
+
+                        <h3>
+                            Featured Products
+                        </h3>
+
+                    </div>
+
+                    <div class="hero-product-slider">
+
+                        <!-- PRODUCT -->
+
+                        <div class="hero-product-card">
+
+                            <img src="{% static 'img/product1.jpg' %}" alt="">
+
+                            <div class="hero-product-info">
+
+                                <h4>
+                                    Copper Earth Rod
+                                </h4>
+
+                                <p>
+                                    High conductivity earthing solution
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <!-- PRODUCT -->
+
+                        <div class="hero-product-card">
+
+                            <img src="{% static 'img/product2.jpg' %}" alt="">
+
+                            <div class="hero-product-info">
+
+                                <h4>
+                                    Industrial Contactor
+                                </h4>
+
+                                <p>
+                                    Heavy-duty motor switching
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <!-- PRODUCT -->
+
+                        <div class="hero-product-card">
+
+                            <img src="{% static 'img/product3.jpg' %}" alt="">
+
+                            <div class="hero-product-info">
+
+                                <h4>
+                                    MCCB Breakers
+                                </h4>
+
+                                <p>
+                                    Industrial circuit protection
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

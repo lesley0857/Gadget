@@ -15,6 +15,9 @@ from wallets.models import *
 from orders.models import *
 from withdrawals.views import *
 
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
+
 def register_view(request):
     if request.method == "POST":
         email = request.POST['email']

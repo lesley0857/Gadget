@@ -3,7 +3,7 @@ from django.urls import path,include
 from webhooks.views import paystack_webhook
 from django.conf.urls.static import static
 from django.conf import settings
-
+import accounts
 from accounts.views import *
 from cart.views import *
 from payments.views import *
@@ -69,5 +69,6 @@ urlpatterns = [
 
     path("webhooks/paystack/", paystack_webhook),
 ]
+handler404 = 'accounts.views.custom_404'
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

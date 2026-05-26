@@ -16,15 +16,26 @@ from logistics.services.aggregator import LogisticsAggregator
 from decimal import Decimal
 
 def add_to_cart(request, listing_id):
+
     if request.method == "POST":
-        listing = get_object_or_404(ProductListing, id=listing_id)
+
+        listing = get_object_or_404(
+            ProductListing,
+            id=listing_id
+        )
 
         cart_items_data = []
         total = 0
 
-        # ✅ AUTHENTICATED USER
+        # ===================================
+        # AUTHENTICATED USER
+        # ===================================
+
         if request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(user=request.user)
+
+            cart, _ = Cart.objects.get_or_create(
+                user=request.user
+            )
 
             item, created = CartItem.objects.get_or_create(
                 cart=cart,
@@ -38,57 +49,100 @@ def add_to_cart(request, listing_id):
             items = cart.items.all()
 
             for i in items:
+
                 price = i.product_listing.calculate_price()
                 subtotal = price * i.quantity
 
+                image = ""
+
+                media = i.product_listing.media.filter(
+                    is_primary=True
+                ).first()
+
+                if media:
+                    image = media.file.url
+
                 cart_items_data.append({
                     "id": i.product_listing.id,
                     "name": i.product_listing.product.name,
                     "price": float(price),
                     "quantity": i.quantity,
                     "subtotal": float(subtotal),
-                    "image": i.product_listing.media.filter(is_primary=True).first().file.url if i.product_listing.media.filter(is_primary=True).exists() else ""
+                    "image": image
                 })
 
                 total += subtotal
 
-        # ✅ ANONYMOUS USER (SESSION CART)
+        # ===================================
+        # ANONYMOUS USER
+        # ===================================
+
         else:
-            cart = request.session.get('cart', {})
 
+            cart = request.session.get("cart", {})
+
+            # ADD OR INCREMENT
             if str(listing_id) in cart:
-                cart[str(listing_id)]['quantity'] += 1
+
+                cart[str(listing_id)]["quantity"] += 1
+
             else:
-                cart[str(listing_id)] = {'quantity': 1}
 
-            request.session['cart'] = cart
+                cart[str(listing_id)] = {
+                    "quantity": 1
+                }
 
+            request.session["cart"] = cart
+            request.session.modified = True
+
+            # REBUILD RESPONSE
             for id, item in cart.items():
+
                 p = ProductListing.objects.get(id=id)
 
+                quantity = item["quantity"]
+
                 price = p.calculate_price()
-                quantity = item['quantity']
+
                 subtotal = price * quantity
 
+                image = ""
+
+                media = p.media.filter(
+                    is_primary=True
+                ).first()
+
+                if media:
+                    image = media.file.url
+
                 cart_items_data.append({
-                    "id": i.product_listing.id,
-                    "name": i.product_listing.product.name,
+                    "id": p.id,
+                    "name": p.product.name,
                     "price": float(price),
-                    "quantity": i.quantity,
+                    "quantity": quantity,
                     "subtotal": float(subtotal),
-                    "image": i.product_listing.media.filter(is_primary=True).first().file.url if i.product_listing.media.filter(is_primary=True).exists() else ""
+                    "image": image
                 })
 
                 total += subtotal
+
+        # ===================================
+        # RETURN RESPONSE
+        # ===================================
 
         return JsonResponse({
             "success": True,
             "cart_items": cart_items_data,
             "total": float(total),
-            "cart_count": sum(i["quantity"] for i in cart_items_data)
+            "cart_count": sum(
+                item["quantity"]
+                for item in cart_items_data
+            )
         })
 
-    return JsonResponse({"success": False}, status=400)
+    return JsonResponse({
+        "success": False
+    }, status=400)
 
 def remove_from_cart(request, listing_id):
     if request.user.is_authenticated:

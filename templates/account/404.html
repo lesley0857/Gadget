@@ -1,0 +1,426 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Power Interrupted | Remarobe</title>
+
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top, rgba(220, 38, 38, 0.15), transparent 40%),
+                linear-gradient(135deg, #0F172A, #111827);
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: "Segoe UI", sans-serif;
+            color: white;
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* =========================
+        BACKGROUND GRID
+        ========================= */
+
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+        }
+
+        /* =========================
+        ELECTRIC LINES
+        ========================= */
+
+        .electric-line {
+            position: absolute;
+            width: 2px;
+            height: 100vh;
+            background: linear-gradient(to bottom,
+                    transparent,
+                    rgba(59, 130, 246, 0.7),
+                    transparent);
+            animation: pulseLine 3s linear infinite;
+            opacity: 0.3;
+        }
+
+        .line1 {
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .line2 {
+            left: 50%;
+            animation-delay: 1s;
+        }
+
+        .line3 {
+            left: 80%;
+            animation-delay: 2s;
+        }
+
+        @keyframes pulseLine {
+            0% {
+                opacity: 0.1;
+                transform: scaleY(0.8);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scaleY(1);
+            }
+
+            100% {
+                opacity: 0.1;
+                transform: scaleY(0.8);
+            }
+        }
+
+        /* =========================
+        MAIN CONTAINER
+        ========================= */
+
+        .error-container {
+            position: relative;
+            z-index: 10;
+
+            width: 100%;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+        .error-box {
+            width: 100%;
+            max-width: 850px;
+
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(14px);
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 30px;
+
+            padding: 60px 50px;
+
+            text-align: center;
+
+            box-shadow:
+                0 0 50px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(220, 38, 38, 0.1);
+        }
+
+        /* =========================
+        LIGHTNING ICON
+        ========================= */
+
+        .electric-icon {
+            width: 120px;
+            height: 120px;
+
+            margin: 0 auto 30px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                radial-gradient(circle,
+                    rgba(59, 130, 246, 0.25),
+                    rgba(220, 38, 38, 0.15));
+
+            border: 2px solid rgba(255, 255, 255, 0.1);
+
+            animation: glow 2s infinite alternate;
+        }
+
+        .electric-icon i {
+            font-size: 60px;
+            color: #FACC15;
+            animation: flash 1.5s infinite;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+
+            to {
+                box-shadow:
+                    0 0 40px rgba(59, 130, 246, 0.6),
+                    0 0 70px rgba(220, 38, 38, 0.3);
+            }
+        }
+
+        @keyframes flash {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* =========================
+        404 TEXT
+        ========================= */
+
+        .error-code {
+            font-size: 140px;
+            font-weight: 900;
+            line-height: 1;
+
+            background: linear-gradient(90deg, #ffffff, #60A5FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            margin-bottom: 10px;
+        }
+
+        .error-title {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .error-description {
+            color: #CBD5E1;
+            font-size: 18px;
+            line-height: 1.8;
+
+            max-width: 650px;
+            margin: 0 auto 40px;
+        }
+
+        /* =========================
+        BUTTONS
+        ========================= */
+
+        .error-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            padding: 15px 28px;
+            border-radius: 12px;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            transition: 0.3s ease;
+        }
+
+        .primary-btn {
+            background: #DC2626;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: #B91C1C;
+            transform: translateY(-3px);
+        }
+
+        .secondary-btn {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+        }
+
+        /* =========================
+        FLOATING PARTICLES
+        ========================= */
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+
+            background: #60A5FA;
+            border-radius: 50%;
+
+            opacity: 0.6;
+
+            animation: floatParticle 10s linear infinite;
+        }
+
+        .particle:nth-child(1) {
+            top: 10%;
+            left: 15%;
+            animation-duration: 8s;
+        }
+
+        .particle:nth-child(2) {
+            top: 70%;
+            left: 25%;
+            animation-duration: 10s;
+        }
+
+        .particle:nth-child(3) {
+            top: 50%;
+            left: 80%;
+            animation-duration: 12s;
+        }
+
+        .particle:nth-child(4) {
+            top: 20%;
+            left: 70%;
+            animation-duration: 9s;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0px);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-120px);
+                opacity: 0;
+            }
+        }
+
+        /* =========================
+        MOBILE
+        ========================= */
+
+        @media(max-width:768px) {
+
+            .error-box {
+                padding: 40px 25px;
+            }
+
+            .electric-icon {
+                width: 90px;
+                height: 90px;
+            }
+
+            .electric-icon i {
+                font-size: 45px;
+            }
+
+            .error-code {
+                font-size: 90px;
+            }
+
+            .error-title {
+                font-size: 28px;
+            }
+
+            .error-description {
+                font-size: 15px;
+            }
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .primary-btn,
+            .secondary-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- GRID -->
+    <div class="grid-bg"></div>
+
+    <!-- ELECTRIC LINES -->
+    <div class="electric-line line1"></div>
+    <div class="electric-line line2"></div>
+    <div class="electric-line line3"></div>
+
+    <!-- PARTICLES -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- MAIN -->
+    <div class="error-container">
+
+        <div class="error-box">
+
+            <!-- ICON -->
+            <div class="electric-icon">
+                <i class="fa fa-bolt"></i>
+            </div>
+
+            <!-- ERROR -->
+            <div class="error-code">
+                404
+            </div>
+
+            <h1 class="error-title">
+                Power Interrupted
+            </h1>
+
+            <p class="error-description">
+                The electrical route you are trying to access could not be found.
+                The page may have been disconnected, relocated, or temporarily unavailable.
+            </p>
+
+            <!-- BUTTONS -->
+            <div class="error-actions">
+
+                <a href="/" class="primary-btn">
+                    <i class="fa fa-home"></i>
+                    Return Home
+                </a>
+
+                <a href="/contact/" class="secondary-btn">
+                    <i class="fa fa-envelope"></i>
+                    Contact Support
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+
+</html>

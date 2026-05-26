@@ -1,0 +1,751 @@
+{%load static%}
+<!-- =========================================
+RFQ SECTION WITH FILE UPLOAD
+========================================= -->
+
+<section class="rfq-section">
+    <style>
+        /* =========================================
+RFQ SECTION
+========================================= */
+
+        .rfq-section {
+
+            padding: 110px 0;
+
+            background:
+                linear-gradient(135deg,
+                    #111827,
+                    #1F2937);
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        /* =========================================
+BACKGROUND EFFECTS
+========================================= */
+
+        .rfq-section::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 500px;
+            height: 500px;
+
+            background:
+                rgba(220, 38, 38, 0.08);
+
+            border-radius: 50%;
+
+            top: -220px;
+            right: -180px;
+        }
+
+        .rfq-section::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 420px;
+            height: 420px;
+
+            background:
+                rgba(255, 255, 255, 0.03);
+
+            border-radius: 50%;
+
+            bottom: -180px;
+            left: -120px;
+        }
+
+        /* =========================================
+WRAPPER
+========================================= */
+
+        .rfq-wrapper {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: grid;
+
+            grid-template-columns: 1.05fr 0.95fr;
+
+            gap: 60px;
+
+            align-items: center;
+        }
+
+        /* =========================================
+LEFT CONTENT
+========================================= */
+
+        .rfq-content {
+
+            color: white;
+        }
+
+        .rfq-badge {
+
+            display: inline-block;
+
+            padding: 10px 18px;
+
+            border-radius: 40px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            color: #F9FAFB;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 22px;
+        }
+
+        .rfq-title {
+
+            font-size: 50px;
+
+            line-height: 1.2;
+
+            font-weight: 800;
+
+            margin-bottom: 24px;
+        }
+
+        .rfq-description {
+
+            color: rgba(255, 255, 255, 0.82);
+
+            line-height: 1.9;
+
+            font-size: 17px;
+
+            margin-bottom: 45px;
+        }
+
+        /* =========================================
+FEATURES
+========================================= */
+
+        .rfq-features {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 24px;
+        }
+
+        .rfq-feature {
+
+            display: flex;
+
+            gap: 18px;
+
+            align-items: flex-start;
+        }
+
+        .rfq-feature-icon {
+
+            min-width: 54px;
+            height: 54px;
+
+            border-radius: 16px;
+
+            background:
+                linear-gradient(135deg,
+                    #DC2626,
+                    #EF4444);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 20px;
+
+            color: white;
+        }
+
+        .rfq-feature h4 {
+
+            font-size: 18px;
+
+            margin-bottom: 8px;
+        }
+
+        .rfq-feature p {
+
+            color: rgba(255, 255, 255, 0.75);
+
+            line-height: 1.7;
+        }
+
+        /* =========================================
+FORM CARD
+========================================= */
+
+        .rfq-form-card {
+
+            background: white;
+
+            padding: 45px;
+
+            border-radius: 28px;
+
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.18);
+        }
+
+        .rfq-form-header {
+
+            margin-bottom: 30px;
+        }
+
+        .rfq-form-header h3 {
+
+            font-size: 34px;
+
+            color: #111827;
+
+            font-weight: 800;
+
+            margin-bottom: 12px;
+        }
+
+        .rfq-form-header p {
+
+            color: #6B7280;
+
+            line-height: 1.7;
+        }
+
+        /* =========================================
+FORM
+========================================= */
+
+        .rfq-form {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 22px;
+        }
+
+        .rfq-input-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        .rfq-input-group label {
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            color: #374151;
+        }
+
+        .rfq-input-group input,
+        .rfq-input-group select,
+        .rfq-input-group textarea {
+
+            width: 100%;
+
+            border: 1px solid #E5E7EB;
+
+            border-radius: 14px;
+
+            padding: 16px 18px;
+
+            background: #F9FAFB;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: 0.3s ease;
+        }
+
+        .rfq-input-group textarea {
+
+            resize: vertical;
+        }
+
+        .rfq-input-group input:focus,
+        .rfq-input-group select:focus,
+        .rfq-input-group textarea:focus {
+
+            border-color: #DC2626;
+
+            background: white;
+
+            box-shadow:
+                0 0 0 4px rgba(220, 38, 38, 0.08);
+        }
+
+        /* =========================================
+UPLOAD BOX
+========================================= */
+
+        .rfq-upload-box {
+
+            position: relative;
+        }
+
+        .rfq-upload-box input[type="file"] {
+
+            display: none;
+        }
+
+        .rfq-upload-label {
+
+            border: 2px dashed #D1D5DB;
+
+            background: #F9FAFB;
+
+            border-radius: 18px;
+
+            padding: 40px 20px;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+        .rfq-upload-label:hover {
+
+            border-color: #DC2626;
+
+            background: rgba(220, 38, 38, 0.03);
+        }
+
+        .rfq-upload-label i {
+
+            font-size: 42px;
+
+            color: #DC2626;
+        }
+
+        .rfq-upload-label span {
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            color: #111827;
+        }
+
+        .rfq-upload-label small {
+
+            color: #6B7280;
+        }
+
+        /* =========================================
+BUTTON
+========================================= */
+
+        .rfq-submit-btn {
+
+            border: none;
+
+            background:
+                linear-gradient(135deg,
+                    #DC2626,
+                    #EF4444);
+
+            color: white;
+
+            padding: 18px;
+
+            border-radius: 16px;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 12px;
+
+            cursor: pointer;
+
+            transition: 0.35s ease;
+
+            margin-top: 10px;
+        }
+
+        .rfq-submit-btn:hover {
+
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 18px 35px rgba(220, 38, 38, 0.28);
+        }
+
+        /* =========================================
+RESPONSIVE
+========================================= */
+
+        @media(max-width: 1200px) {
+
+            .rfq-wrapper {
+
+                grid-template-columns: 1fr;
+
+                gap: 50px;
+            }
+        }
+
+        @media(max-width: 768px) {
+
+            .rfq-section {
+
+                padding: 80px 0;
+            }
+
+            .rfq-title {
+
+                font-size: 36px;
+            }
+
+            .rfq-form-card {
+
+                padding: 30px;
+            }
+        }
+
+        @media(max-width: 480px) {
+
+            .rfq-title {
+
+                font-size: 30px;
+            }
+
+            .rfq-form-card {
+
+                padding: 22px;
+
+                border-radius: 20px;
+            }
+
+            .rfq-upload-label {
+
+                padding: 30px 15px;
+            }
+
+            .rfq-upload-label i {
+
+                font-size: 34px;
+            }
+
+        }
+    </style>
+    <div class="container">
+
+        <div class="rfq-wrapper">
+
+            <!-- LEFT CONTENT -->
+            <div class="rfq-content">
+
+                <span class="rfq-badge">
+
+                    Professional RFQ Portal
+
+                </span>
+
+                <h2 class="rfq-title">
+
+                    Send Your Project
+                    Requirements & Technical Files
+
+                </h2>
+
+                <p class="rfq-description">
+
+                    Upload BOQs, electrical drawings, specifications,
+                    datasheets, tender documents or project files.
+                    Our engineering team will review and provide
+                    a professional quotation.
+
+                </p>
+
+                <!-- FEATURES -->
+                <div class="rfq-features">
+
+                    <div class="rfq-feature">
+
+                        <div class="rfq-feature-icon">
+                            <i class="fa fa-file-text"></i>
+                        </div>
+
+                        <div>
+                            <h4>
+                                Upload Technical Documents
+                            </h4>
+
+                            <p>
+                                BOQ, drawings, PDFs, Excel sheets & specifications
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="rfq-feature">
+
+                        <div class="rfq-feature-icon">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+
+                        <div>
+                            <h4>
+                                Fast Engineering Review
+                            </h4>
+
+                            <p>
+                                Our engineers review submissions quickly
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="rfq-feature">
+
+                        <div class="rfq-feature-icon">
+                            <i class="fa fa-truck"></i>
+                        </div>
+
+                        <div>
+                            <h4>
+                                Material Supply & Installation
+                            </h4>
+
+                            <p>
+                                Complete supply and project execution services
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RFQ FORM -->
+            <div class="rfq-form-card">
+
+                <div class="rfq-form-header">
+
+                    <h3>
+
+                        Request A Quotation
+
+                    </h3>
+
+                    <p>
+
+                        Submit your requirements and upload supporting files.
+
+                    </p>
+
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" action="#" class="rfq-form">
+
+                    {% csrf_token %}
+
+                    <!-- NAME -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Full Name
+
+                        </label>
+
+                        <input type="text" name="name" placeholder="Enter your full name" required>
+
+                    </div>
+
+                    <!-- COMPANY -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Company Name
+
+                        </label>
+
+                        <input type="text" name="company" placeholder="Enter company name">
+
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Email Address
+
+                        </label>
+
+                        <input type="email" name="email" placeholder="Enter email address" required>
+
+                    </div>
+
+                    <!-- PHONE -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Phone Number
+
+                        </label>
+
+                        <input type="text" name="phone" placeholder="+234..." required>
+
+                    </div>
+
+                    <!-- SERVICE -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Requirement Category
+
+                        </label>
+
+                        <select name="service">
+
+                            <option value="">
+                                Select Requirement
+                            </option>
+
+                            <option>
+                                Electrical Earthing
+                            </option>
+
+                            <option>
+                                Industrial Installation
+                            </option>
+
+                            <option>
+                                Control Panels
+                            </option>
+
+                            <option>
+                                Contactors & Breakers
+                            </option>
+
+                            <option>
+                                Cable Accessories
+                            </option>
+
+                            <option>
+                                Cathodic Protection
+                            </option>
+
+                            <option>
+                                Engineering Project
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- MESSAGE -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Project Details
+
+                        </label>
+
+                        <textarea name="message" rows="5"
+                            placeholder="Describe your project, material requirements, quantities or installation details..."></textarea>
+
+                    </div>
+
+                    <!-- FILE UPLOAD -->
+                    <div class="rfq-input-group">
+
+                        <label>
+
+                            Upload Documents / Drawings
+
+                        </label>
+
+                        <div class="rfq-upload-box">
+
+                            <input type="file" name="documents" id="rfq-file" multiple>
+
+                            <label for="rfq-file" class="rfq-upload-label">
+
+                                <i class="fa fa-cloud-upload"></i>
+
+                                <span>
+
+                                    Drag & Drop files here
+                                    or Click to Upload
+
+                                </span>
+
+                                <small>
+
+                                    PDF, DOCX, XLSX, DWG, PNG, JPG
+
+                                </small>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <!-- BUTTON -->
+                    <button type="submit" class="rfq-submit-btn">
+
+                        <i class="fa fa-paper-plane"></i>
+
+                        Submit RFQ
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

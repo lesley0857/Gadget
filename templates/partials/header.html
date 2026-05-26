@@ -1,226 +1,761 @@
 {% load static %}
-<!DOCTYPE html>
 
-<!-- /HEADER -->
-<header>
-    <!-- TOP HEADER -->
-    <div id="top-header">
-        <div class="container">
-            <ul class="header-links pull-left">
-                <li><a href="#"><i class="fa fa-phone"></i> +2348100911189</a></li>
-                <li><a href="#"><i class="fa fa-envelope-o"></i> nwekelesley@gmail.com</a></li>
-                <li><a href="#"><i class="fa fa-map-marker"></i> D6C Unipetrol Estate Satellite Town Lagos</a></li>
-            </ul>
-            <ul class="header-links pull-right">
-                <li><a href="#"><i class="fa fa-naira"></i> NGN</a></li>
-                {% if user.is_authenticated %}
-                <li><a href="{% url 'profile' %}"><i class="fa fa-user-o"></i> My Account</a></li>
-                <li><a href="#"><i class="fa fa-user-o"></i> Logout</a></li>
-                <li><a id="open-orders-btn">📦 My Orders</a></li>
-                {% else %}
-                <li><a href="#"><i class="fa fa-user-o"></i> Login</a></li>
-                <li><a href="#"><i class="fa fa-user-o"></i> Register</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-    <!-- /TOP HEADER -->
-
-    <!-- MAIN HEADER -->
-    <div id="header">
-        <!-- container -->
-        <div class="container">
-            <!-- row -->
-            <div class="row">
-                <!-- LOGO -->
-                <div class="col-md-3">
-                    <div class="header-logo">
-                        <a href="#" class="logo">
-                            <img src="{% static './img/logo.png' %}" alt="">
-                        </a>
-                    </div>
-                </div>
-                <!-- /LOGO -->
-
-                <!-- SEARCH BAR -->
-                <div class="col-md-6">
-                    <div class="header-search">
-                        <form>
-                            <select onchange="location = this.value;">
-                                <option value="">All Categories</option>
-
-                                {% for category in categories %}
-                                <option value="{% url 'category_products' category.id %}">
-                                    {{ category.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="search-box" style="position: relative;">
-
-                                <form action="{% url 'search_products' %}" method="GET">
-                                    <input type="text" name="q" id="search-input" placeholder="Search products...">
-                                </form>
-
-                                <!-- 🔥 DROPDOWN -->
-                                <div id="search-suggestions" class="suggestions-box"></div>
-
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <!-- /SEARCH BAR -->
-
-                <!-- ACCOUNT -->
-                <div class="col-md-3 clearfix">
-                    <div class="header-ctn">
-                        <!-- Wishlist -->
-                        <!-- <div>
-                            <a href="#">
-                                <i class="fa fa-heart-o"></i>
-                                <span>Your Wishlist</span>
-                                <div class="qty">2</div>
-                            </a>
-                        </div> -->
-                        <!-- /Wishlist -->
-
-                        <!-- Cart -->
-                        <div class="dropdown">
-                            <a href="{% url 'cart' %}">
-                                <i class="fa fa-shopping-cart"></i>
-                                <span>Your Cart</span>
-                                <div class="qty" id="cart-count">0</div>
-                            </a>
-                        </div>
-                        <!-- /Cart -->
-
-                        <!-- Menu Toogle -->
-                        <div class="menu-toggle">
-                            <a href="#">
-                                <i class="fa fa-bars"></i>
-                                <span>Menu</span>
-                            </a>
-                        </div>
-                        <!-- /Menu Toogle -->
-                    </div>
-                </div>
-                <!-- /ACCOUNT -->
-            </div>
-            <!-- row -->
-        </div>
-        <!-- container -->
-    </div>
-    <!-- /MAIN HEADER -->
-</header>
-<!-- /HEADER -->
-
-<!-- NAVIGATION -->
-<nav id="navigation">
-    <!-- container -->
-    <div class="container">
-        <!-- responsive-nav -->
-        <div id="responsive-nav">
-            <!-- NAV -->
-            <ul class="main-nav nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#">Hot Deals</a></li>
-                <li><a href="#">Categories</a></li>
-                <li><a href="#">Laptops</a></li>
-                <li><a href="#">Smartphones</a></li>
-                <li><a href="#">Cameras</a></li>
-                <li><a href="#">Accessories</a></li>
-            </ul>
-            <!-- /NAV -->
-        </div>
-        <!-- /responsive-nav -->
-    </div>
-    <!-- /container -->
-</nav>
-<!-- /NAVIGATION -->
-
+<!-- =========================
+HEADER SCRIPT
+========================= -->
 <script>
 
-    function updateCartUI(data) {
+    document.addEventListener("DOMContentLoaded", function () {
 
-        const countElements = document.querySelectorAll("#cart-count");
-        const totalElements = document.querySelectorAll("#cart-total");
+        /* =========================
+        MOBILE NAVIGATION
+        ========================= */
 
-        countElements.forEach(el => {
-            el.innerText = data.cart_count;
-        });
+        const menuBtn = document.getElementById("mobile-menu-btn");
 
-        totalElements.forEach(el => {
-            el.innerText = data.total;
-        });
+        const nav = document.getElementById("responsive-nav");
 
-        if (typeof renderCart === "function") {
-            renderCart(data);
-        }
-    }
+        if (menuBtn && nav) {
 
-    function loadCart() {
-        fetch("/cart/summary/")
-            .then(res => res.json())
-            .then(data => {
-                updateCartUI(data);
+            menuBtn.addEventListener("click", function (e) {
+
+                e.stopPropagation();
+
+                nav.classList.toggle("active");
+
+                /* LOCK BODY SCROLL */
+                document.body.classList.toggle("nav-open");
+
             });
+
+            /* CLOSE WHEN CLICKING OUTSIDE */
+            document.addEventListener("click", function (e) {
+
+                if (
+                    !nav.contains(e.target) &&
+                    !menuBtn.contains(e.target)
+                ) {
+
+                    nav.classList.remove("active");
+
+                    document.body.classList.remove("nav-open");
+
+                }
+
+            });
+
+        }
+
+    });
+
+</script>
+
+<!-- =========================
+TOP HEADER
+========================= -->
+<div id="top-header">
+
+    <div class="container top-header-container">
+
+        <!-- LEFT -->
+        <div class="top-left">
+
+            <a href="#">
+                <i class="fa fa-phone"></i>
+                +2348100911189
+            </a>
+
+            <a href="#">
+                <i class="fa fa-envelope-o"></i>
+                nwekelesley@gmail.com
+            </a>
+
+            <a href="#">
+                <i class="fa fa-map-marker"></i>
+                Satellite Town, Lagos
+            </a>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="top-right">
+
+            {% if user.is_authenticated %}
+
+            <a href="{% url 'profile' %}">
+                <i class="fa fa-user-o"></i>
+                My Account
+            </a>
+
+            <a id="open-orders-btn">
+                <i class="fa fa-truck"></i>
+                Orders
+            </a>
+
+            <a href="#">
+                <i class="fa fa-sign-out"></i>
+                Logout
+            </a>
+
+            {% else %}
+
+            <a href="#">
+                <i class="fa fa-sign-in"></i>
+                Login
+            </a>
+
+            <a href="#">
+                <i class="fa fa-user-plus"></i>
+                Register
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+MAIN HEADER
+========================= -->
+<header id="main-header">
+
+    <div class="container navbar-container">
+
+        <!-- LOGO -->
+        <div class="logo-area">
+
+            <a href="/" class="logo">
+
+                <div class="logo-text-wrap">
+
+                    <span class="logo-main">
+                        REMAROBE
+                    </span>
+
+                    <span class="logo-sub">
+                        Electrical Engineering
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="nav-actions">
+
+            <!-- CART -->
+            <a href="{% url 'cart' %}" class="cart-link">
+
+                <i class="fa fa-shopping-cart"></i>
+
+                <span>Cart</span>
+
+                <div class="qty" id="cart-count">0</div>
+
+            </a>
+
+            <!-- MENU -->
+            <div class="menu-toggle" id="mobile-menu-btn">
+
+                <i class="fa fa-bars"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH SECTION -->
+    <div class="container search-container">
+
+        <div class="search-area">
+
+            <form action="{% url 'search_products' %}" method="GET">
+
+                <div class="search-wrapper">
+
+                    <!-- CATEGORY -->
+                    <select class="search-category" onchange="if(this.value){location=this.value;}">
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                        {% for category in categories %}
+
+                        <option value="{% url 'category_products' category.id %}">
+                            {{ category.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <!-- SEARCH -->
+                    <input type="text" name="q" id="search-input"
+                        placeholder="Search electrical products, earthing materials, contactors...">
+
+                    <!-- BUTTON -->
+                    <button type="submit" class="search-btn">
+
+                        <i class="fa fa-search"></i>
+
+                    </button>
+
+                    <!-- DROPDOWN -->
+                    <div id="search-suggestions" class="suggestions-box"></div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================
+NAVIGATION
+========================= -->
+<nav id="navigation">
+
+    <!-- RESPONSIVE NAV -->
+    <div id="responsive-nav">
+
+        <ul class="main-nav">
+
+            <li class="active">
+                <a href="/">Home</a>
+            </li>
+
+            <li>
+                <a href="#">Earthing Materials</a>
+            </li>
+
+            <li>
+                <a href="#">Industrial Electrical</a>
+            </li>
+
+            <li>
+                <a href="#">Contactors & Breakers</a>
+            </li>
+
+            <li>
+                <a href="#">Installation Services</a>
+            </li>
+
+            <li>
+                <a href="#">Control Panels</a>
+            </li>
+
+            <li>
+                <a href="#">Cable Accessories</a>
+            </li>
+
+            <li>
+                <a href="#">About Us</a>
+            </li>
+
+            <li>
+                <a href="#">Contact</a>
+            </li>
+
+        </ul>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =========================
+STYLES
+========================= -->
+<style>
+    /* =========================
+GENERAL
+========================= */
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #F9FAFB;
+        overflow-x: hidden;
     }
 
-    // 🔥 RUN ON EVERY PAGE LOAD
-    document.addEventListener("DOMContentLoaded", loadCart);
+    body.nav-open {
+        overflow: hidden;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .container {
+        width: 92%;
+        margin: auto;
+    }
+
+    /* =========================
+TOP HEADER
+========================= */
+
+    #top-header {
+        background: #1F2937;
+        color: #F9FAFB;
+        font-size: 13px;
+        padding: 10px 0;
+    }
+
+    .top-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .top-left,
+    .top-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .top-left a,
+    .top-right a {
+        color: #E5E7EB;
+        font-size: 13px;
+        transition: 0.3s ease;
+    }
+
+    .top-left a:hover,
+    .top-right a:hover {
+        color: #DC2626;
+    }
+
+    /* =========================
+MAIN HEADER
+========================= */
+
+    #main-header {
+        background: #FFFFFF;
+        border-bottom: 1px solid #E5E7EB;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+
+    .navbar-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0;
+    }
+
+    /* =========================
+LOGO
+========================= */
+
+    .logo {
+        text-decoration: none;
+    }
+
+    .logo-text-wrap {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-main {
+        font-size: 30px;
+        font-weight: 800;
+        color: #DC2626;
+        line-height: 1;
+    }
+
+    .logo-sub {
+        font-size: 12px;
+        color: #4B5563;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* =========================
+SEARCH
+========================= */
+
+    .search-container {
+        padding-bottom: 18px;
+    }
+
+    .search-area {
+        width: 100%;
+    }
+
+    .search-wrapper {
+        position: relative;
+        display: flex;
+        width: 100%;
+    }
+
+    .search-category {
+        width: 220px;
+        border: 1px solid #D1D5DB;
+        border-right: none;
+        padding: 14px;
+        background: #F9FAFB;
+        outline: none;
+    }
+
+    #search-input {
+        flex: 1;
+        border: 1px solid #D1D5DB;
+        padding: 14px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .search-btn {
+        width: 65px;
+        border: none;
+        background: #DC2626;
+        color: white;
+        cursor: pointer;
+    }
+
+    .search-btn:hover {
+        background: #B91C1C;
+    }
+
+    /* =========================
+ACTIONS
+========================= */
+
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .cart-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #111827;
+        font-weight: 600;
+    }
+
+    .cart-link i {
+        font-size: 22px;
+    }
+
+    .qty {
+        background: #DC2626;
+        color: white;
+        border-radius: 50%;
+        padding: 3px 7px;
+        font-size: 12px;
+    }
+
+    /* =========================
+MENU TOGGLE
+========================= */
+
+    .menu-toggle {
+        display: none;
+        cursor: pointer;
+    }
+
+    .menu-toggle i {
+        font-size: 26px;
+        color: #111827;
+    }
+
+    /* =========================
+DESKTOP NAVIGATION
+========================= */
+
+    #navigation {
+        background: #FFFFFF;
+        border-bottom: 1px solid #E5E7EB;
+    }
+
+    .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        list-style: none;
+        margin: 0;
+        padding: 16px 30px;
+    }
+
+    .main-nav li {
+        list-style: none;
+    }
+
+    .main-nav li a {
+        color: #111827;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.3s ease;
+    }
+
+    .main-nav li a:hover {
+        color: #DC2626;
+    }
+
+    .main-nav li.active a {
+        color: #DC2626;
+    }
+
+    /* =========================
+SEARCH SUGGESTIONS
+========================= */
+
+    .suggestions-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #eee;
+        z-index: 9999;
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 12px;
+        border-bottom: 1px solid #F3F4F6;
+        cursor: pointer;
+        color: #111827;
+    }
+
+    .suggestion-item:hover {
+        background: #F9FAFB;
+    }
+
+    /* =========================
+TABLET
+========================= */
+
+    @media(max-width: 992px) {
+
+        .top-header-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+    }
+
+    /* =========================
+MOBILE
+========================= */
+
+    @media (max-width: 768px) {
+
+        /* TOP HEADER */
+
+        .top-left,
+        .top-right {
+            width: 100%;
+            gap: 12px;
+        }
+
+        .top-left a,
+        .top-right a {
+            font-size: 12px;
+        }
+
+        /* LOGO */
+
+        .logo-main {
+            font-size: 24px;
+        }
+
+        .logo-sub {
+            font-size: 10px;
+        }
+
+        /* SEARCH */
+
+        .search-container {
+            padding-bottom: 15px;
+        }
+
+        .search-wrapper {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-category {
+            width: 100%;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+        }
+
+        #search-input {
+            width: 100%;
+            border-radius: 6px;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+        }
+
+        /* MENU */
+
+        .menu-toggle {
+            display: block;
+        }
+
+        /* OVERLAY NAVIGATION */
+
+        #responsive-nav {
+
+            position: fixed;
+
+            top: 0;
+            right: -100%;
+
+            width: 85%;
+            max-width: 340px;
+
+            height: 100vh;
+
+            background: #ffffff;
+
+            z-index: 99999;
+
+            overflow-y: auto;
+
+            transition: 0.35s ease;
+
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.12);
+
+            padding-top: 80px;
+        }
+
+        #responsive-nav.active {
+            right: 0;
+            z-index: 999;
+        }
+
+        .main-nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            padding: 0;
+        }
+
+        .main-nav li {
+            width: 100%;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .main-nav li a {
+            display: block;
+            width: 100%;
+            padding: 18px 25px;
+            color: #111827 !important;
+            background: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .main-nav li.active a {
+            background: #F9FAFB;
+            color: #DC2626 !important;
+        }
+
+        .main-nav li a:hover {
+            background: #F3F4F6;
+            color: #DC2626 !important;
+        }
+
+    }
+</style>
 
 
+
+<!-- =========================
+SEARCH JS
+========================= -->
+<script>
 
     const input = document.getElementById("search-input");
+
     const box = document.getElementById("search-suggestions");
 
     input.addEventListener("keyup", function () {
+
         const query = input.value;
 
         if (query.length < 2) {
+
             box.style.display = "none";
+
             return;
         }
 
         fetch(`/search-suggestions/?q=${query}`)
+
             .then(res => res.json())
+
             .then(data => {
 
                 box.innerHTML = "";
 
                 if (data.results.length === 0) {
+
                     box.style.display = "none";
+
                     return;
                 }
 
                 data.results.forEach(item => {
+
                     box.innerHTML += `
                     <div class="suggestion-item" data-name="${item.name}">
-                        <img src="${item.image}" width="30">
                         ${item.name}
                     </div>
                 `;
+
                 });
 
                 box.style.display = "block";
+
             });
+
     });
 
 
-    // 🔥 CLICK SUGGESTION
     document.addEventListener("click", function (e) {
 
         if (e.target.classList.contains("suggestion-item")) {
+
             const name = e.target.dataset.name;
 
             input.value = name;
 
             window.location.href = `/search/?q=${name}`;
+
         } else {
+
             box.style.display = "none";
         }
+
     });
 
-
 </script>
-
-</html>

@@ -1,0 +1,704 @@
+{%load static%}
+<!-- =========================================
+FEATURED PRODUCTS SECTION
+========================================= -->
+
+<section class="featured-products-section">
+    <style>
+        /* =========================================
+FEATURED PRODUCTS SECTION
+========================================= */
+
+        .featured-products-section {
+
+            padding: 90px 0;
+
+            background: #F9FAFB;
+        }
+
+        /* =========================================
+SECTION HEADER
+========================================= */
+
+        .products-section-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-end;
+
+            gap: 30px;
+
+            margin-bottom: 50px;
+
+            flex-wrap: wrap;
+        }
+
+        .products-badge {
+
+            display: inline-block;
+
+            background: rgba(220, 38, 38, 0.08);
+
+            color: #DC2626;
+
+            padding: 10px 18px;
+
+            border-radius: 40px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 18px;
+        }
+
+        .products-title {
+
+            font-size: 42px;
+
+            font-weight: 800;
+
+            color: #111827;
+
+            margin-bottom: 14px;
+        }
+
+        .products-description {
+
+            max-width: 650px;
+
+            color: #6B7280;
+
+            font-size: 16px;
+
+            line-height: 1.8;
+        }
+
+        /* =========================================
+FILTERS
+========================================= */
+
+        .products-filters {
+
+            display: flex;
+
+            gap: 12px;
+
+            flex-wrap: wrap;
+        }
+
+        .products-filters a {
+
+            padding: 12px 20px;
+
+            border-radius: 40px;
+
+            background: white;
+
+            border: 1px solid #E5E7EB;
+
+            color: #374151;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            transition: 0.3s ease;
+        }
+
+        .products-filters a:hover,
+        .products-filters a.active {
+
+            background: #DC2626;
+
+            color: white;
+
+            border-color: #DC2626;
+        }
+
+        /* =========================================
+PRODUCTS GRID
+========================================= */
+
+        .products-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 28px;
+        }
+
+        /* =========================================
+PRODUCT CARD
+========================================= */
+
+        .product-card {
+
+            background: white;
+
+            border-radius: 24px;
+
+            overflow: hidden;
+
+            position: relative;
+
+            transition: 0.35s ease;
+
+            border: 1px solid #F1F5F9;
+        }
+
+        .product-card:hover {
+
+            transform: translateY(-8px);
+
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* =========================================
+PRODUCT IMAGE
+========================================= */
+
+        .product-img {
+
+            position: relative;
+
+            aspect-ratio: 1 / 1;
+
+            overflow: hidden;
+
+            background: #F8FAFC;
+        }
+
+        .product-image {
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            transition: 0.5s ease;
+        }
+
+        .product-video {
+
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            opacity: 0;
+
+            transition: 0.5s ease;
+        }
+
+        .product-card:hover .product-image {
+
+            opacity: 0;
+        }
+
+        .product-card:hover .product-video {
+
+            opacity: 1;
+        }
+
+        /* =========================================
+BADGES
+========================================= */
+
+        .product-badges {
+
+            position: absolute;
+
+            top: 18px;
+            left: 18px;
+
+            z-index: 3;
+        }
+
+        .badge-new {
+
+            background: #DC2626;
+
+            color: white;
+
+            padding: 7px 14px;
+
+            border-radius: 30px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+        /* =========================================
+PRODUCT ACTIONS
+========================================= */
+
+        .product-actions {
+
+            position: absolute;
+
+            top: 18px;
+            right: 18px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            opacity: 0;
+
+            transform: translateX(10px);
+
+            transition: 0.35s ease;
+
+            z-index: 3;
+        }
+
+        .product-card:hover .product-actions {
+
+            opacity: 1;
+
+            transform: translateX(0);
+        }
+
+        .product-actions button {
+
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            border: none;
+
+            background: white;
+
+            color: #111827;
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-actions button:hover {
+
+            background: #DC2626;
+
+            color: white;
+        }
+
+        /* =========================================
+PRODUCT BODY
+========================================= */
+
+        .product-body {
+
+            padding: 24px;
+        }
+
+        .product-category {
+
+            color: #DC2626;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+
+            font-size: 18px;
+
+            font-weight: 700;
+
+            line-height: 1.5;
+
+            margin-bottom: 18px;
+
+            min-height: 54px;
+        }
+
+        .product-name a {
+
+            color: #111827;
+
+            transition: 0.3s ease;
+        }
+
+        .product-name a:hover {
+
+            color: #DC2626;
+        }
+
+        /* =========================================
+PRICE
+========================================= */
+
+        .product-price-wrap {
+
+            margin-bottom: 16px;
+        }
+
+        .product-price {
+
+            color: #111827;
+
+            font-size: 24px;
+
+            font-weight: 800;
+        }
+
+        /* =========================================
+RATING
+========================================= */
+
+        .product-rating {
+
+            color: #F59E0B;
+
+            font-size: 13px;
+
+            display: flex;
+
+            gap: 4px;
+        }
+
+        /* =========================================
+FOOTER
+========================================= */
+
+        .product-footer {
+
+            padding: 0 24px 24px;
+        }
+
+        .add-to-cart-btn {
+
+            width: 100%;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 10px;
+
+            padding: 16px;
+
+            border-radius: 14px;
+
+            background: #111827;
+
+            color: white;
+
+            font-weight: 700;
+
+            transition: 0.3s ease;
+
+            cursor: pointer;
+        }
+
+        .add-to-cart-btn:hover {
+
+            background: #DC2626;
+
+            color: white;
+        }
+
+        /* =========================================
+RESPONSIVE
+========================================= */
+
+        @media(max-width: 1200px) {
+
+            .products-grid {
+
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media(max-width: 992px) {
+
+            .products-grid {
+
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .products-title {
+
+                font-size: 34px;
+            }
+        }
+
+        @media(max-width: 768px) {
+
+            .featured-products-section {
+
+                padding: 70px 0;
+            }
+
+            .products-grid {
+
+                gap: 18px;
+            }
+
+            .product-body {
+
+                padding: 18px;
+            }
+
+            .product-footer {
+
+                padding: 0 18px 18px;
+            }
+
+            .product-name {
+
+                font-size: 16px;
+            }
+
+            .product-price {
+
+                font-size: 20px;
+            }
+        }
+
+        @media(max-width: 540px) {
+
+            .products-grid {
+
+                grid-template-columns: repeat(2, 1fr);
+
+                gap: 14px;
+            }
+
+            .products-title {
+
+                font-size: 28px;
+            }
+
+            .product-card {
+
+                border-radius: 18px;
+            }
+
+            .product-name {
+
+                font-size: 15px;
+
+                min-height: auto;
+            }
+
+            .product-price {
+
+                font-size: 18px;
+            }
+
+            .add-to-cart-btn {
+
+                padding: 13px;
+
+                font-size: 14px;
+            }
+        }
+    </style>
+    <div class="container">
+
+        <!-- SECTION HEADER -->
+        <div class="products-section-header">
+
+            <div>
+
+                <span class="products-badge">
+                    Featured Products
+                </span>
+
+                <h2 class="products-title">
+                    Industrial Electrical Products
+                </h2>
+
+                <p class="products-description">
+
+                    High-quality earthing materials,
+                    switchgear, automation devices and
+                    industrial electrical components.
+
+                </p>
+
+            </div>
+
+            <!-- OPTIONAL FILTERS -->
+            <div class="products-filters">
+
+                <a href="#" class="active">
+                    All
+                </a>
+
+                <a href="#">
+                    Earthing
+                </a>
+
+                <a href="#">
+                    Breakers
+                </a>
+
+                <a href="#">
+                    Panels
+                </a>
+
+                <a href="#">
+                    Accessories
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- PRODUCTS GRID -->
+        <div class="products-grid">
+
+            {% for product in productList %}
+
+            <div class="product-card">
+
+                <!-- PRODUCT IMAGE -->
+                <div class="product-img">
+
+                    {% with primary_media=product.media.all %}
+
+                    {% for media in primary_media %}
+
+                    {% if media.is_primary and media.media_type == "image" %}
+
+                    <img class="product-image" src="{{ media.file.url }}" alt="{{ product.product.name }}">
+
+                    {% endif %}
+
+                    {% empty %}
+
+                    <img class="product-image" src="{% static 'img/hotdeal.png' %}" alt="No image">
+
+                    {% endfor %}
+
+                    <!-- PRODUCT VIDEO -->
+                    {% for media in product.media.all %}
+
+                    {% if media.media_type == "video" %}
+
+                    <video class="product-video" muted loop playsinline>
+
+                        <source src="{{ media.file.url }}">
+
+                    </video>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+                    {% endwith %}
+
+                    <!-- BADGES -->
+                    <div class="product-badges">
+
+                        <span class="badge-new">
+                            NEW
+                        </span>
+
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="product-actions">
+
+                        <button>
+                            <i class="fa fa-heart-o"></i>
+                        </button>
+
+                        <button>
+                            <i class="fa fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- PRODUCT BODY -->
+                <div class="product-body">
+
+                    <!-- CATEGORY -->
+                    <p class="product-category">
+
+                        {{ product.product.category }}
+
+                    </p>
+
+                    <!-- PRODUCT NAME -->
+                    <h3 class="product-name">
+
+                        <a href="#">
+
+                            {{ product.product.name }}
+
+                        </a>
+
+                    </h3>
+
+                    <!-- PRICE -->
+                    <div class="product-price-wrap">
+
+                        <h4 class="product-price">
+
+                            ₦{{ product.calculate_price|floatformat:2 }}
+
+                        </h4>
+
+                    </div>
+
+                    <!-- RATING -->
+                    <div class="product-rating">
+
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+
+                    </div>
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="product-footer">
+
+                    <a class="add-to-cart-btn" data-id="{{ product.id }}">
+
+                        <i class="fa fa-shopping-cart"></i>
+
+                        Add To Cart
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
