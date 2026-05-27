@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from accounts.models import *
+from cloudinary.models import CloudinaryField
 
 class Category(models.Model):
     name = models.CharField(max_length=120)
@@ -42,7 +43,7 @@ class Product(models.Model):
 class ProductListing(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="listings")
     vendor = models.ForeignKey('accounts.Vendor', on_delete=models.CASCADE)
-
+    categories = models.ManyToManyField(Category, related_name="product_listings")
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     final_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     description = models.TextField(blank=True)
@@ -54,10 +55,13 @@ class ProductListing(models.Model):
         return f"{self.product.name}--{self.vendor}"
     
     def get_applicable_rule(self):
-        # 1. Vendor + Category
+
+        categories = self.categories.all()
+
+        # 1. Vendor + ANY category
         rule = PricingRule.objects.filter(
             vendor=self.vendor,
-            category=self.product.category
+            category__in=categories
         ).order_by('priority').first()
         if rule:
             return rule
@@ -73,16 +77,16 @@ class ProductListing(models.Model):
         # 3. Category only
         rule = PricingRule.objects.filter(
             vendor__isnull=True,
-            category=self.product.category
+            category__in=categories
         ).order_by('priority').first()
         if rule:
             return rule
 
         # 4. Default rule
-        rule = PricingRule.objects.filter(
+        return PricingRule.objects.filter(
             is_default=True
         ).order_by('priority').first()
-        return rule
+
 
     def calculate_price(self):
         rule = self.get_applicable_rule()
@@ -97,10 +101,6 @@ class ProductListing(models.Model):
             return self.base_price + rule.value
 
         return self.base_price
-    
-
-from django.db import models
-from cloudinary.models import CloudinaryField
 
 
 class ProductMedia(models.Model):

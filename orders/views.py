@@ -20,49 +20,6 @@ from django.http import JsonResponse
 from .models import Order
 from logistics.models import *
 
-class CreateOrderView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = OrderCreateSerializer(
-            data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
-        return Response({"order_id": order.id})
-
-
-@login_required
-def user_orders_json(request):
-
-    orders = Order.objects.filter(customer=request.user).prefetch_related("items")
-
-    data = []
-
-    for order in orders:
-        for item in order.items.all():
-
-            listing = item.product_listing   # ✅ FIX HERE
-
-            # IMAGE
-            image = ""
-            if listing.media.exists():
-                image = listing.media.first().file.url
-
-            data.append({
-                "id": item.id,
-                "name": listing.product.name,   # ✅ FIX
-                "status": order.status,
-                "quantity": item.quantity,
-                "price": float(item.escrow_amount),
-                "image": image
-            })
-
-    return JsonResponse({
-        "success": True,
-        "orders": data
-    })
-
 @login_required
 @require_POST
 def request_shipping_negotiation(request):
@@ -202,3 +159,99 @@ def pay_negotiated_shipping(request, code):
     negotiation.save()
 
     return redirect(order.payment_url)
+
+
+@login_required
+def orders_page(request):
+
+    orders = (
+        Order.objects
+        .select_related("customer")
+        .prefetch_related(
+            "items",
+            "items__product_listing",
+            "items__product_listing__product",
+            "items__product_listing__media"
+        )
+        .filter(customer=request.user)
+        .order_by("-created_at")
+    )
+
+    context = {
+        "orders": orders
+    }
+
+    return render(request, "order.html", context)
+
+
+# =========================
+# ORDER DETAIL PAGE
+# =========================
+@login_required
+def order_detail(request, order_id):
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        customer=request.user
+    )
+
+    order_items = order.items.all()
+
+    context = {
+        "order": order,
+        "order_items": order_items
+    }
+
+    return render(request, "order_detail.html", context)
+
+
+# =========================
+# AJAX ORDERS JSON
+# =========================
+@login_required
+def orders_json(request):
+
+    orders = (
+        Order.objects
+        .filter(customer=request.user)
+        .prefetch_related("items", "items__product_listing")
+        .order_by("-created_at")
+    )
+
+    data = []
+
+    for order in orders:
+
+        items_data = []
+
+        for item in order.items.all():
+
+            listing = item.product_listing
+
+            image = ""
+
+            if listing.media.exists():
+                image = listing.media.first().file.url
+
+            items_data.append({
+                "id": item.id,
+                "name": listing.product.name,
+                "price": float(item.price),
+                "quantity": item.quantity,
+                "subtotal": float(item.price * item.quantity),
+                "image": image,
+                "status": order.status,
+            })
+
+        data.append({
+            "order_id": order.id,
+            "status": order.status,
+            "total": float(order.total_amount),
+            "created_at": order.created_at.strftime("%d %b %Y"),
+            "items": items_data
+        })
+
+    return JsonResponse({
+        "orders": data
+    })

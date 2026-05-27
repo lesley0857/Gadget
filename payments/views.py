@@ -211,6 +211,55 @@ def verify_payment(request):
 
     data = json.loads(order.locked_data)
 
+        # ======================================
+    # CREATE ORDER ITEMS
+    # ======================================
+
+    cart = Cart.objects.get(user=order.customer)
+
+    for cart_item in cart.items.select_related(
+        "product_listing",
+        "product_listing__vendor",
+        "product_listing__product"
+    ):
+
+        listing = cart_item.product_listing
+
+        vendor = listing.vendor
+
+        quantity = cart_item.quantity
+
+        unit_price = Decimal(
+            str(listing.calculate_price())
+        )
+
+        line_total = unit_price * quantity
+
+        # Example commission (5%)
+        commission = line_total * Decimal("0.05")
+
+        escrow_amount = line_total - commission
+
+        OrderItem.objects.create(
+            order=order,
+
+            product_listing=listing,
+
+            vendor=vendor,
+
+            quantity=quantity,
+
+            price=unit_price,
+
+            total=line_total,
+
+            commission=commission,
+
+            escrow_amount=escrow_amount,
+
+            status="pending",
+        )
+
     total_weight = Decimal(
         data.get("total_weight", "1")
     )

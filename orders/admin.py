@@ -6,6 +6,7 @@ from .models import Order, OrderItem
 from wallets.models import Commission
 from logistics.models import Shipment
 
+admin.site.register(OrderItem)
 
 # =========================
 # ORDER ITEMS INLINE

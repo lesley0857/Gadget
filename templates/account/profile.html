@@ -1,8 +1,457 @@
-<h2>My Profile</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-<p><strong>Phone:</strong> {{ profile.phone }}</p>
-<p><strong>Address:</strong> {{ profile.address }}</p>
-<p><strong>City:</strong> {{ profile.city }}</p>
-<p><strong>State:</strong> {{ profile.state }}</p>
+{% block content %}
 
-<a href="{% url 'update_profile' %}">Edit Profile</a>
+<style>
+    .profile-page {
+        padding: 50px 0;
+        background: #F9FAFB;
+        min-height: 70vh;
+    }
+
+    .profile-wrapper {
+        max-width: 1100px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 30px;
+    }
+
+    /* =========================
+SIDEBAR
+========================= */
+
+    .profile-sidebar {
+        background: #fff;
+        border-radius: 18px;
+        padding: 30px 25px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+        height: fit-content;
+    }
+
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #DC2626, #991B1B);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        font-weight: 700;
+        margin: auto;
+    }
+
+    .profile-name {
+        text-align: center;
+        margin-top: 18px;
+    }
+
+    .profile-name h3 {
+        margin-bottom: 5px;
+        font-size: 24px;
+        color: #111827;
+    }
+
+    .profile-name p {
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    .profile-actions {
+        margin-top: 30px;
+    }
+
+    .profile-actions a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        text-decoration: none;
+        color: #374151;
+        font-weight: 600;
+        transition: .3s;
+        background: #F9FAFB;
+    }
+
+    .profile-actions a:hover {
+        background: #DC2626;
+        color: #fff;
+    }
+
+    /* =========================
+MAIN CONTENT
+========================= */
+
+    .profile-content {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .profile-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .profile-card h2 {
+        margin-bottom: 25px;
+        color: #111827;
+        font-size: 26px;
+    }
+
+    /* INFO GRID */
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .info-box {
+        background: #F9FAFB;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .info-label {
+        font-size: 13px;
+        color: #6B7280;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .info-value {
+        font-size: 17px;
+        font-weight: 700;
+        color: #111827;
+        word-break: break-word;
+    }
+
+    /* BUTTONS */
+
+    .profile-btns {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .edit-btn {
+        background: #DC2626;
+        color: #fff;
+        padding: 14px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: .3s;
+    }
+
+    .edit-btn:hover {
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    .orders-btn {
+        background: #111827;
+        color: #fff;
+        padding: 14px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: .3s;
+    }
+
+    .orders-btn:hover {
+        background: #1F2937;
+        color: #fff;
+    }
+
+    /* =========================
+QUICK STATS
+========================= */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #fff, #F3F4F6);
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        border: 1px solid #eee;
+    }
+
+    .stat-card i {
+        font-size: 28px;
+        color: #DC2626;
+        margin-bottom: 12px;
+    }
+
+    .stat-card h3 {
+        font-size: 28px;
+        margin-bottom: 5px;
+        color: #111827;
+    }
+
+    .stat-card p {
+        color: #6B7280;
+        margin: 0;
+    }
+
+    /* =========================
+MOBILE
+========================= */
+
+    @media(max-width:992px) {
+
+        .profile-wrapper {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+    @media(max-width:768px) {
+
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-card {
+            padding: 22px;
+        }
+
+    }
+</style>
+
+<div class="profile-page">
+
+    <div class="container">
+
+        <div class="profile-wrapper">
+
+            <!-- SIDEBAR -->
+            <div class="profile-sidebar">
+
+                <div class="profile-avatar">
+                    {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                </div>
+
+                <div class="profile-name">
+
+                    <h3>
+                        {{ request.user.first_name }} {{ request.user.last_name }}
+                    </h3>
+
+                    <p>
+                        {{ request.user.email }}
+                    </p>
+
+                </div>
+
+                <div class="profile-actions">
+
+                    <a href="{% url 'profile' %}">
+                        <i class="fa fa-user"></i>
+                        My Profile
+                    </a>
+
+                    <a href="{% url 'update_profile' %}">
+                        <i class="fa fa-edit"></i>
+                        Edit Profile
+                    </a>
+
+                    <a id="open-orders-btn">
+                        <i class="fa fa-shopping-bag"></i>
+                        My Orders
+                    </a>
+
+
+                    <a href="#">
+                        <i class="fa fa-map-marker"></i>
+                        Shipping Address
+                    </a>
+
+                    <a href="#">
+                        <i class="fa fa-heart"></i>
+                        Wishlist
+                    </a>
+
+                    <a href="{%url 'account_logout'%}">
+                        <i class="fa fa-sign-out"></i>
+                        Logout
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- MAIN -->
+            <div class="profile-content">
+
+                <!-- PROFILE DETAILS -->
+                <div class="profile-card">
+
+                    <h2>Profile Information</h2>
+
+                    <div class="profile-grid">
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                Full Name
+                            </div>
+
+                            <div class="info-value">
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            </div>
+
+                        </div>
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                Email Address
+                            </div>
+
+                            <div class="info-value">
+                                {{ request.user.email }}
+                            </div>
+
+                        </div>
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                Phone Number
+                            </div>
+
+                            <div class="info-value">
+                                {{ profile.phone|default:"Not Added" }}
+                            </div>
+
+                        </div>
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                Address
+                            </div>
+
+                            <div class="info-value">
+                                {{ profile.address|default:"Not Added" }}
+                            </div>
+
+                        </div>
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                City
+                            </div>
+
+                            <div class="info-value">
+                                {{ profile.city|default:"Not Added" }}
+                            </div>
+
+                        </div>
+
+                        <div class="info-box">
+
+                            <div class="info-label">
+                                State
+                            </div>
+
+                            <div class="info-value">
+                                {{ profile.state|default:"Not Added" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="profile-btns">
+
+                        <a href="{% url 'update_profile' %}" class="edit-btn">
+                            Edit Profile
+                        </a>
+
+                        <a href="{% url 'orders_page' %}" class="orders-btn">
+                            View Orders
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- QUICK STATS -->
+                <div class="profile-card">
+
+                    <h2>Account Overview</h2>
+
+                    <div class="stats-grid">
+
+                        <div class="stat-card">
+
+                            <i class="fa fa-shopping-cart"></i>
+
+                            <h3>
+                                {{ total_orders|default:"0" }}
+                            </h3>
+
+                            <p>Total Orders</p>
+
+                        </div>
+
+                        <div class="stat-card">
+
+                            <i class="fa fa-truck"></i>
+
+                            <h3>
+                                {{ active_orders|default:"0" }}
+                            </h3>
+
+                            <p>Active Orders</p>
+
+                        </div>
+
+                        <div class="stat-card">
+
+                            <i class="fa fa-check-circle"></i>
+
+                            <h3>
+                                {{ completed_orders|default:"0" }}
+                            </h3>
+
+                            <p>Completed Orders</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}

@@ -50,7 +50,7 @@ def login_view(request):
             login(request, user)
             return redirect('home')
 
-    return render(request, 'accounts/login.html')
+    return render(request, 'account/login.html')
 
 def logout_view(request):
     logout(request)
@@ -69,13 +69,69 @@ def product_detail(request, product_id):
 
 @login_required
 def profile_view(request):
+
     profile = request.user.userprofile
-    return render(request, "account/profile.html", {"profile": profile})
+
+    # =========================
+    # ORDERS
+    # =========================
+
+    orders = Order.objects.filter(
+        customer=request.user
+    )
+
+    total_orders = orders.count()
+
+    active_orders = orders.filter(
+        status__in=["pending", "processing", "paid"]
+    ).count()
+
+    completed_orders = OrderItem.objects.filter(
+        order__customer=request.user,
+        status="delivered"
+    ).values(
+        "order"
+    ).distinct().count()
+
+    # =========================
+    # TOTAL SPENT
+    # =========================
+
+    total_spent = sum(
+        order.total_amount
+        for order in orders.filter(status="paid")
+    )
+
+    # =========================
+    # RECENT ORDERS
+    # =========================
+
+    recent_orders = orders.order_by(
+        "-created_at"
+    )[:5]
+
+    context = {
+
+        "profile": profile,
+
+        "total_orders": total_orders,
+
+        "active_orders": active_orders,
+
+        "completed_orders": completed_orders,
+
+        "total_spent": total_spent,
+
+        "recent_orders": recent_orders,
+    }
+    return render(request, "account/profile.html", context=context)
 
 
 @login_required
 def update_profile(request):
-    profile = request.user.userprofile
+    profile, created = UserProfile.objects.get_or_create(
+    user=request.user
+    )
 
     if request.method == "POST":
         profile.phone = request.POST.get("phone")

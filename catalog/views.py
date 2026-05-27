@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import generics, permissions
-from .models import ProductListing
+from .models import *
 from .serializers import ProductSerializer
 from django.db.models import Q
 from catalog.models import ProductListing
@@ -56,10 +56,18 @@ def search_suggestions(request):
 
     return JsonResponse({"results": results})
 
-def category_products(request, id):
-    products = ProductListing.objects.filter(product__category_id=id)
+def category_products(request, name):
 
-    return render(request, "catalog/category.html", {
+    category = Category.objects.get(name=name)
+
+    products = ProductListing.objects.filter(
+        categories__name=name,
+        is_active=True
+    ).distinct()
+    categories = Category.objects.all()
+    return render(request, "category.html", {
+        "category": category,
+        "categories":categories,
         "products": products
     })
 

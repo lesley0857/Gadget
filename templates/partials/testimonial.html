@@ -1,0 +1,101 @@
+{% load static %}
+
+<section class="testimonial-section">
+
+    <style>
+        .testimonial-section {
+            padding: 80px 15px;
+            background: #f9fafb;
+        }
+
+        .testimonial-container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .testimonial-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .testimonial-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .testimonial-card p {
+            color: #6b7280;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .testimonial-user {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .testimonial-role {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        @media(max-width:900px) {
+            .testimonial-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width:600px) {
+            .testimonial-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="testimonial-container">
+
+        <h2 class="testimonial-title">What Clients Say</h2>
+
+        <div class="testimonial-grid">
+
+            <div class="testimonial-card">
+                <p>
+                    Excellent service delivery. The team handled our industrial installation with precision and
+                    professionalism.
+                </p>
+                <div class="testimonial-user">Eng. Daniel</div>
+                <div class="testimonial-role">Oil & Gas Supervisor</div>
+            </div>
+
+            <div class="testimonial-card">
+                <p>
+                    Very reliable electrical engineering team. Their earthing system design improved our safety
+                    compliance.
+                </p>
+                <div class="testimonial-user">Mrs. Amina</div>
+                <div class="testimonial-role">Facility Manager</div>
+            </div>
+
+            <div class="testimonial-card">
+                <p>
+                    Fast execution and quality work. Highly recommended for industrial projects.
+                </p>
+                <div class="testimonial-user">John Okafor</div>
+                <div class="testimonial-role">Project Engineer</div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

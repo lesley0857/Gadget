@@ -1,0 +1,108 @@
+{% load static %}
+
+<section class="projects-section">
+
+    <style>
+        .projects-section {
+            padding: 80px 15px;
+            background: #fff;
+        }
+
+        .projects-container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .projects-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .project-card {
+            background: #f9fafb;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .project-img {
+            height: 200px;
+            background: #ddd;
+        }
+
+        .project-body {
+            padding: 20px;
+        }
+
+        .project-body h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .project-body p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media(max-width:900px) {
+            .projects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width:600px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="projects-container">
+
+        <h2 class="projects-title">Our Projects</h2>
+
+        <div class="projects-grid">
+
+            <div class="project-card">
+                <div class="project-img"></div>
+                <div class="project-body">
+                    <h3>Industrial Panel Installation</h3>
+                    <p>Design and installation of control panels for industrial automation systems.</p>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-img"></div>
+                <div class="project-body">
+                    <h3>Earthing & Grounding System</h3>
+                    <p>Complete earthing solutions for industrial safety and compliance.</p>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-img"></div>
+                <div class="project-body">
+                    <h3>Pipeline Electrical Support</h3>
+                    <p>Electrical integration and support systems for pipeline infrastructure.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

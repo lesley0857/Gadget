@@ -67,7 +67,7 @@ TOP HEADER
 
             <a href="#">
                 <i class="fa fa-envelope-o"></i>
-                nwekelesley@gmail.com
+                lemarobenigeria@gmail.com
             </a>
 
             <a href="#">
@@ -87,24 +87,24 @@ TOP HEADER
                 My Account
             </a>
 
-            <a id="open-orders-btn">
+            <a href="{% url 'orders_page' %}" class="profile-btn">
                 <i class="fa fa-truck"></i>
                 Orders
             </a>
 
-            <a href="#">
+            <a href="{% url 'account_logout' %}">
                 <i class="fa fa-sign-out"></i>
                 Logout
             </a>
 
             {% else %}
 
-            <a href="#">
+            <a href="{% url 'account_login' %}">
                 <i class="fa fa-sign-in"></i>
                 Login
             </a>
 
-            <a href="#">
+            <a href="{% url 'account_signup' %}">
                 <i class="fa fa-user-plus"></i>
                 Register
             </a>
@@ -229,7 +229,6 @@ NAVIGATION
 ========================= -->
 <nav id="navigation">
 
-    <!-- RESPONSIVE NAV -->
     <div id="responsive-nav">
 
         <ul class="main-nav">
@@ -238,45 +237,21 @@ NAVIGATION
                 <a href="/">Home</a>
             </li>
 
+            {% for cat in categories %}
             <li>
-                <a href="#">Earthing Materials</a>
+                <a href="{% url 'category_products' cat.name %}">
+                    {{ cat.name }}
+                </a>
             </li>
+            {% endfor %}
 
-            <li>
-                <a href="#">Industrial Electrical</a>
-            </li>
 
-            <li>
-                <a href="#">Contactors & Breakers</a>
-            </li>
-
-            <li>
-                <a href="#">Installation Services</a>
-            </li>
-
-            <li>
-                <a href="#">Control Panels</a>
-            </li>
-
-            <li>
-                <a href="#">Cable Accessories</a>
-            </li>
-
-            <li>
-                <a href="#">About Us</a>
-            </li>
-
-            <li>
-                <a href="#">Contact</a>
-            </li>
 
         </ul>
 
     </div>
 
 </nav>
-
-
 
 <!-- =========================
 STYLES
@@ -686,9 +661,6 @@ MOBILE
 
     }
 </style>
-
-
-
 <!-- =========================
 SEARCH JS
 ========================= -->

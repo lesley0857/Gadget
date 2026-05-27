@@ -3,13 +3,37 @@
 {% load humanize %}
 
 {% block content %}
+
 <style>
+    .cart-page {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        padding: 40px 0;
+    }
+
+    .cart-items-section,
+    .cart-summary {
+        background: #fff;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .cart-items-section h2,
+    .cart-summary h3 {
+        margin-bottom: 25px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* CART ROW */
     .cart-row {
         display: grid;
         grid-template-columns: 100px 1fr 120px;
         gap: 20px;
         align-items: center;
-        padding: 15px 0;
+        padding: 18px 0;
         border-bottom: 1px solid #eee;
     }
 
@@ -17,52 +41,112 @@
         width: 90px;
         height: 90px;
         object-fit: cover;
-        border-radius: 10px;
+        border-radius: 12px;
+        background: #f8f8f8;
     }
 
     .cart-details h3 {
         font-size: 16px;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
+        color: #111827;
     }
 
     .unit-price {
         font-size: 13px;
-        color: #666;
+        color: #6B7280;
     }
 
     .item-total {
-        font-weight: bold;
+        margin-top: 5px;
+        font-weight: 700;
         color: #D10024;
     }
 
+    /* QTY */
     .qty-controls {
         display: flex;
-        gap: 8px;
-        margin-top: 8px;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
     }
 
     .qty-controls button {
-        padding: 4px 10px;
+        width: 32px;
+        height: 32px;
         border: none;
-        background: #eee;
+        background: #F3F4F6;
+        border-radius: 6px;
         cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
     }
 
+    .qty-controls button:hover {
+        background: #E5E7EB;
+    }
+
+    .qty-number {
+        min-width: 20px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    /* REMOVE */
     .remove-btn {
-        margin-top: 8px;
-        color: red;
+        margin-top: 12px;
         background: none;
         border: none;
+        color: #DC2626;
         cursor: pointer;
+        padding: 0;
+        font-size: 14px;
     }
 
-    .cart-subtotal {
-        font-weight: bold;
-        color: #D10024;
+    /* SUMMARY */
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: 700;
     }
 
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        background: #DC2626;
+        color: #fff;
+        text-align: center;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .3s;
+    }
 
-    @media (max-width: 768px) {
+    .checkout-btn:hover {
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    /* EMPTY */
+    .empty-cart {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6B7280;
+    }
+
+    /* MOBILE */
+    @media(max-width:992px) {
+
+        .cart-page {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+    @media(max-width:768px) {
+
         .cart-row {
             grid-template-columns: 80px 1fr;
         }
@@ -70,219 +154,280 @@
         .cart-subtotal {
             grid-column: span 2;
             text-align: right;
+            padding-top: 10px;
         }
+
     }
 </style>
 
+<div class="container">
 
-<div class="cart-page">
+    <div class="cart-page">
 
-    <!-- LEFT: CART ITEMS -->
-    <div class="cart-items-section">
-        <h2>Your Cart</h2>
+        <!-- LEFT -->
+        <div class="cart-items-section">
 
-        <div id="cart-container"></div> <!-- JS FILLS THIS -->
-    </div>
+            <h2>Your Cart</h2>
 
-    <!-- RIGHT: SUMMARY -->
-    <div class="cart-summary">
+            <div id="cart-container"></div>
 
-        <h3>Cart Summary</h3>
-
-        <div class="summary-row">
-            <span>Total</span>
-            <span id="cart-total">₦{{ total }}</span>
         </div>
 
-        {% if user.is_authenticated %}
-        <a href="{% url 'checkout' %}" class="checkout-btn">
-            Proceed to Checkout
-        </a>
-        {% else %}
-        <a href="{% url 'account_login' %}" class="checkout-btn">
-            Login to Checkout
-        </a>
-        {% endif %}
+        <!-- RIGHT -->
+        <div class="cart-summary">
 
-    </div>
+            <h3>Cart Summary</h3>
 
-    <!-- Order Banner -->
-    <div id="orders-banner" class="cart-banner">
-        <div class="cart-header">
-            <h3>Your Orders</h3>
-            <button id="close-orders">✖</button>
+            <div class="summary-row">
+                <span>Total</span>
+                <span id="page-cart-total">₦0</span>
+            </div>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'checkout' %}" class="checkout-btn">
+                Proceed to Checkout
+            </a>
+            {% else %}
+            <a href="{% url 'account_login' %}" class="checkout-btn">
+                Login to Checkout
+            </a>
+            {% endif %}
+
         </div>
-        <div id="orders-list" class="cart-items"></div>
-        <!-- Order Banner -->
+
     </div>
 
 </div>
 
-
 <script>
+
     const cartContainer = document.getElementById("cart-container");
-    const cartTotal = document.getElementById("cart-total");
+    const pageCartTotal = document.getElementById("page-cart-total");
 
 
-    // 🔥 INITIAL LOAD
-    document.addEventListener("DOMContentLoaded", () => {
+    /* =========================
+    INITIAL LOAD
+    ========================= */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
         fetchCart();
+
     });
 
 
-    // 🔥 FETCH CURRENT CART STATE
+    /* =========================
+    FETCH CART
+    ========================= */
+
     function fetchCart() {
-        fetch("/cart/update/", {   // reuse endpoint or create /cart/data/
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCSRFToken()
-            },
-            body: "" // no action → just return current cart
-        })
+
+        fetch("/cart/summary/")
             .then(res => res.json())
             .then(data => {
+
                 renderCartPage(data);
+
+                // IMPORTANT
+                syncNavbarCart(data);
+
             });
+
     }
 
 
-    // 🔥 RENDER CART PAGE UI
+    /* =========================
+    SYNC NAVBAR
+    ========================= */
+
+    function syncNavbarCart(data) {
+
+        // UPDATE NAVBAR CART COUNT
+        const cartCounts = document.querySelectorAll("#cart-count");
+
+        cartCounts.forEach(el => {
+
+            el.innerText = data.cart_count || 0;
+
+        });
+
+    }
+
+
+    /* =========================
+    RENDER CART
+    ========================= */
+
     function renderCartPage(data) {
+
         cartContainer.innerHTML = "";
 
         if (!data.cart_items || data.cart_items.length === 0) {
-            cartContainer.innerHTML = "<p>Your cart is empty</p>";
-            cartTotal.innerText = "₦0";
+
+            cartContainer.innerHTML = `
+            <div class="empty-cart">
+                <h3>Your cart is empty</h3>
+            </div>
+        `;
+
+            pageCartTotal.innerText = "₦0";
+
+            syncNavbarCart({
+                cart_count: 0
+            });
+
             return;
         }
 
         data.cart_items.forEach(item => {
+
             cartContainer.innerHTML += `
-            <div class="cart-row">
 
-                <div class="cart-image">
-                    <img src="${item.image || '/static/img/hotdeal.png'}">
-                </div>
+        <div class="cart-row">
 
-                <div class="cart-details">
-                    <h3>${item.name}</h3>
+            <div class="cart-image">
 
-                    <p class="unit-price">Unit: ₦${item.price}</p>
-                    <p class="item-total">Total: ₦${item.subtotal}</p>
-
-                    <div class="qty-controls">
-                        <button class="cart-action" data-id="${item.id}" data-action="decrement">−</button>
-                        <span>${item.quantity}</span>
-                        <button class="cart-action" data-id="${item.id}" data-action="increment">+</button>
-                    </div>
-
-                    <button class="remove-btn cart-action" data-id="${item.id}" data-action="remove">
-                        Remove
-                    </button>
-                </div>
-
-                <div class="cart-subtotal">
-                    ₦${item.subtotal}
-                </div>
+                <img src="${item.image || '/static/img/hotdeal.png'}">
 
             </div>
+
+            <div class="cart-details">
+
+                <h3>${item.name}</h3>
+
+                <p class="unit-price">
+                    Unit Price: ₦${item.price}
+                </p>
+
+                <p class="item-total">
+                    Total: ₦${item.subtotal}
+                </p>
+
+                <div class="qty-controls">
+
+                    <button 
+                        class="cart-action"
+                        data-id="${item.id}"
+                        data-action="decrement"
+                    >
+                        −
+                    </button>
+
+                    <span class="qty-number">
+                        ${item.quantity}
+                    </span>
+
+                    <button 
+                        class="cart-action"
+                        data-id="${item.id}"
+                        data-action="increment"
+                    >
+                        +
+                    </button>
+
+                </div>
+
+                <button 
+                    class="remove-btn cart-action"
+                    data-id="${item.id}"
+                    data-action="remove"
+                >
+                    Remove
+                </button>
+
+            </div>
+
+            <div class="cart-subtotal">
+
+                ₦${item.subtotal}
+
+            </div>
+
+        </div>
+
         `;
+
         });
 
-        cartTotal.innerText = `₦${data.total}`;
+        pageCartTotal.innerText = `₦${data.total}`;
+
     }
 
 
-    // 🔥 HANDLE ALL BUTTON CLICKS (EVENT DELEGATION)
+    /* =========================
+    EVENT DELEGATION
+    ========================= */
+
     document.addEventListener("click", function (e) {
+
         const btn = e.target.closest(".cart-action");
+
         if (!btn) return;
 
         const id = btn.dataset.id;
         const action = btn.dataset.action;
 
         updateCart(id, action);
+
     });
 
 
-    // 🔥 UPDATE CART (NO RELOAD)
+    /* =========================
+    UPDATE CART
+    ========================= */
+
     function updateCart(id, action) {
+
         fetch("/cart/update/", {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 "X-CSRFToken": getCSRFToken()
             },
+
             body: `product_id=${id}&action=${action}`
+
         })
+
             .then(res => res.json())
+
             .then(data => {
+
                 if (data.success) {
-                    renderCartPage(data); // 🔥 REAL-TIME UPDATE
-                } else {
-                    alert(data.error); // 🔒 show locked message
+
+                    // RENDER PAGE
+                    renderCartPage(data);
+
+                    // UPDATE NAVBAR
+                    syncNavbarCart(data);
+
                 }
+                else {
+
+                    alert(data.error || "Error updating cart");
+
+                }
+
             });
+
     }
-    // 🔐 CSRF
+
+
+    /* =========================
+    CSRF
+    ========================= */
+
     function getCSRFToken() {
-        return document.cookie.split('; ')
+
+        return document.cookie
+            .split('; ')
             .find(row => row.startsWith('csrftoken'))
             ?.split('=')[1];
+
     }
-
-
-    function loadOrders() {
-
-        fetch("/orders/json/")
-            .then(res => res.json())
-            .then(data => {
-                console.log(data)
-                ordersList.innerHTML = "";
-
-                if (!data.orders || data.orders.length === 0) {
-                    ordersList.innerHTML = "<p>No orders yet</p>";
-                    return;
-                }
-
-                data.orders.forEach(item => {
-
-                    ordersList.innerHTML += `
-                    <div class="cart-item">
-
-                        <img src="${item.image}" class="cart-img"/>
-
-                        <div class="cart-info">
-                            <p><strong>${item.name}</strong></p>
-                            <p>₦${item.price}</p>
-                            <p>Qty: ${item.quantity}</p>
-                            <p>Status: ${item.status}</p>
-
-                            <a href="/orders/dispute/${item.id}/" 
-                               style="color:red; font-size:12px;">
-                               Report Issue
-                            </a>
-                        </div>
-
-                    </div>
-                `;
-                });
-            });
-    }
-
-    const ordersBanner = document.getElementById("orders-banner");
-    const ordersList = document.getElementById("orders-list");
-
-    // OPEN
-    document.getElementById("open-orders-btn").onclick = () => {
-        loadOrders();
-        ordersBanner.classList.add("active");
-    };
-
-    // CLOSE
-    document.getElementById("close-orders").onclick = () => {
-        ordersBanner.classList.remove("active");
-    };
 
 </script>
+
 {% endblock %}

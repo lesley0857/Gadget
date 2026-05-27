@@ -379,10 +379,12 @@ def checkout_view(request):
 
     items = cart.items.all()
 
-    profile = getattr(user, "userprofile", None)
+    profile, created = UserProfile.objects.get_or_create(user=user)
 
-    if not profile or not profile.address or not profile.phone:
-        return redirect("update_profile")
+    missing_profile = False
+
+    if not profile.address or not profile.phone:
+        missing_profile = True
 
     # =========================
     # CORE BUILD (DO ALL LOGIC HERE)
@@ -416,6 +418,7 @@ def checkout_view(request):
         "vendor_to_hub_total":
             data.get("vendor_to_hub_total", 0),
         "shipping_options": shipping_options,
+        "missing_profile":missing_profile,
     }
 
     return render(request, "checkout.html", context)

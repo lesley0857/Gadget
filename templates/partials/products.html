@@ -569,7 +569,7 @@ RESPONSIVE
         </div>
 
         <!-- PRODUCTS GRID -->
-        <div class="products-grid">
+        <div class="products-grid" id="products-grid">
 
             {% for product in productList %}
 
@@ -641,7 +641,9 @@ RESPONSIVE
                     <!-- CATEGORY -->
                     <p class="product-category">
 
-                        {{ product.product.category }}
+                        {% for cat in product.categories.all %}
+                        {{ cat.name }}
+                        {% endfor %}
 
                     </p>
 

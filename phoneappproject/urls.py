@@ -19,9 +19,11 @@ urlpatterns = [
     path('cart/remove/<int:listing_id>/', remove_from_cart, name='remove_from_cart'),
     path("cart/summary/", cart_summary, name="cart_summary"),
     path('cart/update/', update_cart, name='update_cart'),
+    path("orders/",orders_page,name="orders_page"),
+    path("<int:order_id>/",order_detail,name="order_detail"),
+    path("json/",orders_json,name="orders_json"),
     path('checkout/', checkout_view, name='checkout'),
     path('orders/dispute/<int:item_id>/', dispute_page, name='dispute_page'),
-    path("orders/json/", user_orders_json, name="user_orders_json"),
     path("pay/", initiate_payment, name="initiate_payment"),
     path("payment/verify/", verify_payment, name="verify_payment"),
     path("payment_success/", payment_success, name="payment_success"),
@@ -41,31 +43,15 @@ urlpatterns = [
     path("vendor/delete/", vendor_delete, name="vendor_delete"),
     path('product/<int:product_id>/', product_detail, name='product_detail'),
 
-    path("category/<int:id>/", category_products, name="category_products"),
+    path("category/<str:name>/",category_products, name="category_products"),
     path("search/", search_products, name="search_products"),
     path("search-suggestions/", search_suggestions, name="search_suggestions"),
-    path("products/", ProductListView.as_view(),name='products'),
-    path("products/create/", ProductCreateView.as_view()),
 
-    path("orders/create/", CreateOrderView.as_view()),
+    path("shipping/request/",request_shipping_negotiation,name="request_shipping_negotiation"),
 
-    path(
-        "shipping/request/",
-        request_shipping_negotiation,
-        name="request_shipping_negotiation"
-    ),
+    path("shipping/negotiated/<str:code>/",negotiated_checkout,name="negotiated_checkout"),
 
-    path(
-        "shipping/negotiated/<str:code>/",
-        negotiated_checkout,
-        name="negotiated_checkout"
-    ),
-
-    path(
-        "shipping/pay/<str:code>/",
-        pay_negotiated_shipping,
-        name="pay_negotiated_shipping"
-    ),
+    path("shipping/pay/<str:code>/",pay_negotiated_shipping,name="pay_negotiated_shipping"),
 
     path("webhooks/paystack/", paystack_webhook),
 ]

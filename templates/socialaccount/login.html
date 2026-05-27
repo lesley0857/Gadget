@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<section class="oauth-section">
+
+    <style>
+        .oauth-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            padding: 40px 15px;
+        }
+
+        .oauth-card {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .oauth-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .oauth-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .google-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .google-box img {
+            width: 22px;
+            height: 22px;
+        }
+
+        .oauth-warning {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 25px;
+        }
+
+        .oauth-btn {
+            width: 100%;
+            padding: 14px;
+            background: #111827;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .oauth-btn:hover {
+            background: #dc2626;
+        }
+
+        .oauth-cancel {
+            display: block;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .oauth-cancel:hover {
+            color: #dc2626;
+        }
+    </style>
+
+    <div class="oauth-card">
+
+        <!-- TITLE -->
+        <div class="oauth-title">
+            Sign in with Google
+        </div>
+
+        <!-- INFO -->
+        <div class="oauth-subtitle">
+            You are about to continue using your Google account.
+            We will use your email to create or access your account securely.
+        </div>
+
+        <!-- GOOGLE BRAND BOX -->
+        <div class="google-box">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+            Google Account Authentication
+        </div>
+
+        <!-- WARNING -->
+        <div class="oauth-warning">
+            By continuing, you agree to our terms and privacy policy.
+        </div>
+
+        <!-- CONTINUE BUTTON -->
+        <form method="post">
+            {% csrf_token %}
+
+            <button type="submit" class="oauth-btn">
+                Continue
+            </button>
+        </form>
+
+        <!-- CANCEL -->
+        <a class="oauth-cancel" href="{% url 'account_login' %}">
+            Cancel and return to login
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
