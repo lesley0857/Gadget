@@ -210,9 +210,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-DEFAULT_FILE_STORAGE = (
-    "cloudinary_storage.storage.MediaCloudinaryStorage"
-)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -237,6 +234,7 @@ CELERY_TASK_SERIALIZER = "json"
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/")

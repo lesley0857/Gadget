@@ -124,8 +124,8 @@ class ProductMedia(models.Model):
         choices=MEDIA_TYPE_CHOICES
     )
 
-    file = CloudinaryField(
-        resource_type="auto"
+    file = models.FileField(
+    upload_to="product_media/"
     )
 
     is_primary = models.BooleanField(default=False)
