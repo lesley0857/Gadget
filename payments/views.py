@@ -93,7 +93,7 @@ def initiate_payment(request):
             "email": user.email,
             "amount": int(total * 100),
             "reference": reference,
-            "callback_url": "http://127.0.0.1:8000/payment/verify/"
+            "callback_url": "https://remarobe.com/payment/verify/"
         },
         headers={
             "Authorization": "Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
