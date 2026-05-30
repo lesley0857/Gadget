@@ -129,15 +129,12 @@ def add_to_cart(request, listing_id):
         # ===================================
         # RETURN RESPONSE
         # ===================================
-
+        
         return JsonResponse({
             "success": True,
             "cart_items": cart_items_data,
             "total": float(total),
-            "cart_count": sum(
-                item["quantity"]
-                for item in cart_items_data
-            )
+            "cart_count": len(cart_items_data)
         })
 
     return JsonResponse({
@@ -284,15 +281,13 @@ def update_cart(request):
         })
 
         total += subtotal
-
-    cart_count = sum([item["quantity"] for item in cart_items_data])
+    cart_count = len(cart_items_data)
     return JsonResponse({
         "success": True,
         "cart_items": cart_items_data,
         "total": float(total),
         "cart_count":cart_count,
     })
-
 
 def cart_summary(request):
 
@@ -327,7 +322,10 @@ def cart_summary(request):
             })
 
             total += subtotal
-            count += 1
+
+            # ✅ FIXED
+            count += item.quantity
+        count = len(cart_items_data)
 
     else:
         cart = request.session.get("cart", {})
@@ -351,8 +349,11 @@ def cart_summary(request):
             })
 
             total += subtotal
-            count += 1
 
+            # ✅ FIXED
+            count += item["quantity"]
+        count = len(cart_items_data)
+        
     return JsonResponse({
         "cart_items": cart_items_data,
         "total": float(total),

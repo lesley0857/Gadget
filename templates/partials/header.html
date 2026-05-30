@@ -149,16 +149,18 @@ MAIN HEADER
         <!-- ACTIONS -->
         <div class="nav-actions">
 
-            <!-- CART -->
-            <a href="{% url 'cart' %}" class="cart-link">
+            <button type="button" class="cart-link" id="cart-toggle-btn">
 
                 <i class="fa fa-shopping-cart"></i>
 
                 <span>Cart</span>
 
-                <div class="qty" id="cart-count">0</div>
+                <div class="qty cart-count">
+                    0
+                </div>
 
-            </a>
+            </button>
+
 
             <!-- MENU -->
             <div class="menu-toggle" id="mobile-menu-btn">
@@ -190,7 +192,7 @@ MAIN HEADER
 
                         {% for category in categories %}
 
-                        <option value="{% url 'category_products' category.id %}">
+                        <option value="{% url 'category_products' category.name %}">
                             {{ category.name }}
                         </option>
 
@@ -237,12 +239,14 @@ NAVIGATION
                 <a href="/">Home</a>
             </li>
 
-            {% for cat in categories %}
+            {% for cat in nav_categories %}
+
             <li>
                 <a href="{% url 'category_products' cat.name %}">
                     {{ cat.name }}
                 </a>
             </li>
+
             {% endfor %}
 
 
@@ -665,69 +669,70 @@ MOBILE
 SEARCH JS
 ========================= -->
 <script>
-
     const input = document.getElementById("search-input");
 
     const box = document.getElementById("search-suggestions");
 
-    input.addEventListener("keyup", function () {
+    if (input && box) {
 
-        const query = input.value;
+        input.addEventListener("keyup", function () {
 
-        if (query.length < 2) {
+            const query = input.value;
 
-            box.style.display = "none";
+            if (query.length < 2) {
 
-            return;
-        }
+                box.style.display = "none";
 
-        fetch(`/search-suggestions/?q=${query}`)
+                return;
+            }
 
-            .then(res => res.json())
+            fetch(`/search-suggestions/?q=${query}`)
 
-            .then(data => {
+                .then(res => res.json())
 
-                box.innerHTML = "";
+                .then(data => {
 
-                if (data.results.length === 0) {
+                    box.innerHTML = "";
 
-                    box.style.display = "none";
+                    if (data.results.length === 0) {
 
-                    return;
-                }
+                        box.style.display = "none";
 
-                data.results.forEach(item => {
+                        return;
+                    }
 
-                    box.innerHTML += `
-                    <div class="suggestion-item" data-name="${item.name}">
-                        ${item.name}
-                    </div>
-                `;
+                    data.results.forEach(item => {
+
+                        box.innerHTML += `
+                        <div class="suggestion-item" data-name="${item.name}">
+                            ${item.name}
+                        </div>
+                    `;
+                    });
+
+                    box.style.display = "block";
 
                 });
 
-                box.style.display = "block";
+        });
 
-            });
+        document.addEventListener("click", function (e) {
 
-    });
+            if (e.target.classList.contains("suggestion-item")) {
 
+                const name = e.target.dataset.name;
 
-    document.addEventListener("click", function (e) {
+                input.value = name;
 
-        if (e.target.classList.contains("suggestion-item")) {
+                window.location.href = `/search/?q=${name}`;
 
-            const name = e.target.dataset.name;
+            } else {
 
-            input.value = name;
+                box.style.display = "none";
 
-            window.location.href = `/search/?q=${name}`;
+            }
 
-        } else {
+        });
 
-            box.style.display = "none";
-        }
-
-    });
-
+    }
 </script>

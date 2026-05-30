@@ -2,7 +2,6 @@
 {% load humanize%}
 {% load cloudinary %}
 <!DOCTYPE html>
-{% include 'partials/header.html' %}
 <html lang="en">
 
 <head>
@@ -41,8 +40,298 @@
 
 </head>
 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // =========================
+        // ELEMENTS
+        // =========================
+
+        const cartSidebar = document.getElementById("cart-sidebar");
+
+        const cartBody = document.getElementById("cart-body");
+
+        const overlay = document.getElementById("cart-overlay");
+
+        const openBtn = document.getElementById("cart-toggle-btn");
+
+        const closeBtn = document.getElementById("close-cart-btn");
+
+        const cartTotals = document.querySelectorAll(".cart-total");
+
+        const cartCounts = document.querySelectorAll(".cart-count");
+
+
+
+        // =========================
+        // OPEN CART
+        // =========================
+        function formatMoney(value) {
+            return Number(value).toLocaleString('en-NG', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function openCart() {
+
+            cartSidebar.classList.add("active");
+        }
+
+        // =========================
+        // CLOSE CART
+        // =========================
+
+        function closeCart() {
+
+            cartSidebar.classList.remove("active");
+        }
+
+        openBtn?.addEventListener("click", openCart);
+
+        closeBtn?.addEventListener("click", closeCart);
+
+        overlay?.addEventListener("click", closeCart);
+
+        // =========================
+        // UPDATE UI
+        // =========================
+
+        function updateCartUI(data) {
+            cartCounts.forEach(el => {
+
+                el.innerText = data.cart_count;
+            });
+
+            cartTotals.forEach(el => {
+
+                el.innerText = data.total;
+            });
+
+            renderCartItems(data.cart_items);
+        }
+
+        // =========================
+        // RENDER ITEMS
+        // =========================
+
+        function renderCartItems(items) {
+
+            if (!items || items.length === 0) {
+
+                cartBody.innerHTML = `
+                <div class="cart-empty">
+
+                    <i class="fa fa-shopping-cart"></i>
+
+                    <p>Your cart is empty</p>
+
+                </div>
+            `;
+
+                return;
+            }
+
+            cartBody.innerHTML = "";
+
+            items.forEach(item => {
+
+                cartBody.innerHTML += `
+                <div class="cart-item">
+
+                    <img src="${item.image}" alt="">
+
+                    <div class="cart-item-info">
+
+                        <div class="cart-item-title">
+                            ${item.name}
+                        </div>
+
+                        <div class="cart-item-price">
+                            ₦${formatMoney(item.price)}
+                        </div>
+
+                        <div class="cart-controls">
+
+                            <button
+                                class="cart-action"
+                                data-id="${item.id}"
+                                data-action="decrement"
+                            >
+                                -
+                            </button>
+
+                            <span>${item.quantity}</span>
+
+                            <button
+                                class="cart-action"
+                                data-id="${item.id}"
+                                data-action="increment"
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                        <button
+                            class="remove-item cart-action"
+                            data-id="${item.id}"
+                            data-action="remove"
+                        >
+                            Remove
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+            });
+        }
+
+        // =========================
+        // LOAD CART
+        // =========================
+
+        function loadCart() {
+
+            fetch("/cart/summary/")
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+                });
+        }
+
+        // =========================
+        // ADD TO CART
+        // =========================
+
+        document.addEventListener("click", function (e) {
+
+            const btn = e.target.closest(".add-to-cart-btn");
+
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+
+            btn.disabled = true;
+
+            fetch(`/cart/add/${id}/`, {
+
+                method: "POST",
+
+                headers: {
+
+                    "X-CSRFToken": getCSRFToken()
+                }
+
+            })
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+
+                    openCart();
+                })
+
+                .finally(() => {
+
+                    btn.disabled = false;
+                });
+        });
+
+        // =========================
+        // CART ACTIONS
+        // =========================
+
+        document.addEventListener("click", function (e) {
+
+            const btn = e.target.closest(".cart-action");
+
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+
+            const action = btn.dataset.action;
+
+            fetch("/cart/update/", {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/x-www-form-urlencoded",
+
+                    "X-CSRFToken":
+                        getCSRFToken()
+                },
+
+                body:
+                    `product_id=${id}&action=${action}`
+            })
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+                });
+        });
+
+        // =========================
+        // CSRF
+        // =========================
+
+        function getCSRFToken() {
+
+            return document.cookie
+                .split("; ")
+                .find(row =>
+                    row.startsWith("csrftoken")
+                )
+                ?.split("=")[1];
+        }
+
+        // =========================
+        // INITIAL LOAD
+        // =========================
+
+        loadCart();
+
+    });
+</script>
+
+
+
 <body>
     <style>
+        /* =========================================
+MESSAGES
+========================================= */
+
+        .message-wrapper {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto 0;
+        }
+
+        .success-message {
+            background: #DCFCE7;
+            color: #166534;
+            padding: 18px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
         .product-img {
             position: relative;
             overflow: hidden;
@@ -201,123 +490,290 @@
             background: #a8001c;
         }
 
-        /* Cart */
-        /* CART SIDEBAR */
 
-        .cart-banner {
+        /* =========================
+CART SIDEBAR
+========================= */
+
+        .cart-sidebar {
+
             position: fixed;
-            top: 0;
-            right: -100%;
-            width: 350px;
-            height: 100%;
-            background: #fff;
-            transition: right 0.3s ease;
-            z-index: 9999;
 
-            display: flex;
-            flex-direction: column;
-            /* 🔥 IMPORTANT */
+            inset: 0;
+
+            z-index: 999999;
+
+            pointer-events: none;
         }
 
-        .cart-banner.active {
+        .cart-sidebar.active {
+
+            pointer-events: all;
+        }
+
+        /* OVERLAY */
+
+        .cart-overlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.45);
+
+            opacity: 0;
+
+            transition: 0.3s ease;
+        }
+
+        .cart-sidebar.active .cart-overlay {
+
+            opacity: 1;
+        }
+
+        /* PANEL */
+
+        .cart-panel {
+
+            position: absolute;
+
+            top: 0;
+            right: -420px;
+
+            width: 400px;
+            max-width: 100%;
+
+            height: 100vh;
+
+            background: white;
+
+            display: flex;
+
+            flex-direction: column;
+
+            transition: 0.35s ease;
+
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .cart-sidebar.active .cart-panel {
+
             right: 0;
         }
 
         /* HEADER */
-        .cart-header {
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
+
+        .cart-top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 20px;
+
+            border-bottom: 1px solid #eee;
         }
 
-        /* SCROLLABLE ITEMS */
-        .cart-items {
+        .cart-top h3 {
+
+            margin: 0;
+
+            font-size: 20px;
+        }
+
+        #close-cart-btn {
+
+            border: none;
+
+            background: none;
+
+            font-size: 28px;
+
+            cursor: pointer;
+        }
+
+        /* BODY */
+
+        .cart-body {
+
             flex: 1;
-            /* 🔥 TAKES REMAINING SPACE */
+
             overflow-y: auto;
-            /* 🔥 ENABLE SCROLL */
-            padding: 10px;
+
+            padding: 20px;
         }
 
-        /* FOOTER (ALWAYS VISIBLE) */
-        .cart-footer {
-            padding: 15px;
-            border-top: 1px solid #ddd;
-            background: white;
-        }
+        /* EMPTY */
 
+        .cart-empty {
 
-        /* ITEM */
-        .cart-item {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            height: 100%;
+
+            color: #888;
         }
 
-        .cart-item img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-        }
+        .cart-empty i {
 
-        .cart-item {
-            display: flex;
-            gap: 10px;
+            font-size: 40px;
+
             margin-bottom: 15px;
         }
 
-        .cart-img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
+        /* ITEM */
+
+        .cart-item {
+
+            display: flex;
+
+            gap: 14px;
+
+            margin-bottom: 20px;
+
+            padding-bottom: 20px;
+
+            border-bottom: 1px solid #f1f1f1;
         }
 
-        .cart-info {
+        .cart-item img {
+
+            width: 80px;
+
+            height: 80px;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+        }
+
+        .cart-item-info {
+
             flex: 1;
         }
 
+        .cart-item-title {
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 10px;
+        }
+
+        .cart-item-price {
+
+            color: #DC2626;
+
+            font-weight: 700;
+
+            margin-bottom: 10px;
+        }
+
+        /* CONTROLS */
+
         .cart-controls {
+
             display: flex;
-            gap: 5px;
+
             align-items: center;
+
+            gap: 10px;
         }
 
         .cart-controls button {
-            padding: 4px 8px;
+
+            width: 30px;
+
+            height: 30px;
+
+            border: 1px solid #ddd;
+
+            background: white;
+
             cursor: pointer;
+
+            border-radius: 6px;
         }
 
-        .remove-btn {
-            margin-top: 5px;
-            color: red;
-            background: none;
+        /* REMOVE */
+
+        .remove-item {
+
+            margin-top: 10px;
+
             border: none;
+
+            background: none;
+
+            color: red;
+
             cursor: pointer;
+
+            padding: 0;
         }
 
+        /* FOOTER */
 
+        .cart-bottom {
 
+            border-top: 1px solid #eee;
 
-        .checkout-btn {
+            padding: 20px;
+        }
+
+        .cart-summary {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-bottom: 15px;
+
+            font-size: 18px;
+        }
+
+        .checkout-link {
+
             display: block;
-            background: #D10024;
+
+            width: 100%;
+
+            padding: 15px;
+
+            background: #DC2626;
+
             color: white;
+
             text-align: center;
-            padding: 10px;
-            text-decoration: none;
+
+            border-radius: 10px;
+
+            font-weight: 700;
         }
 
-        /* 📱 MOBILE */
-        @media (max-width: 768px) {
-            .cart-banner {
-                @media (max-width: 768px) {
-                    .cart-banner {
-                        width: 100%;
-                        right: -100%;
-                        /* ✅ IMPORTANT */
-                    }
-                }
+        /* MOBILE */
+
+        @media(max-width:768px) {
+
+            .cart-panel {
+
+                width: 100%;
             }
         }
+
+
+
+
+        /* 📱 MOBILE */
 
         .suggestions-box {
             position: absolute;
@@ -344,6 +800,19 @@
 
 
     <!-- MAIN CONTENT -->
+    {% include 'partials/header.html' %}
+
+    {% for message in messages %}
+    <div class="success-message">
+
+        <i class="fa fa-check-circle"></i>
+
+        <span>
+            {{ message }}
+        </span>
+
+    </div>
+    {% endfor %}
 
     <main>
         {% block content %}
@@ -352,31 +821,75 @@
         {% include 'partials/product_category.html' %}
         {% include 'partials/rfq.html' %}
         {% include 'partials/projects.html' %}
+        {% include "partials/blogs.html" %}
         {% include 'partials/testimonial.html' %}
         {% include 'partials/footer.html' %}
         {% endblock %}
     </main>
 
-    <!-- Cart Banner -->
-    <div id="cart-banner" class="cart-banner">
 
-        <!-- HEADER -->
-        <div class="cart-header">
-            <h3>Your Cart</h3>
-            <button id="close-cart">✖</button>
-        </div>
+    <!-- =========================
+CART SIDEBAR
+========================= -->
 
-        <!-- SCROLLABLE AREA -->
-        <div id="cart-items" class="cart-items"></div>
+    <div id="cart-sidebar" class="cart-sidebar">
 
-        <!-- FOOTER -->
-        <div class="cart-footer">
-            <p>Total: ₦<span id="cart-total">0</span></p>
-            <a href="/cart/" class="checkout-btn">Checkout</a>
+        <!-- OVERLAY -->
+        <div id="cart-overlay" class="cart-overlay"></div>
+
+        <!-- PANEL -->
+        <div class="cart-panel">
+
+            <!-- HEADER -->
+            <div class="cart-top">
+
+                <h3>Your Cart</h3>
+
+                <button id="close-cart-btn">
+                    &times;
+                </button>
+
+            </div>
+
+            <!-- ITEMS -->
+            <div id="cart-body" class="cart-body">
+
+                <div class="cart-empty">
+
+                    <i class="fa fa-shopping-cart"></i>
+
+                    <p>Your cart is empty</p>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="cart-bottom">
+
+                <div class="cart-summary">
+
+                    <span>Total</span>
+
+                    <strong>
+                        ₦<span class="cart-total">0</span>
+                    </strong>
+
+                </div>
+
+                <a href="/cart/" class="checkout-link">
+
+                    Proceed To Checkout
+
+                </a>
+
+            </div>
+
         </div>
 
     </div>
-    <!-- Cart Banner -->
+
+
 
 
     <!-- jQuery Plugins -->
@@ -385,9 +898,7 @@
     <script src="{% static 'js/slick.min.js' %}"></script>
     <script src="{% static 'js/nouislider.min.js' %}"></script>
     <script src="{% static 'js/jquery.zoom.min.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    <!-- JS -->
-    <script src="{% static 'js/main.js' %}"></script>
+
 
     <script>
         document.querySelectorAll('.product').forEach(product => {
@@ -425,147 +936,6 @@
 
     {% block extra_js %}{% endblock %}
 
-    <script>
-        function updateCartUI(data) {
-
-            const countElements = document.querySelectorAll("#cart-count");
-            const totalElements = document.querySelectorAll("#cart-total");
-
-            countElements.forEach(el => {
-                el.innerText = data.cart_count;
-            });
-
-            totalElements.forEach(el => {
-                el.innerText = data.total;
-            });
-
-            if (typeof renderCart === "function") {
-                renderCart(data);
-            }
-        }
-
-        function loadCart() {
-            fetch("/cart/summary/")
-                .then(res => res.json())
-                .then(data => {
-                    updateCartUI(data);
-                });
-        }
-
-        // 🔥 RUN ON EVERY PAGE LOAD
-        document.addEventListener("DOMContentLoaded", loadCart);
-
-        const cartBanner = document.getElementById("cart-banner");
-        const cartItems = document.getElementById("cart-items");
-        const cartTotal = document.getElementById("cart-total");
-
-        // OPEN CART
-        function openCart() {
-            cartBanner.classList.add("active");
-            cartItems.scrollTop = 0;
-        }
-
-        // CLOSE CART
-        document.getElementById("close-cart").onclick = () => {
-            cartBanner.classList.remove("active");
-        };
-
-        // ADD TO CART CLICK
-        document.addEventListener("click", function (e) {
-
-            const btn = e.target.closest(".add-to-cart-btn");
-
-            if (!btn) return;
-
-            const id = btn.dataset.id;
-
-            fetch(`/cart/add/${id}/`, {
-
-                method: "POST",
-
-                headers: {
-                    "X-CSRFToken": getCSRFToken()
-                }
-
-            })
-
-                .then(res => res.json())
-
-                .then(data => {
-
-                    if (data.success) {
-
-                        updateCartUI(data);
-
-                        openCart();
-
-                    }
-
-                });
-
-        });
-
-        // RENDER CART
-        function renderCart(data) {
-            const cartItems = document.getElementById("cart-items");
-            cartItems.innerHTML = "";
-
-            if (!data.cart_items || data.cart_items.length === 0) {
-                cartItems.innerHTML = "<p>Your cart is empty</p>";
-                document.getElementById("cart-total").innerText = "0";
-                document.getElementById("cart-count").innerText = "0";
-                return;
-            }
-
-            data.cart_items.forEach(item => {
-                cartItems.innerHTML += `
-            <div class="cart-item">
-                <img src="${item.image}" class="cart-img"/>
-                <div class="cart-info">
-                    <p>${item.name}</p>
-                    <p>₦${item.price}</p>
-
-                    <div class="cart-controls">
-                        <button onclick="updateCart(${item.id}, 'decrement')">−</button>
-                        <span>${item.quantity}</span>
-                        <button onclick="updateCart(${item.id}, 'increment')">+</button>
-                    </div>
-
-                    <button onclick="updateCart(${item.id}, 'remove')">🗑</button>
-                </div>
-            </div>
-        `;
-            });
-
-            document.getElementById("cart-total").innerText = data.total;
-            document.getElementById("cart-count").innerText = data.cart_count;
-        }
-
-        function updateCart(id, action) {
-            fetch("/cart/update/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": getCSRFToken()
-                },
-                body: `product_id=${id}&action=${action}`
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        updateCartUI(data);  // 🔥 MUST RUN
-                    }
-                });
-        }
-
-        // CSRF
-        function getCSRFToken() {
-            return document.cookie.split('; ')
-                .find(row => row.startsWith('csrftoken'))
-                ?.split('=')[1];
-        }
-
-    </script>
 
 
 

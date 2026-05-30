@@ -1,689 +1,243 @@
-{%load static%}
-<!-- =========================================
-SERVICES SECTION
-========================================= -->
+{% load static %}
 
-<section class="services-section">
-    <style>
-        /* =========================================
-SERVICES SECTION
-========================================= */
+<section class="services-page">
 
-        .services-section {
-
-            padding: 100px 0;
-
-            background:
-                linear-gradient(to bottom,
-                    #F9FAFB,
-                    #FFFFFF);
-        }
-
-        /* =========================================
-HEADER
-========================================= */
-
-        .services-header {
-
-            text-align: center;
-
-            max-width: 760px;
-
-            margin: 0 auto 70px;
-        }
-
-        .services-badge {
-
-            display: inline-block;
-
-            background: rgba(220, 38, 38, 0.08);
-
-            color: #DC2626;
-
-            padding: 10px 18px;
-
-            border-radius: 40px;
-
-            font-size: 13px;
-
-            font-weight: 700;
-
-            margin-bottom: 22px;
-        }
-
-        .services-title {
-
-            font-size: 46px;
-
-            font-weight: 800;
-
-            color: #111827;
-
-            line-height: 1.2;
-
-            margin-bottom: 22px;
-        }
-
-        .services-description {
-
-            font-size: 17px;
-
-            line-height: 1.8;
-
-            color: #6B7280;
-        }
-
-        /* =========================================
-GRID
-========================================= */
-
-        .services-grid {
-
-            display: grid;
-
-            grid-template-columns: repeat(3, 1fr);
-
-            gap: 30px;
-        }
-
-        /* =========================================
-SERVICE CARD
-========================================= */
-
-        .service-card {
-
-            position: relative;
-
-            background: white;
-
-            padding: 38px;
-
-            border-radius: 26px;
-
-            border: 1px solid #E5E7EB;
-
-            transition: 0.4s ease;
-
-            overflow: hidden;
-        }
-
-        .service-card:hover {
-
-            transform: translateY(-10px);
-
-            box-shadow:
-                0 25px 50px rgba(0, 0, 0, 0.08);
-
-            border-color: rgba(220, 38, 38, 0.15);
-        }
-
-        /* FEATURED CARD */
-
-        .featured-service {
-
-            background:
-                linear-gradient(135deg,
-                    #111827,
-                    #1F2937);
-
-            color: white;
-
-            border: none;
-        }
-
-        .featured-service p,
-        .featured-service li {
-
-            color: rgba(255, 255, 255, 0.82);
-        }
-
-        .featured-service h3 {
-
-            color: white;
-        }
-
-        /* FEATURED TAG */
-
-        .featured-tag {
-
-            position: absolute;
-
-            top: 20px;
-            right: -40px;
-
-            background: #DC2626;
-
-            color: white;
-
-            padding: 8px 50px;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            transform: rotate(45deg);
-        }
-
-        /* =========================================
-ICON
-========================================= */
-
-        .service-icon {
-
-            width: 78px;
-            height: 78px;
-
-            border-radius: 22px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            font-size: 30px;
-
-            background:
-                linear-gradient(135deg,
-                    #DC2626,
-                    #EF4444);
-
-            color: white;
-
-            margin-bottom: 28px;
-
-            box-shadow:
-                0 12px 25px rgba(220, 38, 38, 0.25);
-        }
-
-        /* =========================================
-TEXT
-========================================= */
-
-        .service-card h3 {
-
-            font-size: 26px;
-
-            font-weight: 700;
-
-            color: #111827;
-
-            margin-bottom: 18px;
-
-            line-height: 1.4;
-        }
-
-        .service-card p {
-
-            font-size: 15px;
-
-            line-height: 1.9;
-
-            color: #6B7280;
-
-            margin-bottom: 24px;
-        }
-
-        /* =========================================
-FEATURES
-========================================= */
-
-        .service-features {
-
-            list-style: none;
-
-            padding: 0;
-
-            margin: 0 0 28px;
-        }
-
-        .service-features li {
-
-            position: relative;
-
-            padding-left: 24px;
-
-            margin-bottom: 14px;
-
-            color: #374151;
-
-            font-size: 14px;
-
-            font-weight: 500;
-        }
-
-        .service-features li::before {
-
-            content: "";
-
-            position: absolute;
-
-            left: 0;
-            top: 8px;
-
-            width: 8px;
-            height: 8px;
-
-            border-radius: 50%;
-
-            background: #DC2626;
-        }
-
-        /* =========================================
-BUTTON
-========================================= */
-
-        .service-btn {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 10px;
-
-            color: #DC2626;
-
-            font-weight: 700;
-
-            font-size: 14px;
-
-            transition: 0.3s ease;
-        }
-
-        .service-btn:hover {
-
-            gap: 14px;
-
-            color: #B91C1C;
-        }
-
-        .featured-service .service-btn {
-
-            color: white;
-        }
-
-        /* =========================================
-RESPONSIVE
-========================================= */
-
-        @media(max-width: 1200px) {
-
-            .services-grid {
-
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media(max-width: 768px) {
-
-            .services-section {
-
-                padding: 80px 0;
-            }
-
-            .services-title {
-
-                font-size: 34px;
-            }
-
-            .services-grid {
-
-                grid-template-columns: 1fr;
-
-                gap: 24px;
-            }
-
-            .service-card {
-
-                padding: 30px;
-            }
-
-            .service-card h3 {
-
-                font-size: 22px;
-            }
-        }
-
-        @media(max-width: 480px) {
-
-            .services-title {
-
-                font-size: 28px;
-            }
-
-            .services-description {
-
-                font-size: 15px;
-            }
-
-            .service-card {
-
-                padding: 24px;
-
-                border-radius: 20px;
-            }
-
-            .service-icon {
-
-                width: 65px;
-                height: 65px;
-
-                font-size: 24px;
-            }
-
-        }
-    </style>
     <div class="container">
 
-        <!-- SECTION HEADER -->
-        <div class="services-header">
+        <div class="section-header">
 
-            <span class="services-badge">
-                Our Services
+            <span class="section-badge">
+                OUR SERVICES
             </span>
 
-            <h2 class="services-title">
-
-                Industrial Electrical &
-                Engineering Solutions
-
+            <h2>
+                Industrial Electrical & Engineering Solutions
             </h2>
 
-            <p class="services-description">
-
-                We provide professional electrical engineering,
-                earthing installation and industrial automation
-                services for commercial and industrial facilities.
-
+            <p>
+                Professional installation, maintenance and industrial engineering services.
             </p>
 
         </div>
 
-        <!-- SERVICES GRID -->
         <div class="services-grid">
 
-            <!-- SERVICE -->
+            {% for service in services %}
 
             <div class="service-card">
 
-                <div class="service-icon">
+                <div class="service-image">
 
-                    <i class="fa fa-bolt"></i>
+                    <img src="{{ service.hero_image.url }}" alt="{{ service.title }}">
 
                 </div>
 
-                <h3>
+                <div class="service-body">
 
-                    Electrical Earthing Installation
+                    <div class="service-icon">
 
-                </h3>
+                        <i class="{{ service.icon }}"></i>
 
-                <p>
+                    </div>
 
-                    Professional grounding systems,
-                    earth pit installation, copper
-                    earth mats and lightning protection
-                    solutions for industries.
+                    <h3>
+                        {{ service.title }}
+                    </h3>
 
-                </p>
+                    <p>
+                        {{ service.short_description|truncatewords:20 }}
+                    </p>
 
-                <ul class="service-features">
+                    <a href="{% url 'service_detail' service.slug %}">
+                        Learn More
+                    </a>
 
-                    <li>Earth Pit Installation</li>
-
-                    <li>Earth Resistance Testing</li>
-
-                    <li>Copper Earth Mats</li>
-
-                    <li>Lightning Protection</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
+                </div>
 
             </div>
 
-            <!-- SERVICE -->
-
-            <div class="service-card featured-service">
-
-                <div class="featured-tag">
-                    Most Requested
-                </div>
-
-                <div class="service-icon">
-
-                    <i class="fa fa-cogs"></i>
-
-                </div>
-
-                <h3>
-
-                    Industrial Control Panels
-
-                </h3>
-
-                <p>
-
-                    Design, wiring and installation
-                    of industrial control panels,
-                    motor starter panels and automation systems.
-
-                </p>
-
-                <ul class="service-features">
-
-                    <li>Motor Control Panels</li>
-
-                    <li>PLC Panels</li>
-
-                    <li>Automation Wiring</li>
-
-                    <li>Industrial Troubleshooting</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
-
-            </div>
-
-            <!-- SERVICE -->
-
-            <div class="service-card">
-
-                <div class="service-icon">
-
-                    <i class="fa fa-building"></i>
-
-                </div>
-
-                <h3>
-
-                    Industrial Electrical Installation
-
-                </h3>
-
-                <p>
-
-                    Complete industrial electrical
-                    installation services for factories,
-                    plants and commercial facilities.
-
-                </p>
-
-                <ul class="service-features">
-
-                    <li>Power Distribution</li>
-
-                    <li>Cable Tray Installation</li>
-
-                    <li>Industrial Wiring</li>
-
-                    <li>Equipment Installation</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
-
-            </div>
-
-            <!-- SERVICE -->
-
-            <div class="service-card">
-
-                <div class="service-icon">
-
-                    <i class="fa fa-wrench"></i>
-
-                </div>
-
-                <h3>
-
-                    Maintenance & Troubleshooting
-
-                </h3>
-
-                <p>
-
-                    Fast diagnosis and maintenance
-                    of industrial electrical systems,
-                    switchgear and automation equipment.
-
-                </p>
-
-                <ul class="service-features">
-
-                    <li>Fault Diagnosis</li>
-
-                    <li>Preventive Maintenance</li>
-
-                    <li>Emergency Repairs</li>
-
-                    <li>System Upgrades</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
-
-            </div>
-
-            <!-- SERVICE -->
-
-            <div class="service-card">
-
-                <div class="service-icon">
-
-                    <i class="fa fa-random"></i>
-
-                </div>
-
-                <h3>
-
-                    CNG & Gas System Electricals
-
-                </h3>
-
-                <p>
-
-                    Electrical installations and
-                    maintenance for CNG compressor
-                    stations and industrial gas systems.
-
-                </p>
-
-                <ul class="service-features">
-
-                    <li>Compressor Wiring</li>
-
-                    <li>Control Connections</li>
-
-                    <li>PRMS Electricals</li>
-
-                    <li>Panel Commissioning</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
-
-            </div>
-
-            <!-- SERVICE -->
-
-            <div class="service-card">
-
-                <div class="service-icon">
-
-                    <i class="fa fa-shield"></i>
-
-                </div>
-
-                <h3>
-
-                    Cathodic Protection Services
-
-                </h3>
-
-                <p>
-
-                    Cathodic protection installation,
-                    monitoring and maintenance for
-                    pipelines and industrial structures.
-
-                </p>
-
-                <ul class="service-features">
-
-                    <li>TR Installation</li>
-
-                    <li>CP Monitoring</li>
-
-                    <li>Pipeline Protection</li>
-
-                    <li>Corrosion Prevention</li>
-
-                </ul>
-
-                <a href="#" class="service-btn">
-
-                    Learn More
-
-                    <i class="fa fa-arrow-right"></i>
-
-                </a>
-
-            </div>
+            {% endfor %}
 
         </div>
 
     </div>
 
 </section>
+
+<style>
+    .services-page {
+
+        padding: 80px 0;
+
+        background: #F9FAFB;
+    }
+
+    .section-header {
+
+        text-align: center;
+
+        margin-bottom: 60px;
+    }
+
+    .section-badge {
+
+        display: inline-block;
+
+        background: #FEE2E2;
+
+        color: #DC2626;
+
+        padding: 10px 20px;
+
+        border-radius: 30px;
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        margin-bottom: 20px;
+    }
+
+    .section-header h2 {
+
+        font-size: 42px;
+
+        font-weight: 800;
+
+        margin-bottom: 18px;
+    }
+
+    .section-header p {
+
+        max-width: 700px;
+
+        margin: auto;
+
+        color: #6B7280;
+
+        line-height: 1.8;
+    }
+
+    .services-grid {
+
+        display: grid;
+
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 30px;
+    }
+
+    .service-card {
+
+        background: white;
+
+        border-radius: 24px;
+
+        overflow: hidden;
+
+        transition: .35s ease;
+
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .04);
+    }
+
+    .service-card:hover {
+
+        transform: translateY(-8px);
+    }
+
+    .service-image {
+
+        height: 240px;
+
+        overflow: hidden;
+    }
+
+    .service-image img {
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: cover;
+    }
+
+    .service-body {
+
+        padding: 28px;
+    }
+
+    .service-icon {
+
+        width: 60px;
+
+        height: 60px;
+
+        border-radius: 50%;
+
+        background: #DC2626;
+
+        color: white;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-size: 22px;
+
+        margin-bottom: 20px;
+    }
+
+    .service-body h3 {
+
+        font-size: 22px;
+
+        font-weight: 700;
+
+        margin-bottom: 16px;
+    }
+
+    .service-body p {
+
+        color: #6B7280;
+
+        line-height: 1.8;
+
+        margin-bottom: 24px;
+    }
+
+    .service-body a {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        color: #DC2626;
+
+        font-weight: 700;
+    }
+
+    @media(max-width:992px) {
+
+        .services-grid {
+
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width:768px) {
+
+        .services-grid {
+
+            grid-template-columns: 1fr;
+        }
+
+        .section-header h2 {
+
+            font-size: 32px;
+        }
+    }
+</style>

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'cloudinary',
     'cloudinary_storage',
+    "django_summernote",
 
     'accounts',
     'cart',
@@ -72,6 +73,11 @@ INSTALLED_APPS = [
     'withdrawals',
     'disputes',
     'webhooks',
+    'services',
+    'remarobeprojects',
+    'testimonials',
+    'blog',
+    
 
     
 ]
@@ -103,7 +109,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+                'catalog.context_processors.global_categories',
+                "context_processors.website_content",
             ],
         },
     },

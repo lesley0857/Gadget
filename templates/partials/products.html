@@ -1,4 +1,5 @@
 {%load static%}
+{% load humanize %}
 <!-- =========================================
 FEATURED PRODUCTS SECTION
 ========================================= -->
@@ -548,21 +549,14 @@ RESPONSIVE
                     All
                 </a>
 
-                <a href="#">
-                    Earthing
+                {% for cat in second_categories %}
+
+
+                <a href="{% url 'category_products' cat.name %}">
+                    {{ cat.name }}
                 </a>
 
-                <a href="#">
-                    Breakers
-                </a>
-
-                <a href="#">
-                    Panels
-                </a>
-
-                <a href="#">
-                    Accessories
-                </a>
+                {% endfor %}
 
             </div>
 
@@ -663,7 +657,7 @@ RESPONSIVE
 
                         <h4 class="product-price">
 
-                            ₦{{ product.calculate_price|floatformat:2 }}
+                            ₦{{ product.calculate_price|floatformat:2|intcomma }}
 
                         </h4>
 
@@ -685,13 +679,13 @@ RESPONSIVE
                 <!-- BUTTON -->
                 <div class="product-footer">
 
-                    <a class="add-to-cart-btn" data-id="{{ product.id }}">
+                    <button type="button" class="add-to-cart-btn" data-id="{{ product.id }}">
 
                         <i class="fa fa-shopping-cart"></i>
 
                         Add To Cart
 
-                    </a>
+                    </button>
 
                 </div>
 

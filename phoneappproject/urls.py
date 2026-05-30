@@ -10,10 +10,14 @@ from payments.views import *
 from disputes.views import *
 from orders.views import *
 from catalog.views import *
+from services.views import *
+from remarobeprojects.views import *
+from blog.views import *
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path("summernote/", include("django_summernote.urls")),
     path('cart/', cart_view, name='cart'),
     path('cart/add/<int:listing_id>/', add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:listing_id>/', remove_from_cart, name='remove_from_cart'),
@@ -32,7 +36,9 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('', home, name='home'),
-
+    path("<slug:slug>/",blog_detail,name="blog_detail"),
+    path('project/<slug:slug>/', project_detail, name='project_detail'),
+    
     path("accounts/profile/", profile_view, name="profile"),
     path("profile/update/", update_profile, name="update_profile"),
 
@@ -46,6 +52,9 @@ urlpatterns = [
     path("category/<str:name>/",category_products, name="category_products"),
     path("search/", search_products, name="search_products"),
     path("search-suggestions/", search_suggestions, name="search_suggestions"),
+
+    path('services/', services_page,name='services'),
+    path('services/<slug:slug>/', service_detail,name='service_detail'),
 
     path("shipping/request/",request_shipping_negotiation,name="request_shipping_negotiation"),
 

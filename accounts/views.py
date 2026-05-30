@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render,redirect
 
 # Create your views here.
@@ -14,6 +15,8 @@ from .models import *
 from wallets.models import *
 from orders.models import *
 from withdrawals.views import *
+from services.models import *
+from blog.models import *
 
 def custom_404(request, exception):
     return render(request, '404.html', status=404)
@@ -59,8 +62,44 @@ def logout_view(request):
 
 def home(request):
     productList = ProductListing.objects.all()  # Featured products
-    return render(request, 'base.html', {'productList': productList,
-                                         "categories": Category.objects.all()})
+    services = Service.objects.filter(is_active=True)
+    blogs=BlogPost.objects.all()
+    random.shuffle(list(productList))
+
+ 
+    if request.method == "POST":
+
+        ServiceRFQ.objects.create(
+            service = Service.objects.filter().first(),
+            name=request.POST.get("name"),
+
+            email=request.POST.get("email"),
+
+            phone=request.POST.get("phone"),
+
+            company=request.POST.get("company"),
+
+            message=request.POST.get("message"),
+
+            document=request.FILES.get("document")
+        )
+
+        messages.success(
+            request,
+            "Your quotation request has been submitted successfully."
+        )
+
+        return redirect(
+            "home",
+        )
+    
+
+    return render(request, 'base.html', 
+                  {'productList': productList,
+                "categories": Category.objects.all(),
+                "services":services,
+                "blogs":blogs,
+                })
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
