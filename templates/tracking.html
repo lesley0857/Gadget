@@ -1,9 +1,42 @@
-<h2>Order Tracking</h2>
+<div class="tracking-container">
 
-{% for s in shipments %}
-<div class="card">
-    <h4>{{ s.get_stage_display }}</h4>
-    <p>Status: {{ s.get_status_display }}</p>
-    <p>Tracking ID: {{ s.tracking_id }}</p>
+    <h2>Track Your Order</h2>
+
+    <div class="tracking-box">
+
+        <p><strong>Tracking ID:</strong> {{ shipment.tracking_id }}</p>
+
+        <p><strong>Status:</strong> {{ shipment.status }}</p>
+
+        <p><strong>Current Location:</strong> {{ shipment.current_location }}</p>
+
+        <p><strong>Delivery Agent:</strong> {{ shipment.delivery_agent_name }}</p>
+
+    </div>
+
+    <div class="tracking-steps">
+
+        <div
+            class="{% if shipment.status in 'created picked in_transit at_hub out_for_delivery delivered' %}active{% endif %}">
+            Order Created
+        </div>
+
+        <div class="{% if shipment.status in 'picked in_transit at_hub out_for_delivery delivered' %}active{% endif %}">
+            Picked Up
+        </div>
+
+        <div class="{% if shipment.status in 'in_transit at_hub out_for_delivery delivered' %}active{% endif %}">
+            In Transit
+        </div>
+
+        <div class="{% if shipment.status in 'out_for_delivery delivered' %}active{% endif %}">
+            Out for Delivery
+        </div>
+
+        <div class="{% if shipment.status == 'delivered' %}active{% endif %}">
+            Delivered
+        </div>
+
+    </div>
+
 </div>
-{% endfor %}

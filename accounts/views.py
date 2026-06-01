@@ -30,17 +30,20 @@ def register_view(request):
         # ✅ CHECK IF EMAIL EXISTS
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists")
-            return redirect('register')
+            return redirect('account_signup')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect('account_signup')
         
         user = User.objects.create_user(
             username=username,
             email=email,
             password=password
         )
-        login(request, user)
-        return redirect('home')
+        return redirect('account_login')
 
-    return render(request, 'accounts/register.html')
+    return render(request, 'account/signup.html')
 
 def login_view(request):
     if request.method == "POST":
@@ -108,8 +111,7 @@ def product_detail(request, product_id):
 
 @login_required
 def profile_view(request):
-
-    profile = request.user.userprofile
+    profile = UserProfile.objects.filter(user=request.user).first()
 
     # =========================
     # ORDERS

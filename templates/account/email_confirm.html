@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account %}
+{% load allauth %}
+
+{% block title %}
+Confirm Email | Remarobe
+{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+
+    <div class="account-card">
+
+        <div class="account-icon success">
+            <i class="fa fa-envelope-open"></i>
+        </div>
+
+        <h1>Email Verification</h1>
+
+        {% if confirmation %}
+
+        {% user_display confirmation.email_address.user as user_display %}
+
+        {% if can_confirm %}
+
+        <p class="account-text">
+            Verify that
+            <strong>{{ confirmation.email_address.email }}</strong>
+            belongs to your Remarobe account.
+        </p>
+
+        {% url 'account_confirm_email' confirmation.key as action_url %}
+
+        <form method="post" action="{{ action_url }}">
+
+            {% csrf_token %}
+
+            {{ redirect_field }}
+
+            <button type="submit" class="account-btn">
+                <i class="fa fa-check-circle"></i>
+                Confirm Email Address
+            </button>
+
+        </form>
+
+        {% else %}
+
+        <div class="alert-box error">
+
+            <i class="fa fa-times-circle"></i>
+
+            <div>
+                This email address has already been confirmed by
+                another account.
+
+                Please contact support if you believe this is an
+                error.
+            </div>
+
+        </div>
+
+        {% endif %}
+
+        {% else %}
+
+        {% url 'account_email' as email_url %}
+
+        <div class="alert-box warning">
+
+            <i class="fa fa-exclamation-triangle"></i>
+
+            <div>
+                This verification link has expired or is invalid.
+            </div>
+
+        </div>
+
+        <a href="{{ email_url }}" class="secondary-btn">
+
+            <i class="fa fa-refresh"></i>
+
+            Request New Verification Email
+
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+<style>
+    .account-page {
+        min-height: 70vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 80px 20px;
+        background: #f8fafc;
+    }
+
+    .account-card {
+        background: #fff;
+        max-width: 650px;
+        width: 100%;
+        padding: 50px;
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+        text-align: center;
+    }
+
+    .account-icon {
+        width: 90px;
+        height: 90px;
+        margin: auto auto 25px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 38px;
+    }
+
+    .account-icon.success {
+        background: #ecfdf3;
+        color: #16a34a;
+    }
+
+    .account-card h1 {
+        font-size: 34px;
+        margin-bottom: 15px;
+    }
+
+    .account-text {
+        color: #64748b;
+        line-height: 1.8;
+        margin-bottom: 35px;
+    }
+
+    .account-btn {
+        border: none;
+        background: #0f172a;
+        color: white;
+        padding: 16px 30px;
+        border-radius: 10px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: .3s;
+    }
+
+    .account-btn:hover {
+        background: #1e293b;
+    }
+
+    .secondary-btn {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 14px 24px;
+        border-radius: 10px;
+        background: #0f172a;
+        color: white;
+        text-decoration: none;
+    }
+
+    .alert-box {
+        display: flex;
+        gap: 15px;
+        text-align: left;
+        padding: 18px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .alert-box.error {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .alert-box.warning {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .alert-box i {
+        font-size: 24px;
+    }
+</style>
+
+{% endblock %}

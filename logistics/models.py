@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 # Create your models here.
 from django.conf import settings
+from orders.models import Order
 
 class Hub(models.Model):
     name = models.CharField(max_length=100)
@@ -35,56 +36,36 @@ class ShippingOption(models.Model):
     def __str__(self):
         return f"{self.provider.name} - {self.name}"
 
+
 class Shipment(models.Model):
+
     STATUS = [
-        ("pending", "Pending"),
-        ("booked", "Booked"),
+        ("created", "Created"),
+        ("picked", "Picked Up"),
         ("in_transit", "In Transit"),
+        ("at_hub", "At Hub"),
+        ("out_for_delivery", "Out for Delivery"),
         ("delivered", "Delivered"),
+        ("failed", "Failed Delivery"),
     ]
 
-    STAGE_CHOICES = [
-        ("vendor_to_hub", "Vendor → Hub"),
-        ("hub_to_hub", "Hub → Hub"),
-        ("hub_to_customer", "Hub → Customer"),
-    ]
+    order = models.ForeignKey( "orders.Order", on_delete=models.CASCADE, related_name="shipments")
 
-    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="shipments")
-    vendor = models.ForeignKey("accounts.Vendor", on_delete=models.CASCADE,null=True,
-    blank=True)
-    provider = models.CharField(max_length=50)  # kwik, gigl, etc
-    option_name = models.CharField(max_length=100)  # bike, express, etc
-    platform_margin = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    total_shipping = models.DecimalField(max_digits=10, decimal_places=2)
-    job_id = models.CharField(max_length=100, blank=True, null=True)  # from KWIK
-    status = models.CharField(max_length=20, default="pending")
+    vendor = models.ForeignKey("accounts.Vendor", on_delete=models.CASCADE, null=True)
+
+    tracking_id = models.CharField(max_length=100, unique=True)
+
+    status = models.CharField(max_length=30, default="created")
+
+    current_location = models.CharField(max_length=255, blank=True, null=True)
+
+    delivery_agent_name = models.CharField(max_length=100, blank=True, null=True)
+
+    delivery_agent_phone = models.CharField(max_length=20, blank=True, null=True)
+
+    last_update = models.DateTimeField(auto_now=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
-    tracking_id = models.CharField(max_length=100, blank=True)
-    pickup_address = models.TextField(null=True, blank=True)
-    delivery_address = models.TextField(null=True, blank=True)
-    weight = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    shipping_fee = models.DecimalField(max_digits=12, decimal_places=2)
-
-    
-    origin_hub = models.ForeignKey(
-        Hub,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="origin_shipments"
-    )
-    stage = models.CharField(max_length=30, choices=STAGE_CHOICES,default="vendor_to_hub")
-    destination_hub = models.ForeignKey(
-        Hub,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="destination_shipments"
-    )
-
-
-    def __str__(self):
-        return f"{self.order.id} - {self.vendor}-{self.provider}"
 
 
 class ShippingNegotiation(models.Model):

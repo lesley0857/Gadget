@@ -13,6 +13,7 @@ from catalog.views import *
 from services.views import *
 from remarobeprojects.views import *
 from blog.views import *
+from logistics.views import *
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -39,6 +40,8 @@ urlpatterns = [
     path("<slug:slug>/",blog_detail,name="blog_detail"),
     path('project/<slug:slug>/', project_detail, name='project_detail'),
     
+    path("delivery/dashboard/", delivery_dashboard, name="delivery_dashboard"),
+
     path("accounts/profile/", profile_view, name="profile"),
     path("profile/update/", update_profile, name="update_profile"),
 

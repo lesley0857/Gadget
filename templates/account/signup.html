@@ -124,7 +124,7 @@
         <h2 class="auth-title">Create Account</h2>
 
         <!-- REGISTER FORM -->
-        <form method="POST">
+        <form method="POST" action="{% url 'register' %}">
             {% csrf_token %}
 
             <input class="auth-input" type="text" name="username" placeholder="Username" required>
@@ -150,7 +150,7 @@
         <!-- FOOTER -->
         <div class="auth-footer">
             Already have an account?
-            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'account_login' %}">Login</a>
         </div>
 
     </div>

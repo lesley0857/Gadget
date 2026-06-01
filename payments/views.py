@@ -22,7 +22,7 @@ from django.db import transaction
 from wallets.models import VendorWallet, WalletTransaction, Commission
 from logistics.services.router import *
 from logistics.services.router import route_order, get_central_hub
-
+from accounts.models import Vendor
 
 
 def initiate_payment(request):

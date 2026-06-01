@@ -14,6 +14,7 @@ from cart.models import Cart
 from orders.models import *
 from logistics.services.aggregator import LogisticsAggregator
 from decimal import Decimal
+from accounts.models import UserProfile
 
 def add_to_cart(request, listing_id):
 

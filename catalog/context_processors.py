@@ -5,6 +5,7 @@ from catalog.models import Category
 
 def global_categories(request):
 
+    
     categories = list(
         Category.objects.filter(parent=None)
     )
@@ -20,6 +21,7 @@ def global_categories(request):
     random.shuffle(second_categories)
 
     return {
+        "categories": categories,
         "nav_categories": categories[:4],
         "second_categories":second_categories[:4]
     }

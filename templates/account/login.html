@@ -82,7 +82,7 @@
 
         <h2 class="auth-title">Welcome Back</h2>
 
-        <form method="POST">
+        <form method="POST" action="{% url 'login' %}">
             {% csrf_token %}
 
             <input class="auth-input" type="email" name="email" placeholder="Email" required>
@@ -98,7 +98,12 @@
 
         <div class="auth-footer">
             Don't have an account?
-            <a href="{% url 'register' %}">Create account</a>
+            <a href="{% url 'account_signup' %}">Create account</a>
+        </div>
+
+        <div class="auth-footer">
+            Forgot Password?
+            <a href="{% url 'account_reset_password' %}">Reset Password</a>
         </div>
 
     </div>

@@ -1,12 +1,15 @@
 import os
-from dotenv import load_dotenv
-from pathlib import Path
-from datetime import timedelta
 import dj_database_url
-
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api	
+
+from dotenv import load_dotenv
+from pathlib import Path
+from datetime import timedelta
+
+
+
 
 load_dotenv()
 
@@ -245,16 +248,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SITE_ID = 1
 
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
 KWIK_TOKEN = "test_token"
 KWIK_VENDOR_ID = "123456"
 KWIK_DOMAIN = "yourapp.com"
 
-
 SHIPPING_MARGIN_PERCENT = 0.15   # 15% profit
 GROUPING_RADIUS_KM = 3           # vendors within 3km grouped
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "nwekelesley@gmail.com"
+EMAIL_HOST_PASSWORD = "qmdrunmbsljwdzwt"
+EMAIL_USE_TLS = True
+
+
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'
@@ -269,5 +281,8 @@ ACCOUNT_SIGNUP_FIELDS = [
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_REDIRECT_URL = '/'
+
+
+
 
 USE_L10N = True

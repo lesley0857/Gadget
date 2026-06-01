@@ -1,0 +1,30 @@
+<h2>My Deliveries</h2>
+
+{% for s in shipments %}
+
+<div class="delivery-card">
+
+    <p><strong>Tracking:</strong> {{ s.tracking_id }}</p>
+
+    <p><strong>Status:</strong> {{ s.status }}</p>
+
+    <p><strong>Customer:</strong> {{ s.order.customer.email }}</p>
+
+    <p><strong>Address:</strong> {{ s.order.shipping_address }}</p>
+
+    <form method="POST" action="">
+        {% csrf_token %}
+
+        <select name="status">
+            <option value="picked">Picked</option>
+            <option value="in_transit">In Transit</option>
+            <option value="out_for_delivery">Out for Delivery</option>
+            <option value="delivered">Delivered</option>
+        </select>
+
+        <button>Update</button>
+    </form>
+
+</div>
+
+{% endfor %}

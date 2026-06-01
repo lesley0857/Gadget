@@ -25,7 +25,7 @@ class PricingRule(models.Model):
     value = models.DecimalField(max_digits=10, decimal_places=2)
 
     category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.CASCADE)
-    vendor = models.ForeignKey(Vendor, null=True, blank=True, on_delete=models.CASCADE,related_name='vendor_rule')
+    vendor = models.ForeignKey('accounts.Vendor', null=True, blank=True, on_delete=models.CASCADE,related_name='vendor_rule')
     is_default = models.BooleanField(default=False)
     priority = models.PositiveIntegerField(default=1)
 
