@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from collections import defaultdict
 from datetime import timedelta
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 from .utils import *
 from cart.models import Cart
 from orders.models import *
@@ -372,11 +373,12 @@ def cart_summary(request):
         "cart_count": count
     })
 
-
+@login_required
 def negotiate_cart(request):
 
-    cart = Cart.objects.get(
-        user=request.user
+    cart = get_object_or_404(
+        Cart,
+         user=request.user
     )
 
     profile = request.user.userprofile
@@ -424,18 +426,18 @@ def negotiate_cart(request):
         )
 
     message = f"""
-Hello Remarobe,
+        Hello Remarobe,
 
-I want to negotiate the following products.
+        I want to negotiate the following products.
 
-Negotiation Code:
-{negotiation.code}
+        Negotiation Code:
+        {negotiation.code}
 
-{chr(10).join(lines)}
+        {chr(10).join(lines)}
 
-Current Total:
-₦{total:,.2f}
-"""
+        Current Total:
+        ₦{total:,.2f}
+        """
 
     whatsapp = "2348100911189"
 
@@ -446,6 +448,7 @@ Current Total:
 
     return redirect(url)
 
+@login_required
 def negotiation_lookup(request):
 
     negotiation = None
@@ -472,6 +475,7 @@ def negotiation_lookup(request):
         }
     )
 
+@login_required
 def edit_negotiation(request, pk):
 
     negotiation = get_object_or_404(
@@ -506,7 +510,8 @@ def edit_negotiation(request, pk):
             
 
         return redirect(
-            f"http://127.0.0.1:8000/negotiation/{negotiation.code}" ,
+            'negotiation_detail',
+        code=negotiation.code
         )
 
     return render(
@@ -517,6 +522,7 @@ def edit_negotiation(request, pk):
         }
     )
 
+@login_required
 def negotiation_detail(request, code):
 
     negotiation = get_object_or_404(
@@ -540,6 +546,7 @@ def negotiation_detail(request, code):
         }
     )
 
+@login_required
 def user_negotiation_ready_view(request,code):
     negotiation = get_object_or_404(
         NegotiationRequest,
@@ -728,8 +735,7 @@ def pay_negotiation(request, code):
     )
 
 
-
-
+@login_required
 def checkout_view(request):
     user = request.user
 
