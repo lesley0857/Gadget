@@ -17,6 +17,7 @@ from orders.models import *
 from logistics.services.aggregator import LogisticsAggregator
 from decimal import Decimal
 from accounts.models import UserProfile
+from django.urls import reverse
 from urllib.parse import quote
 
 import uuid
@@ -707,14 +708,19 @@ def pay_negotiation(request, code):
     negotiation.payment_reference = payment_reference
     negotiation.save()
 
+
+    callback_url = request.build_absolute_uri(
+        reverse(
+            "verify_negotiated_payment",
+        )
+    )
     response = requests.post(
         "https://api.paystack.co/transaction/initialize",
         json={
             "email": negotiation.user.email,
             "amount": int(total * 100),
             "reference": payment_reference,
-            "callback_url":
-                "http://127.0.0.1:8000/negotiation/payment/verify/"
+            "callback_url":callback_url
         },
         headers={
             "Authorization":
