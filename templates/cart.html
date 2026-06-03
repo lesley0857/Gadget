@@ -184,6 +184,9 @@
             </div>
 
             {% if user.is_authenticated %}
+            <a href="{% url 'negotiate_cart' %}" class="btn btn-warning w-100 mb-3">
+                Negotiate
+            </a>
             <a href="{% url 'checkout' %}" class="checkout-btn">
                 Proceed to Checkout
             </a>

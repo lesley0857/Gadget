@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Cart, CartItem
 from catalog.models import ProductListing
 from django.http import JsonResponse
+from django.db import transaction
 from django.views.decorators.http import require_POST
 from collections import defaultdict
 from datetime import timedelta
@@ -15,6 +16,16 @@ from orders.models import *
 from logistics.services.aggregator import LogisticsAggregator
 from decimal import Decimal
 from accounts.models import UserProfile
+from urllib.parse import quote
+
+import uuid
+import requests
+from decimal import Decimal
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+
+from .models import NegotiationRequest
 
 def add_to_cart(request, listing_id):
 
@@ -360,6 +371,364 @@ def cart_summary(request):
         "total": float(total),
         "cart_count": count
     })
+
+
+def negotiate_cart(request):
+
+    cart = Cart.objects.get(
+        user=request.user
+    )
+
+    profile = request.user.userprofile
+
+    negotiation = NegotiationRequest.objects.create(
+
+        user=request.user,
+
+        customer_name=request.user.get_full_name(),
+
+        customer_phone=profile.phone
+    )
+
+    lines = []
+
+    total = 0
+
+    for item in cart.items.all():
+
+        price = item.product_listing.calculate_price()
+
+        NegotiationItem.objects.create(
+
+            negotiation=negotiation,
+
+            product_listing=item.product_listing,
+
+            quantity=item.quantity,
+
+            original_price=price
+        )
+
+        subtotal = price * item.quantity
+
+        total += subtotal
+
+        lines.append(
+            f"""
+                {item.product_listing.product.name}
+
+                Qty: {item.quantity}
+
+                Price: ₦{price:,.2f}
+            """
+        )
+
+    message = f"""
+Hello Remarobe,
+
+I want to negotiate the following products.
+
+Negotiation Code:
+{negotiation.code}
+
+{chr(10).join(lines)}
+
+Current Total:
+₦{total:,.2f}
+"""
+
+    whatsapp = "2348100911189"
+
+    url = (
+        f"https://wa.me/{whatsapp}"
+        f"?text={quote(message)}"
+    )
+
+    return redirect(url)
+
+def negotiation_lookup(request):
+
+    negotiation = None
+
+    if request.method == "POST":
+
+        code = request.POST.get("code")
+        print(code)
+
+        negotiation = NegotiationRequest.objects.filter(
+            code=code
+        ).first()
+        print(negotiation)
+        if negotiation:
+            print('True')
+            return render(request,"edit_negotiation.html",
+                {"negotiation": negotiation}
+            )
+    return render(
+        request,
+        "admin_negotiation_lookup.html",
+        {
+            "negotiation": negotiation
+        }
+    )
+
+def edit_negotiation(request, pk):
+
+    negotiation = get_object_or_404(
+        NegotiationRequest,
+        pk=pk
+    )
+    print(f'neg{negotiation}')
+
+    if request.method == "POST":
+        print('lllkkgyuguf')
+        shipping = request.POST.get(
+            "shipping_fee"
+        )
+
+        negotiation.shipping_fee = shipping
+
+        negotiation.status = "quoted"
+
+        negotiation.save()
+
+        for item in negotiation.items.all():
+
+            price = request.POST.get(
+                f"price_{item.id}"
+            )
+
+            item.negotiated_price = price
+
+            item.save()
+
+            send_negotiation_email(request,negotiation)
+            
+
+        return redirect(
+            f"http://127.0.0.1:8000/negotiation/{negotiation.code}" ,
+        )
+
+    return render(
+        request,
+        "edit_negotiation.html",
+        {
+            "negotiation": negotiation
+        }
+    )
+
+def negotiation_detail(request, code):
+
+    negotiation = get_object_or_404(
+        NegotiationRequest,
+        code=code
+    )
+    print(f'oo{negotiation}')
+    total = sum(
+        i.get_total()
+        for i in negotiation.items.all()
+    )
+
+    total += negotiation.shipping_fee
+
+    return render(
+        request,
+        "negotiation_detail.html",
+        {
+            "negotiation": negotiation,
+            "total": total
+        }
+    )
+
+def user_negotiation_ready_view(request,code):
+    negotiation = get_object_or_404(
+        NegotiationRequest,
+        code=code
+    )
+    total = sum(
+        i.get_total()
+        for i in negotiation.items.all()
+    )
+
+    total += negotiation.shipping_fee
+    return render(request,"users_negotiation_view.html",
+        {
+            'negotiation':negotiation,
+            'total':total
+        }
+    )
+
+@transaction.atomic
+def verify_negotiated_payment(request):
+
+    reference = request.GET.get(
+        "reference"
+    )
+
+    negotiation = NegotiationRequest.objects.get(
+        payment_reference=reference
+    )
+
+    if negotiation.status == "paid":
+
+        return redirect(
+            "payment_success"
+        )
+
+    response = requests.get(
+        f"https://api.paystack.co/transaction/verify/{reference}",
+        headers={
+            "Authorization":
+                f"Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
+        }
+    )
+
+    paystack_data = response.json()
+
+    if (
+        not paystack_data.get("status")
+        or
+        paystack_data["data"]["status"]
+        != "success"
+    ):
+
+        return JsonResponse({
+            "error":
+            "Payment verification failed"
+        })
+
+    subtotal = Decimal("0.00")
+
+    for item in negotiation.items.all():
+
+        subtotal += item.get_total()
+
+    total = subtotal + negotiation.shipping_fee
+
+    order = Order.objects.create(
+        customer=negotiation.user,
+        total_amount=total,
+        email = negotiation.user.email,
+        phone = negotiation.customer_phone,
+        shipping_amount=
+            negotiation.shipping_fee,
+        subtotal=subtotal,
+        reference=reference,
+        status="paid",
+        created_at=timezone.now(),
+        shipping_address=
+            negotiation.shipping_address
+    )
+
+    for item in negotiation.items.all():
+
+        vendor = item.product_listing.vendor
+
+        unit_price = item.get_price()
+
+        line_total = (
+            unit_price *
+            item.quantity
+        )
+
+        commission = (
+            line_total *
+            Decimal("0.05")
+        )
+
+        escrow_amount = (
+            line_total -
+            commission
+        )
+
+        OrderItem.objects.create(
+
+            order=order,
+
+            product_listing=
+                item.product_listing,
+
+            vendor=vendor,
+
+            quantity=item.quantity,
+
+            price=unit_price,
+
+            total=line_total,
+
+            commission=commission,
+
+            escrow_amount=escrow_amount,
+
+            status="pending"
+        )
+
+    negotiation.status = "paid"
+    negotiation.order = order
+    negotiation.save()
+
+    return redirect(
+        "payment_success"
+    )
+
+def pay_negotiation(request, code):
+
+    negotiation = get_object_or_404(
+        NegotiationRequest,
+        code=code
+    )
+
+    if negotiation.status == "paid":
+
+        return JsonResponse({
+            "error": "This quotation has already been paid."
+        }, status=400)
+
+    subtotal = Decimal("0.00")
+
+    for item in negotiation.items.all():
+
+        subtotal += (
+            item.negotiated_price *
+            item.quantity
+        )
+
+    total = subtotal + negotiation.shipping_fee
+
+    payment_reference = f"NEG-{uuid.uuid4().hex[:12]}"
+
+    negotiation.payment_reference = payment_reference
+    negotiation.save()
+
+    response = requests.post(
+        "https://api.paystack.co/transaction/initialize",
+        json={
+            "email": negotiation.user.email,
+            "amount": int(total * 100),
+            "reference": payment_reference,
+            "callback_url":
+                "http://127.0.0.1:8000/negotiation/payment/verify/"
+        },
+        headers={
+            "Authorization":
+                f"Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
+        }
+    )
+
+    data = response.json()
+
+    if not data.get("status"):
+
+        return JsonResponse({
+            "error": data.get("message")
+        }, status=400)
+
+    return redirect(
+        data["data"]["authorization_url"]
+    )
+
+
+
 
 def checkout_view(request):
     user = request.user

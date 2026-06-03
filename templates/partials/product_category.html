@@ -300,7 +300,6 @@ RESPONSIVE
                 Browse professional electrical engineering,
                 earthing and industrial automation products
                 for commercial and industrial applications.
-
             </p>
 
         </div>
@@ -308,13 +307,15 @@ RESPONSIVE
         <!-- CATEGORY GRID -->
         <div class="categories-grid">
 
-            <!-- CATEGORY -->
+            {% for category in second_categories %}
 
-            <a href="#" class="category-card">
+            <a href="{% url 'category_products' category.name %}" class="category-card">
 
                 <div class="category-image">
 
-                    <img src="{% static 'img/categories/earthing.jpg' %}" alt="">
+                    {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% endif %}
 
                 </div>
 
@@ -322,213 +323,37 @@ RESPONSIVE
 
                 <div class="category-content">
 
-                    <div class="category-icon">
-
-                        <i class="fa fa-bolt"></i>
-
-                    </div>
-
                     <h3>
-                        Earthing Materials
+                        {{ category.name }}
                     </h3>
 
                     <p>
-                        Copper rods, earth mats,
-                        clamps and grounding accessories.
+                        {{ category.description|truncatechars:90 }}
                     </p>
 
                     <span class="category-link">
-                        View Products
+
+                        {% for product in category.product_listings.all|slice:":4" %}
+
+                        <div class="preview-product">
+                            • {{ product.product.name }}
+                        </div>
+
+                        {% empty %}
+
+                        <div class="preview-product">
+                            No products yet
+                        </div>
+
+                        {% endfor %}
+
                     </span>
 
                 </div>
 
             </a>
 
-            <!-- CATEGORY -->
-
-            <a href="#" class="category-card">
-
-                <div class="category-image">
-
-                    <img src="{% static 'img/categories/contactors.jpg' %}" alt="">
-
-                </div>
-
-                <div class="category-overlay"></div>
-
-                <div class="category-content">
-
-                    <div class="category-icon">
-
-                        <i class="fa fa-plug"></i>
-
-                    </div>
-
-                    <h3>
-                        Contactors & Breakers
-                    </h3>
-
-                    <p>
-                        MCCBs, contactors,
-                        overloads and switchgear systems.
-                    </p>
-
-                    <span class="category-link">
-                        View Products
-                    </span>
-
-                </div>
-
-            </a>
-
-            <!-- CATEGORY -->
-
-            <a href="#" class="category-card">
-
-                <div class="category-image">
-
-                    <img src="{% static 'img/categories/panels.jpg' %}" alt="">
-
-                </div>
-
-                <div class="category-overlay"></div>
-
-                <div class="category-content">
-
-                    <div class="category-icon">
-
-                        <i class="fa fa-cogs"></i>
-
-                    </div>
-
-                    <h3>
-                        Control Panels
-                    </h3>
-
-                    <p>
-                        Industrial control panels,
-                        automation and motor controls.
-                    </p>
-
-                    <span class="category-link">
-                        View Products
-                    </span>
-
-                </div>
-
-            </a>
-
-            <!-- CATEGORY -->
-
-            <a href="#" class="category-card">
-
-                <div class="category-image">
-
-                    <img src="{% static 'img/categories/cables.jpg' %}" alt="">
-
-                </div>
-
-                <div class="category-overlay"></div>
-
-                <div class="category-content">
-
-                    <div class="category-icon">
-
-                        <i class="fa fa-random"></i>
-
-                    </div>
-
-                    <h3>
-                        Cable Accessories
-                    </h3>
-
-                    <p>
-                        Cable glands, lugs,
-                        ties and termination materials.
-                    </p>
-
-                    <span class="category-link">
-                        View Products
-                    </span>
-
-                </div>
-
-            </a>
-
-            <!-- CATEGORY -->
-
-            <a href="#" class="category-card">
-
-                <div class="category-image">
-
-                    <img src="{% static 'img/categories/tools.jpg' %}" alt="">
-
-                </div>
-
-                <div class="category-overlay"></div>
-
-                <div class="category-content">
-
-                    <div class="category-icon">
-
-                        <i class="fa fa-wrench"></i>
-
-                    </div>
-
-                    <h3>
-                        Industrial Tools
-                    </h3>
-
-                    <p>
-                        Electrical tools,
-                        testers and installation equipment.
-                    </p>
-
-                    <span class="category-link">
-                        View Products
-                    </span>
-
-                </div>
-
-            </a>
-
-            <!-- CATEGORY -->
-
-            <a href="#" class="category-card">
-
-                <div class="category-image">
-
-                    <img src="{% static 'img/categories/services.jpg' %}" alt="">
-
-                </div>
-
-                <div class="category-overlay"></div>
-
-                <div class="category-content">
-
-                    <div class="category-icon">
-
-                        <i class="fa fa-building"></i>
-
-                    </div>
-
-                    <h3>
-                        Installation Services
-                    </h3>
-
-                    <p>
-                        Earthing installation,
-                        industrial wiring and maintenance.
-                    </p>
-
-                    <span class="category-link">
-                        Learn More
-                    </span>
-
-                </div>
-
-            </a>
+            {% endfor %}
 
         </div>
 

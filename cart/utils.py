@@ -1,10 +1,14 @@
+import math
 from decimal import Decimal
 from cart.models import *
 from logistics.pricing import calculate_shipping_options
 from collections import defaultdict
 from logistics.services.aggregator import LogisticsAggregator
-import math
 from logistics.services.router import get_central_hub
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.urls import reverse
 
 
 def calculate_checkout(user, selected_option_id=None):
@@ -252,3 +256,42 @@ def build_vendor_checkout(user, shipping_choices=None):
         "hub_to_customer_fee":
             str(hub_fee),
     }
+
+
+def send_negotiation_email(request, negotiation):
+
+    detail_url = request.build_absolute_uri(
+        reverse(
+            "user_negotiation_ready_view",
+            args=[negotiation.code]
+        )
+    )
+
+    context = {
+        "negotiation": negotiation,
+        "detail_url": detail_url,
+    }
+
+    html_content = render_to_string(
+        "negotiation_ready_email.html",
+        context
+    )
+
+    subject = (
+        f"Your Negotiated Quote Is Ready "
+        f"({negotiation.code})"
+    )
+
+    email = EmailMultiAlternatives(
+        subject,
+        "",
+        settings.DEFAULT_FROM_EMAIL,
+        [negotiation.user.email]
+    )
+
+    email.attach_alternative(
+        html_content,
+        "text/html"
+    )
+
+    email.send()

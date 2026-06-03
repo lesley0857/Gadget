@@ -7,11 +7,39 @@ from cloudinary.models import CloudinaryField
 class Category(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
+
     parent = models.ForeignKey(
-        'self', null=True, blank=True, on_delete=models.CASCADE
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
     )
+
+    image = models.ImageField(
+        upload_to="categories/",
+        blank=True,
+        null=True
+    )
+
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    display_order = models.PositiveIntegerField(
+        default=0
+    )
+
+    class Meta:
+        ordering = ["display_order", "name"]
+
     def __str__(self):
-        return f"{self.name}"
+        return self.name
+
+    def featured_products(self):
+        return self.product_listings.filter(
+            is_active=True
+        ).distinct()[:4]
 
 
 class PricingRule(models.Model):

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<section class="container-fluid py-5">
+
+    <form method="POST" action="{% url 'edit_negotiation' negotiation.pk %}">
+
+        {% csrf_token %}
+
+        <div class="card shadow border-0 rounded-4">
+
+            <div class="card-header bg-white p-4">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        <h3 class="fw-bold">
+
+                            Edit Negotiation
+
+                        </h3>
+
+                        <small class="text-muted">
+
+                            {{ negotiation.code }}
+
+                        </small>
+
+                    </div>
+
+                    <button class="btn btn-success">
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Product</th>
+                            <th width="120">Qty</th>
+                            <th width="180">Unit Price</th>
+                            <th width="180">Line Total</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in negotiation.items.all %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ item.product_listing.product.name }}
+
+                            </td>
+
+                            <td>
+
+                                <input type="number" min="1" class="form-control qty" name="qty_{{ item.id }}"
+                                    value="{{ item.quantity }}">
+
+                            </td>
+
+                            <td>
+
+                                <input type="number" step="0.01" class="form-control price" name="price_{{ item.id }}"
+                                    value="{{ item.original_price }}">
+
+                            </td>
+
+                            <td>
+
+                                <input readonly class="form-control total" value="{{ item.get_total }}">
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+                <hr>
+
+                <div class="row">
+
+                    <div class="col-lg-4 ms-auto">
+
+                        <div class="card bg-light border-0">
+
+                            <div class="card-body">
+
+                                <label class="form-label">
+
+                                    Shipping Fee
+
+                                </label>
+
+                                <input type="number" step="0.01" name="shipping_fee"
+                                    value="{{ negotiation.shipping_fee }}" class="form-control mb-3">
+
+                                <label class="form-label">
+
+                                    Admin Notes
+
+                                </label>
+
+                                <textarea class="form-control" rows="4"
+                                    name="admin_notes">{{ negotiation.admin_notes }}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</section>
+
+<script>
+
+    document.querySelectorAll(".qty,.price").forEach(el => {
+
+        el.addEventListener("input", function () {
+
+            const row = this.closest("tr");
+
+            let qty =
+                parseFloat(
+                    row.querySelector(".qty").value
+                ) || 0;
+
+            let price =
+                parseFloat(
+                    row.querySelector(".price").value
+                ) || 0;
+
+            row.querySelector(".total").value =
+                (qty * price).toFixed(2);
+
+        });
+
+    });
+
+</script>
+
+{% endblock %}

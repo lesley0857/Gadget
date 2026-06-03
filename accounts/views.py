@@ -65,9 +65,17 @@ def logout_view(request):
 
 def home(request):
     productList = ProductListing.objects.all()  # Featured products
+    random.shuffle(list(productList))
     services = Service.objects.filter(is_active=True)
     blogs=BlogPost.objects.all()
-    random.shuffle(list(productList))
+    second_categories = Category.objects.filter(
+        parent=None
+    )[:6]
+
+    products_for_second_categories = ProductListing.objects.filter(
+        is_active=True
+    )[:24]
+    
 
  
     if request.method == "POST":
@@ -102,6 +110,8 @@ def home(request):
                 "categories": Category.objects.all(),
                 "services":services,
                 "blogs":blogs,
+                "second_categories":second_categories,
+                "products_for_second_categories":products_for_second_categories
                 })
 
 def product_detail(request, product_id):

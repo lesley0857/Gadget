@@ -24,6 +24,15 @@ urlpatterns = [
     path('cart/remove/<int:listing_id>/', remove_from_cart, name='remove_from_cart'),
     path("cart/summary/", cart_summary, name="cart_summary"),
     path('cart/update/', update_cart, name='update_cart'),
+    
+    path("cart/negotiate/",negotiate_cart,name="negotiate_cart"),
+    path("admin-negotiation/",negotiation_lookup,name="negotiation_lookup"),
+    path("admin-negotiation/<int:pk>/",edit_negotiation,name="edit_negotiation"),
+    path("negotiation/<slug:code>/",negotiation_detail,name="negotiation_detail"),
+    path("user_negotiation_ready_view/<slug:code>/",user_negotiation_ready_view,name="user_negotiation_ready_view"),
+    path("negotiation/pay/<slug:code>/",pay_negotiation,name="pay_negotiation"),
+    path("negotiation/payment/verify/",verify_negotiated_payment,name="verify_negotiated_payment"),
+
     path("orders/",orders_page,name="orders_page"),
     path("<int:order_id>/",order_detail,name="order_detail"),
     path("json/",orders_json,name="orders_json"),
