@@ -827,6 +827,131 @@ CART SIDEBAR
         {% endblock %}
     </main>
 
+    <div id="negotiation-modal" class="negotiation-modal">
+        <style>
+            .negotiation-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.65);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                padding: 20px;
+            }
+
+            .negotiation-modal.show {
+                display: flex;
+            }
+
+            .negotiation-content {
+                background: #fff;
+                width: 100%;
+                max-width: 550px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                animation: popup .25s ease;
+            }
+
+            @keyframes popup {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .negotiation-header {
+                background: #f8f9fa;
+                padding: 18px 24px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .negotiation-header h3 {
+                margin: 0;
+            }
+
+            .negotiation-body {
+                padding: 24px;
+            }
+
+            .negotiation-body ul {
+                padding-left: 20px;
+                margin: 15px 0;
+            }
+
+            .negotiation-body li {
+                margin-bottom: 10px;
+            }
+
+            .negotiation-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                padding: 20px 24px;
+                border-top: 1px solid #eee;
+            }
+
+            .btn-secondary {
+                border: none;
+                background: #ddd;
+                padding: 10px 18px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+        </style>
+        <div class="negotiation-content">
+
+            <div class="negotiation-header">
+                <h3>Request a Price Negotiation</h3>
+            </div>
+
+            <div class="negotiation-body">
+
+                <p>
+                    You are about to submit a negotiation request for the
+                    items currently in your cart.
+                </p>
+
+                <ul>
+                    <li>Our team will review your request.</li>
+                    <li>You might be offered discounted prices.</li>
+                    <li>You will receive a quotation with the negotiated prices.</li>
+                    <li>You can review and pay for the quotation later.</li>
+                    <li>
+                        If your profile information is incomplete, you may be
+                        redirected to update your phone number, address, or
+                        delivery details before proceeding.
+                    </li>
+                </ul>
+
+                <p>
+                    By continuing, a negotiation request will be created using
+                    the products currently in your cart.
+                </p>
+
+            </div>
+
+            <div class="negotiation-actions">
+
+                <button id="cancel-negotiation" class="btn btn-secondary">
+                    Cancel
+                </button>
+
+                <button id="continue-negotiation" class="btn btn-yellow">
+                    Continue to Negotiation
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- =========================
 CART SIDEBAR
@@ -876,7 +1001,7 @@ CART SIDEBAR
                     </strong>
 
                 </div>
-                <a href="{% url 'negotiate_cart' %}" class="checkout-link btn btn-yellow ">
+                <a href="#" id="negotiate-btn" class="checkout-link btn btn-yellow">
                     Negotiate
                 </a>
 
@@ -933,6 +1058,46 @@ CART SIDEBAR
                 });
             }
         });
+    </script>
+
+    <script>
+
+        const negotiateBtn = document.getElementById('negotiate-btn');
+        const modal = document.getElementById('negotiation-modal');
+
+        const cancelBtn = document.getElementById('cancel-negotiation');
+        const continueBtn = document.getElementById('continue-negotiation');
+
+        negotiateBtn.addEventListener('click', function (e) {
+
+            e.preventDefault();
+
+            modal.classList.add('show');
+
+        });
+
+        cancelBtn.addEventListener('click', function () {
+
+            modal.classList.remove('show');
+
+        });
+
+        continueBtn.addEventListener('click', function () {
+
+            window.location.href = "{% url 'negotiate_cart' %}";
+
+        });
+
+        modal.addEventListener('click', function (e) {
+
+            if (e.target === modal) {
+
+                modal.classList.remove('show');
+
+            }
+
+        });
+
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -84,7 +84,7 @@ TOP HEADER
 
             <a href="{% url 'profile' %}">
                 <i class="fa fa-user-o"></i>
-                My Account
+                Account:{{request.user.email}}
             </a>
 
             <a href="{% url 'orders_page' %}" class="profile-btn">

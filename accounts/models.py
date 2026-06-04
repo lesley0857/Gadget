@@ -30,7 +30,7 @@ class Vendor(models.Model):
         return self.store_name
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name='userprofile')
 
     phone = models.CharField(max_length=20, blank=True, null=True)
 

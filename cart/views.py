@@ -19,7 +19,7 @@ from decimal import Decimal
 from accounts.models import UserProfile
 from django.urls import reverse
 from urllib.parse import quote
-
+from django.contrib import messages
 import uuid
 import requests
 from decimal import Decimal
@@ -382,8 +382,13 @@ def negotiate_cart(request):
          user=request.user
     )
 
-    profile = request.user.userprofile
-
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    if not profile.phone:
+        messages.error(
+            request,
+            "Please update your phone number before requesting a quotation."
+    )
+        return redirect("profile")
     negotiation = NegotiationRequest.objects.create(
 
         user=request.user,
