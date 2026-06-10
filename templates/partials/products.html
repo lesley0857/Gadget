@@ -4,7 +4,7 @@
 FEATURED PRODUCTS SECTION
 ========================================= -->
 
-<section class="featured-products-section">
+<section class="featured-products-section" id="product_id">
     <style>
         /* =========================================
 FEATURED PRODUCTS SECTION
@@ -673,131 +673,127 @@ RESPONSIVE
         <div class="products-grid" id="products-grid">
 
             {% for product in productList %}
-
             <div class="product-card">
+                <a href="{%url 'product_detail' product.name %}">
+                    <!-- PRODUCT IMAGE -->
+                    <div class="product-img">
 
-                <!-- PRODUCT IMAGE -->
-                <div class="product-img">
+                        {% with primary_media=product.media.all %}
 
-                    {% with primary_media=product.media.all %}
+                        {% for media in primary_media %}
 
-                    {% for media in primary_media %}
+                        {% if media.is_primary and media.media_type == "image" %}
 
-                    {% if media.is_primary and media.media_type == "image" %}
+                        <img class="product-image" src="{{ media.file.url }}" alt="{{ product.product.name }}">
 
-                    <img class="product-image" src="{{ media.file.url }}" alt="{{ product.product.name }}">
+                        {% endif %}
 
-                    {% endif %}
+                        {% empty %}
 
-                    {% empty %}
+                        <img class="product-image" src="{% static 'img/hotdeal.png' %}" alt="No image">
 
-                    <img class="product-image" src="{% static 'img/hotdeal.png' %}" alt="No image">
-
-                    {% endfor %}
-
-                    <!-- PRODUCT VIDEO -->
-                    {% for media in product.media.all %}
-
-                    {% if media.media_type == "video" %}
-
-                    <video class="product-video" muted loop playsinline>
-
-                        <source src="{{ media.file.url }}">
-
-                    </video>
-
-                    {% endif %}
-
-                    {% endfor %}
-
-                    {% endwith %}
-
-                    <!-- BADGES -->
-                    <div class="product-badges">
-
-                        <span class="badge-new">
-                            NEW
-                        </span>
-
-                    </div>
-
-                    <!-- QUICK ACTIONS -->
-                    <div class="product-actions">
-
-                        <button>
-                            <i class="fa fa-heart-o"></i>
-                        </button>
-
-                        <button>
-                            <i class="fa fa-eye"></i>
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <!-- PRODUCT BODY -->
-                <div class="product-body">
-
-                    <!-- CATEGORY -->
-                    <p class="product-category">
-
-                        {% for cat in product.categories.all %}
-                        {{ cat.name }}
                         {% endfor %}
 
-                    </p>
+                        <!-- PRODUCT VIDEO -->
+                        {% for media in product.media.all %}
 
-                    <!-- PRODUCT NAME -->
-                    <h3 class="product-name">
+                        {% if media.media_type == "video" %}
 
-                        <a href="#">
+                        <video class="product-video" muted loop playsinline>
 
-                            {{ product.product.name }}
+                            <source src="{{ media.file.url }}">
 
-                        </a>
+                        </video>
 
-                    </h3>
+                        {% endif %}
 
-                    <!-- PRICE -->
-                    <div class="product-price-wrap">
+                        {% endfor %}
 
-                        <h4 class="product-price">
+                        {% endwith %}
 
-                            ₦{{ product.calculate_price|floatformat:2|intcomma }}
+                        <!-- BADGES -->
+                        <div class="product-badges">
 
-                        </h4>
+                            <span class="badge-new">
+                                NEW
+                            </span>
+
+                        </div>
+
+                        <!-- QUICK ACTIONS -->
+                        <div class="product-actions">
+
+                            <button>
+                                <i class="fa fa-heart-o"></i>
+                            </button>
+
+                            <button>
+                                <i class="fa fa-eye"></i>
+                            </button>
+
+                        </div>
 
                     </div>
 
-                    <!-- RATING -->
-                    <div class="product-rating">
+                    <!-- PRODUCT BODY -->
+                    <div class="product-body">
 
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
+                        <!-- CATEGORY -->
+                        <p class="product-category">
+
+                            {% for cat in product.categories.all %}
+                            {{ cat.name }}
+                            {% endfor %}
+
+                        </p>
+
+                        <!-- PRODUCT NAME -->
+                        <h3 class="product-name">
+
+                            <a href="#">
+
+                                {{ product.name }}
+
+                            </a>
+
+                        </h3>
+
+                        <!-- PRICE -->
+                        <div class="product-price-wrap">
+
+                            <h4 class="product-price">
+                                ₦{{ product.final_price|floatformat:2|intcomma }}
+                            </h4>
+
+                        </div>
+
+                        <!-- RATING -->
+                        <div class="product-rating">
+
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+
+                        </div>
 
                     </div>
 
-                </div>
+                    <!-- BUTTON -->
+                    <div class="product-footer">
 
-                <!-- BUTTON -->
-                <div class="product-footer">
+                        <button type="button" class="add-to-cart-btn" data-id="{{ product.id }}">
 
-                    <button type="button" class="add-to-cart-btn" data-id="{{ product.id }}">
+                            <i class="fa fa-shopping-cart"></i>
 
-                        <i class="fa fa-shopping-cart"></i>
+                            Add To Cart
 
-                        Add To Cart
+                        </button>
 
-                    </button>
-
-                </div>
-
+                    </div>
+                </a>
             </div>
-
             {% endfor %}
 
         </div>

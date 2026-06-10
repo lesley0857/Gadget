@@ -8,20 +8,30 @@ from django.db.models import Q
 from catalog.models import ProductListing
 from django.http import JsonResponse
 
-
 def search_products(request):
-    query = request.GET.get("q")
+
+    query = request.GET.get("q", "").strip()
 
     products = ProductListing.objects.filter(
-        Q(product__name__icontains=query) |
-        Q(description__icontains=query)
+
+        Q(name__icontains=query) |
+        Q(description__icontains=query) |
+        Q(categories__name__icontains=query)|
+        Q(brand__icontains=query) |
+        Q(manufacturer__icontains=query),
+
+        is_active=True
+
+    ).distinct()
+
+    return render(
+        request,
+        "catalogSearchResults.html",
+        {
+            "products": products,
+            "query": query,
+        }
     )
-
-    return render(request, "catalogSearchResults.html", {
-        "products": products,
-        "query": query
-    })
-
 def search_suggestions(request):
     query = request.GET.get("q", "")
 
@@ -29,11 +39,13 @@ def search_suggestions(request):
         return JsonResponse({"results": []})
 
     products = ProductListing.objects.filter(
-        Q(product__name__icontains=query) |
+        Q(name__icontains=query) |
         Q(description__icontains=query)|
-        Q(product__category__name__icontains=query)
+        Q(categories__name__icontains=query)|
+        Q(brand__icontains=query) |
+        Q(manufacturer__icontains=query)
 
-    ).select_related("product").prefetch_related("media")[:8] # limit results
+    ).prefetch_related("media","categories")[:8] # limit results
 
     results = []
 
@@ -46,13 +58,15 @@ def search_suggestions(request):
         if not media:
             media = p.media.first()
 
-    image_url = media.file.url if media and media.file else ""
+        image_url = media.file.url if media and media.file else ""
 
-    results.append({
-        "id": p.id,
-        "name": p.product.name,
-        "image": image_url,
-    })
+        results.append({
+            "id": p.id,
+            "name": p.name,
+            "image": image_url,
+            "price": str(p.final_price),
+            "url": f"/product/{p.id}/",
+        })
 
     return JsonResponse({"results": results})
 

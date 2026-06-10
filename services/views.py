@@ -1,11 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-
 from .models import *
 
-
 def services_page(request):
-
     services = Service.objects.filter(is_active=True)
     return render(request,"partials/services.html",{
             "services": services,
@@ -49,8 +46,6 @@ def service_detail(request, slug):
             "service_detail",
             slug=slug
         )
-
-
 
     context = {
         "service": service,

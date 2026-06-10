@@ -7,7 +7,6 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import OrderCreateSerializer
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -170,7 +169,6 @@ def orders_page(request):
         .prefetch_related(
             "items",
             "items__product_listing",
-            "items__product_listing__product",
             "items__product_listing__media"
         )
         .filter(customer=request.user)

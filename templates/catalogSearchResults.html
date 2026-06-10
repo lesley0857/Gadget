@@ -149,7 +149,7 @@
             <div class="product-info">
 
                 <div class="product-name">
-                    {{ p.product.name }}
+                    {{ p.name }}
                 </div>
 
                 <div class="vendor-name">
@@ -161,7 +161,7 @@
 
                 <!-- 💰 PRICE -->
                 <div class="price">
-                    ₦{{ p.calculate_price|floatformat:2|intcomma }}
+                    ₦{{ p.final_price|floatformat:2|intcomma }}
 
                     {% if p.old_price %}
                     <span class="old-price">

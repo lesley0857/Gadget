@@ -1,0 +1,251 @@
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        new Swiper(".trendingSwiper", {
+
+            slidesPerView: 3,
+
+            spaceBetween: 15,
+
+            loop: true,
+
+            autoplay: {
+
+                delay: 3500,
+
+                disableOnInteraction: false,
+
+            },
+
+            navigation: {
+
+                nextEl: ".swiper-button-next",
+
+                prevEl: ".swiper-button-prev",
+
+            },
+
+            breakpoints: {
+
+                768: {
+
+                    slidesPerView: 5,
+
+                    spaceBetween: 20,
+
+                }
+
+            }
+
+        });
+
+    });
+
+</script>
+<style>
+    .product-name {
+
+        font-size: 0.85rem;
+        min-height: 40px;
+        line-height: 1.2;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+
+    .product-card {
+
+        display: flex;
+
+        flex-direction: column;
+
+        width: 100%;
+
+        border: 1px solid #eee;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        background: white;
+
+        text-decoration: none;
+
+        color: inherit;
+
+        transition: .2s ease;
+    }
+
+    .product-card:hover {
+
+        transform: translateY(-3px);
+
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+    }
+
+    .product-image {
+
+        aspect-ratio: 1;
+
+        padding: 10px;
+
+        background: white;
+    }
+
+    .product-image img {
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: contain;
+    }
+
+    .product-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .product-price {
+
+        font-size: 1rem;
+
+        font-weight: 700;
+
+        color: #0d6efd;
+
+        margin-top: 4px;
+
+        margin-bottom: 0;
+    }
+
+    .sold-count {
+
+        font-size: 0.75rem;
+
+        color: #666;
+
+        margin-top: 2px;
+
+        margin-bottom: 0;
+    }
+
+    .product-footer {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        align-items: center;
+
+        margin-top: 6px;
+    }
+
+    .negotiable {
+
+        font-size: 0.7rem;
+
+        padding: 2px 6px;
+
+        border-radius: 20px;
+
+        background: #fff4e5;
+
+        color: #d97706;
+
+        line-height: 1;
+    }
+
+    .cart-icon {
+
+        width: 30px;
+
+        height: 30px;
+
+        border: none;
+
+        border-radius: 50%;
+
+        background: #0d6efd;
+
+        color: white;
+
+        cursor: pointer;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+    }
+</style>
+<a href="{% url 'product_detail' product.id %}" class="product-card">
+
+
+    <div class="product-image">
+
+        {% with media=product.media.first %}
+
+        {% if media %}
+
+        <img src="{{ media.file.url }}" alt="{{ product.name }}">
+
+        {% endif %}
+
+        {% endwith %}
+
+    </div>
+
+    <div class="product-body">
+
+        <div class="product-name">
+
+            {{ product.name }}
+
+        </div>
+
+        <div class="product-price">
+
+            ₦{{ product.final_price }}
+
+        </div>
+
+        {% if product.units_sold > 0 %}
+
+        <div class="sold-count">
+
+            {{ product.units_sold }} sold
+
+        </div>
+
+        {% endif %}
+
+        <div class="product-footer">
+
+            {% if product.is_negotiable %}
+
+            <span class="negotiable">
+
+                Negotiable
+
+            </span>
+
+            {% endif %}
+
+            <button class="cart-icon" title="Add to Cart" data-id="{{ product.id }}">
+
+                <i class="fa fa-shopping-cart"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</a>

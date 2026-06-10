@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductListing, ProductMedia, PricingRule
+from .models import Category, ProductListing, ProductMedia, PricingRule
 from accounts.models import Vendor
 
 
@@ -9,15 +9,22 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
 
-# ✅ PRODUCT (REQUIRED FOR AUTOCOMPLETE)
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
 
 # ✅ PRICING RULE
 @admin.register(PricingRule)
 class PricingRuleAdmin(admin.ModelAdmin):
-    list_display = ["pricing_type", "value", "category", "vendor", "priority"]
+    list_display = ["rule_type",
+        "value",
+        "category",
+        "vendor",
+        "priority",
+        "is_active",
+        ]
+    
+    def display_final_price(self, obj):
+        return obj.final_price
+
+    display_final_price.short_description = "Final Price"
 
 
 # ✅ MEDIA INLINE
@@ -29,7 +36,15 @@ class ProductMediaInline(admin.TabularInline):
 # ✅ PRODUCT LISTING
 @admin.register(ProductListing)
 class ProductListingAdmin(admin.ModelAdmin):
-    list_display = ["product", "vendor", "final_price", "stock"]
+    list_display = ["name",
+        "vendor",
+        "display_final_price",
+        "stock",
+        "is_active",]
+    def display_final_price(self, obj):
+        return obj.final_price
+
+    display_final_price.short_description = "Final Price"
 
     # 🔍 REQUIRED
     search_fields = [
@@ -47,7 +62,7 @@ class ProductListingAdmin(admin.ModelAdmin):
         return qs.filter(vendor__user=request.user)
     
     # ⚡ AUTOCOMPLETE
-    autocomplete_fields = ["product", "vendor"]
+    autocomplete_fields = ["vendor"]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 

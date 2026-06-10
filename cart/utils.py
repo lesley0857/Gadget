@@ -94,7 +94,7 @@ def build_vendor_checkout(user, shipping_choices=None):
         for item in items:
 
             price = Decimal(
-                str(item.product_listing.calculate_price())
+                str(item.product_listing.final_price())
             )
 
             qty = item.quantity
@@ -112,7 +112,7 @@ def build_vendor_checkout(user, shipping_choices=None):
 
             item_list.append({
                 "product_id": item.product_listing.id,
-                "product_name": item.product_listing.product.name,
+                "product_name": item.product_listing.name,
                 "unit_price": str(price),
                 "quantity": qty,
                 "weight": str(weight),

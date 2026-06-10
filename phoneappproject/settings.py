@@ -125,28 +125,28 @@ WSGI_APPLICATION = 'phoneappproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 #postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
 print(os.environ['POSTGRES_DB'])
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        "NAME": "remarobe_db",
-        "USER": "remarobe",
-        'PASSWORD': 'StrongPassword123!',
-        'HOST' : "199.192.27.194",         
-        'PORT': '5432',
-        'OPTIONS': {
-            'connect_timeout': 10,  # Recommended by Neon Docs
-        },
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         "NAME": "remarobe_db",
+#         "USER": "remarobe",
+#         'PASSWORD': 'StrongPassword123!',
+#         'HOST' : "199.192.27.194",         
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'connect_timeout': 10,  # Recommended by Neon Docs
+#         },
+#     }
+# }
 
 
 # DATABASES = {

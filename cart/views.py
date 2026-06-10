@@ -64,7 +64,7 @@ def add_to_cart(request, listing_id):
 
             for i in items:
 
-                price = i.product_listing.calculate_price()
+                price = i.product_listing.final_price()
                 subtotal = price * i.quantity
 
                 image = ""
@@ -78,7 +78,7 @@ def add_to_cart(request, listing_id):
 
                 cart_items_data.append({
                     "id": i.product_listing.id,
-                    "name": i.product_listing.product.name,
+                    "name": i.product_listing.name,
                     "price": float(price),
                     "quantity": i.quantity,
                     "subtotal": float(subtotal),
@@ -116,7 +116,7 @@ def add_to_cart(request, listing_id):
 
                 quantity = item["quantity"]
 
-                price = p.calculate_price()
+                price = p.final_price()
 
                 subtotal = price * quantity
 
@@ -131,7 +131,7 @@ def add_to_cart(request, listing_id):
 
                 cart_items_data.append({
                     "id": p.id,
-                    "name": p.product.name,
+                    "name": p.name,
                     "price": float(price),
                     "quantity": quantity,
                     "subtotal": float(subtotal),
@@ -282,12 +282,12 @@ def update_cart(request):
             listing = i["product_listing"]
             quantity = i["quantity"]
 
-        price = listing.calculate_price()
+        price = listing.final_price()
         subtotal = price * quantity
 
         cart_items_data.append({
             "id": listing.id,
-            "name": listing.product.name,
+            "name": listing.name,
             "price": float(price),
             "quantity": quantity,
             "subtotal": float(subtotal),
@@ -323,12 +323,12 @@ def cart_summary(request):
 
         for item in items:
             listing = item.product_listing
-            price = listing.calculate_price()
+            price = listing.final_price()
             subtotal = price * item.quantity
 
             cart_items_data.append({
                 "id": listing.id,
-                "name": listing.product.name,
+                "name": listing.name,
                 "price": float(price),
                 "quantity": item.quantity,
                 "subtotal": float(subtotal),
@@ -350,12 +350,12 @@ def cart_summary(request):
 
         for id, item in cart.items():
             listing = ProductListing.objects.get(id=id)
-            price = listing.calculate_price()
+            price = listing.final_price()
             subtotal = price * item["quantity"]
 
             cart_items_data.append({
                 "id": listing.id,
-                "name": listing.product.name,
+                "name": listing.name,
                 "price": float(price),
                 "quantity": item["quantity"],
                 "subtotal": float(subtotal),
@@ -373,6 +373,7 @@ def cart_summary(request):
         "total": float(total),
         "cart_count": count
     })
+
 
 @login_required
 def negotiate_cart(request):
@@ -404,7 +405,7 @@ def negotiate_cart(request):
 
     for item in cart.items.all():
 
-        price = item.product_listing.calculate_price()
+        price = item.product_listing.final_price()
 
         NegotiationItem.objects.create(
 
@@ -423,7 +424,7 @@ def negotiate_cart(request):
 
         lines.append(
             f"""
-                {item.product_listing.product.name}
+                {item.product_listing.name}
 
                 Qty: {item.quantity}
 

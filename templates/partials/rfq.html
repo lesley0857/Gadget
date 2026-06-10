@@ -3,7 +3,7 @@
 RFQ SECTION WITH FILE UPLOAD
 ========================================= -->
 
-<section class="rfq-section">
+<section class="rfq-section" id="rfq_id">
     <style>
         /* =========================================
 RFQ SECTION
@@ -468,6 +468,20 @@ RESPONSIVE
             }
 
         }
+
+        .upload-status {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .upload-status.success {
+            color: green;
+        }
+
+        .upload-status.error {
+            color: red;
+        }
     </style>
     <div class="container">
 
@@ -645,38 +659,11 @@ RESPONSIVE
 
                         <select name="service">
 
-                            <option value="">
-                                Select Requirement
+                            {% for service in services %}
+                            <option value="{{ service.id }}">
+                                {{ service.title }}
                             </option>
-
-                            <option>
-                                Electrical Earthing
-                            </option>
-
-                            <option>
-                                Industrial Installation
-                            </option>
-
-                            <option>
-                                Control Panels
-                            </option>
-
-                            <option>
-                                Contactors & Breakers
-                            </option>
-
-                            <option>
-                                Cable Accessories
-                            </option>
-
-                            <option>
-                                Cathodic Protection
-                            </option>
-
-                            <option>
-                                Engineering Project
-                            </option>
-
+                            {% endfor %}
                         </select>
 
                     </div>
@@ -707,7 +694,9 @@ RESPONSIVE
                         <div class="rfq-upload-box">
 
                             <input type="file" name="document" id="rfq-file" multiple>
-
+                            <div id="upload-status" class="upload-status">
+                                No document selected
+                            </div>
                             <label for="rfq-file" class="rfq-upload-label">
 
                                 <i class="fa fa-cloud-upload"></i>
@@ -748,4 +737,34 @@ RESPONSIVE
 
     </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const fileInput = document.getElementById("rfq-file");
+            const status = document.getElementById("upload-status");
+
+            fileInput.addEventListener("change", function () {
+
+                if (this.files.length > 0) {
+
+                    status.textContent =
+                        "✓ Document uploaded: " +
+                        this.files[0].name;
+
+                    status.classList.remove("error");
+                    status.classList.add("success");
+
+                } else {
+
+                    status.textContent =
+                        "No document selected";
+
+                    status.classList.remove("success");
+                    status.classList.add("error");
+                }
+
+            });
+
+        });
+    </script>
 </section>

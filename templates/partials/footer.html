@@ -409,7 +409,7 @@ RESPONSIVE
 
                     <p class="footer-about">
 
-                        Professional industrial electrical engineering,
+                        We are Professional in industrial electrical engineering,
                         earthing installation, cathodic protection,
                         switchgear supply and automation solutions
                         across Nigeria.
@@ -457,25 +457,25 @@ RESPONSIVE
                         </li>
 
                         <li>
-                            <a href="#">
+                            <a href="#product_id">
                                 Products
                             </a>
                         </li>
 
                         <li>
-                            <a href="#">
+                            <a href="#service_id">
                                 Services
                             </a>
                         </li>
 
                         <li>
-                            <a href="#">
+                            <a href="#rfq_id">
                                 RFQ Portal
                             </a>
                         </li>
 
                         <li>
-                            <a href="#">
+                            <a href="{% url 'about_us'%}">
                                 About Us
                             </a>
                         </li>
@@ -500,43 +500,13 @@ RESPONSIVE
                     </h3>
 
                     <ul class="footer-links">
-
+                        {%for service in services%}
                         <li>
                             <a href="#">
                                 Electrical Earthing
                             </a>
                         </li>
-
-                        <li>
-                            <a href="#">
-                                Control Panels
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="#">
-                                Industrial Wiring
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="#">
-                                Cathodic Protection
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="#">
-                                CNG Electrical Systems
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="#">
-                                Industrial Automation
-                            </a>
-                        </li>
-
+                        {% endfor %}
                     </ul>
 
                 </div>

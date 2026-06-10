@@ -3,11 +3,12 @@ from django.db import models
 # Create your models here.
 from accounts.models import *
 from cloudinary.models import CloudinaryField
+from django.utils import timezone
+from decimal import Decimal
 
 class Category(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
-
     parent = models.ForeignKey(
         'self',
         null=True,
@@ -41,174 +42,323 @@ class Category(models.Model):
             is_active=True
         ).distinct()[:4]
 
-
 class PricingRule(models.Model):
-    PERCENTAGE = "percentage"
-    FIXED = "fixed"
 
-    pricing_type = models.CharField(
-        max_length=20,
-        choices=[(PERCENTAGE, "Percentage"), (FIXED, "Fixed")]
+    MARKUP_PERCENTAGE = "markup_percentage"
+    MARKUP_FIXED = "markup_fixed"
+    DISCOUNT_PERCENTAGE = "discount_percentage"
+    DISCOUNT_FIXED = "discount_fixed"
+
+    RULE_TYPES = [
+        (MARKUP_PERCENTAGE, "Markup Percentage"),
+        (MARKUP_FIXED, "Markup Fixed"),
+        (DISCOUNT_PERCENTAGE, "Discount Percentage"),
+        (DISCOUNT_FIXED, "Discount Fixed"),
+    ]
+
+    name = models.CharField(max_length=150)
+
+    rule_type = models.CharField(
+        max_length=30,
+        choices=RULE_TYPES
     )
-    value = models.DecimalField(max_digits=10, decimal_places=2)
 
-    category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.CASCADE)
-    vendor = models.ForeignKey('accounts.Vendor', null=True, blank=True, on_delete=models.CASCADE,related_name='vendor_rule')
-    is_default = models.BooleanField(default=False)
-    priority = models.PositiveIntegerField(default=1)
+    value = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
 
-    def __str__(self):
-        return f"{self.pricing_type} - {self.value}"
-    
-class Product(models.Model):
-    name = models.CharField(max_length=255)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
+    vendor = models.ForeignKey(
+        "accounts.Vendor",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="pricing_rules"
+    )
+
+    product = models.ForeignKey(
+        "ProductListing",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="pricing_rules"
+    )
+
+    priority = models.PositiveIntegerField(
+        default=100
+    )
+
+    is_default = models.BooleanField(
+        default=False
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    starts_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    ends_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["priority"]
+
+    def is_valid(self):
+        now = timezone.now()
+
+        if not self.is_active:
+            return False
+
+        if self.starts_at and now < self.starts_at:
+            return False
+
+        if self.ends_at and now > self.ends_at:
+            return False
+
+        return True
 
     def __str__(self):
         return self.name
 
-    
-class ProductListing(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="listings")
-    vendor = models.ForeignKey('accounts.Vendor', on_delete=models.CASCADE)
-    categories = models.ManyToManyField(Category, related_name="product_listings")
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    final_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    description = models.TextField(blank=True)
-    stock = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
-    weight = models.DecimalField(max_digits=6, decimal_places=2, default=1.0)
 
-    def __str__(self):
-        return f"{self.product.name}--{self.vendor}"
-    
+
+class ProductListing(models.Model):
+    name = models.CharField(max_length=255)
+   
+
+    vendor = models.ForeignKey(
+        "accounts.Vendor",
+        on_delete=models.CASCADE
+    )
+
+    categories = models.ManyToManyField(
+        Category,
+        related_name="product_listings"
+    )
+
+    manufacturer = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    brand = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    model_number = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    country_of_origin = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    base_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    stock = models.PositiveIntegerField(
+        default=0
+    )
+
+    minimum_order_quantity = models.PositiveIntegerField(
+        default=1
+    )
+
+    weight = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0
+    )
+
+    description = models.TextField()
+
+    technical_specification = models.TextField(
+        blank=True
+    )
+
+    warranty_period_months = models.PositiveIntegerField(
+        default=0
+    )
+
+    lead_time_days = models.PositiveIntegerField(
+        default=0
+    )
+
+    datasheet = models.FileField(
+        upload_to="datasheets/",
+        blank=True,
+        null=True
+    )
+
+    is_negotiable = models.BooleanField(
+        default=False
+    )
+
+    units_sold = models.PositiveIntegerField(
+    default=0
+    )
+
+    is_featured = models.BooleanField(
+        default=False
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
     def get_applicable_rule(self):
 
         categories = self.categories.all()
 
-        # 1. Vendor + ANY category
         rule = PricingRule.objects.filter(
-            vendor=self.vendor,
-            category__in=categories
-        ).order_by('priority').first()
+            product=self,
+            is_active=True
+        ).order_by("priority").first()
+
         if rule:
             return rule
 
-        # 2. Vendor only
         rule = PricingRule.objects.filter(
             vendor=self.vendor,
-            category__isnull=True
-        ).order_by('priority').first()
+            category__in=categories,
+            is_active=True
+        ).order_by("priority").first()
+
         if rule:
             return rule
 
-        # 3. Category only
+        rule = PricingRule.objects.filter(
+            vendor=self.vendor,
+            category__isnull=True,
+            is_active=True
+        ).order_by("priority").first()
+
+        if rule:
+            return rule
+
         rule = PricingRule.objects.filter(
             vendor__isnull=True,
-            category__in=categories
-        ).order_by('priority').first()
+            category__in=categories,
+            is_active=True
+        ).order_by("priority").first()
+
         if rule:
             return rule
 
-        # 4. Default rule
         return PricingRule.objects.filter(
-            is_default=True
-        ).order_by('priority').first()
+            is_default=True,
+            is_active=True
+        ).order_by("priority").first()
+    
+    def final_price(self):
 
+        price = self.base_price
 
-    def calculate_price(self):
         rule = self.get_applicable_rule()
 
         if not rule:
-            return self.base_price
+            return price
 
-        if rule.pricing_type == PricingRule.PERCENTAGE:
-            return self.base_price + (self.base_price * rule.value / 100)
+        value = Decimal(rule.value)
 
-        elif rule.pricing_type == PricingRule.FIXED:
-            return self.base_price + rule.value
+        if rule.rule_type == PricingRule.MARKUP_PERCENTAGE:
+            price += price * value / 100
 
-        return self.base_price
+        elif rule.rule_type == PricingRule.MARKUP_FIXED:
+            price += value
 
+        elif rule.rule_type == PricingRule.DISCOUNT_PERCENTAGE:
+            price -= price * value / 100
+
+        elif rule.rule_type == PricingRule.DISCOUNT_FIXED:
+            price -= value
+
+        return max(price, Decimal("0.00"))
+
+    final_price.short_description = "Final Price"
 
 class ProductMedia(models.Model):
 
     IMAGE = "image"
     VIDEO = "video"
 
-    MEDIA_TYPE_CHOICES = [
+    MEDIA_TYPES = [
         (IMAGE, "Image"),
         (VIDEO, "Video"),
     ]
 
     product_listing = models.ForeignKey(
-        "ProductListing",
+        ProductListing,
         on_delete=models.CASCADE,
         related_name="media"
     )
 
     media_type = models.CharField(
-        max_length=10,
-        choices=MEDIA_TYPE_CHOICES
+        max_length=20,
+        choices=MEDIA_TYPES
     )
 
     file = models.FileField(
-    upload_to="product_media/"
+        upload_to="product_media/"
     )
 
-    is_primary = models.BooleanField(default=False)
+    is_primary = models.BooleanField(
+        default=False
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    sort_order = models.PositiveIntegerField(
+        default=0
+    )
+
+class ProductSpecification(models.Model):
+
+    product = models.ForeignKey(
+        ProductListing,
+        on_delete=models.CASCADE,
+        related_name="specifications"
+    )
+
+    name = models.CharField(
+        max_length=150
+    )
+
+    value = models.CharField(
+        max_length=255
+    )
 
     def __str__(self):
-        return f"{self.product_listing} - {self.media_type}"
-
-    def save(self, *args, **kwargs):
-
-        if self.is_primary:
-            ProductMedia.objects.filter(
-                product_listing=self.product_listing,
-                is_primary=True
-            ).update(is_primary=False)
-
-        super().save(*args, **kwargs)
-
-    
-# class ProductMedia(models.Model):
-#     IMAGE = "image"
-#     VIDEO = "video"
-
-#     MEDIA_TYPE_CHOICES = [
-#         (IMAGE, "Image"),
-#         (VIDEO, "Video"),
-#     ]
-
-#     product_listing = models.ForeignKey(
-#         ProductListing,
-#         on_delete=models.CASCADE,
-#         related_name="media"
-#     )
-
-#     media_type = models.CharField(
-#         max_length=10,
-#         choices=MEDIA_TYPE_CHOICES
-#     )
-
-#     file = models.FileField(upload_to="products/")
-
-#     is_primary = models.BooleanField(default=False)  # main display image
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f"{self.product_listing} - {self.media_type}"
-    
-#     def save(self, *args, **kwargs):
-#         if self.is_primary:
-#             ProductMedia.objects.filter(
-#                 product_listing=self.product_listing,
-#                 is_primary=True
-#             ).update(is_primary=False)
-
-#         super().save(*args, **kwargs)
-
+        return f"{self.name}: {self.value}"
     

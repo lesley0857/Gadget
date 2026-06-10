@@ -120,8 +120,6 @@ class NegotiationRequest(models.Model):
 
         return self.code
 
-
-
 class NegotiationItem(models.Model):
 
     negotiation = models.ForeignKey(
@@ -150,7 +148,6 @@ class NegotiationItem(models.Model):
     )
 
     def get_price(self):
-
         return self.negotiated_price or self.original_price
 
     def get_total(self):

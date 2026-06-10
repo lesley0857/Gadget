@@ -9,7 +9,7 @@ from .serializers import VendorSerializer
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404,redirect
-from catalog.models import Product
+
 from django.contrib.auth import authenticate, login, logout
 from .models import *
 from wallets.models import *
@@ -62,6 +62,9 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+def about_us(request):
+    context = {}
+    return render(request,"about-us.html",context)
 
 def home(request):
     productList = ProductListing.objects.all()  # Featured products
@@ -75,8 +78,16 @@ def home(request):
     products_for_second_categories = ProductListing.objects.filter(
         is_active=True
     )[:24]
-    
 
+    featured_products = ProductListing.objects.filter(
+        is_featured=True
+    )[:24]
+
+    new_products = ProductListing.objects.filter(
+    is_active=True).order_by("-created_at")[:10]
+
+    trending_products = ProductListing.objects.filter(
+        is_active=True).order_by("-units_sold")[:15]
  
     if request.method == "POST":
 
@@ -111,12 +122,33 @@ def home(request):
                 "services":services,
                 "blogs":blogs,
                 "second_categories":second_categories,
-                "products_for_second_categories":products_for_second_categories
+                "products_for_second_categories":products_for_second_categories,
+                "featured_products":featured_products,
+                "trending_products":trending_products,
+                "new_products":new_products,
                 })
 
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    return render(request, 'product_detail.html', {'product': product})
+def product_detail(request, name):
+    product_listing = get_object_or_404(
+        ProductListing,
+        name=name
+    )
+    related_products = ProductListing.objects.filter(
+        categories__in = product_listing.categories.all(),
+        is_active=True
+    ).exclude(
+                id=product_listing.id
+             ).distinct()[:12]
+    print(related_products)
+
+    return render(
+        request,
+        "product_detail.html",
+        {
+            "product_listing": product_listing,
+            "related_products": related_products,
+        }
+    )
 
 
 @login_required

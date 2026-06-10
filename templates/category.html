@@ -145,56 +145,56 @@
             {% for product in products %}
 
             <div class="product-card">
+                <a href="{%url 'product_detail' product.id %}">
+                    <!-- IMAGE / VIDEO -->
+                    <div class="product-img">
 
-                <!-- IMAGE / VIDEO -->
-                <div class="product-img">
-
-                    {% for media in product.media.all %}
-                    {% if media.is_primary and media.media_type == "image" %}
-                    <img class="product-image" src="{{ media.file.url }}">
-                    {% endif %}
-                    {% endfor %}
-
-                    {% for media in product.media.all %}
-                    {% if media.media_type == "video" %}
-                    <video class="product-video" muted loop playsinline>
-                        <source src="{{ media.file.url }}">
-                    </video>
-                    {% endif %}
-                    {% endfor %}
-
-                    {% if not product.media.all %}
-                    <img class="product-image" src="{% static 'img/hotdeal.png' %}">
-                    {% endif %}
-
-                </div>
-
-                <!-- BODY -->
-                <div class="product-body">
-
-                    <p class="product-category">
-                        {% for cat in product.categories.all %}
-                        {{ cat.name }}
+                        {% for media in product.media.all %}
+                        {% if media.is_primary and media.media_type == "image" %}
+                        <img class="product-image" src="{{ media.file.url }}">
+                        {% endif %}
                         {% endfor %}
-                    </p>
 
-                    <h3 class="product-name">
-                        {{ product.name }}
-                    </h3>
+                        {% for media in product.media.all %}
+                        {% if media.media_type == "video" %}
+                        <video class="product-video" muted loop playsinline>
+                            <source src="{{ media.file.url }}">
+                        </video>
+                        {% endif %}
+                        {% endfor %}
 
-                    <div class="product-price">
-                        ₦{{ product.calculate_price|floatformat:2|intcomma }}
+                        {% if not product.media.all %}
+                        <img class="product-image" src="{% static 'img/hotdeal.png' %}">
+                        {% endif %}
+
                     </div>
 
-                </div>
+                    <!-- BODY -->
+                    <div class="product-body">
 
-                <!-- ACTION -->
-                <div class="product-footer">
-                    <a class="add-to-cart-btn" data-id="{{ product.id }}">
-                        🛒 Add To Cart
-                    </a>
-                </div>
+                        <p class="product-category">
+                            {% for cat in product.categories.all %}
+                            {{ cat.name }}
+                            {% endfor %}
+                        </p>
 
+                        <h3 class="product-name">
+                            {{ product.name }}
+                        </h3>
+
+                        <div class="product-price">
+                            ₦{{ product.calculate_price|floatformat:2|intcomma }}
+                        </div>
+
+                    </div>
+
+                    <!-- ACTION -->
+                    <div class="product-footer">
+                        <a class="add-to-cart-btn" data-id="{{ product.id }}">
+                            🛒 Add To Cart
+                        </a>
+                    </div>
+                </a>
             </div>
 
             {% endfor %}

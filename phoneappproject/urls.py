@@ -20,6 +20,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path("summernote/", include("django_summernote.urls")),
     path('cart/', cart_view, name='cart'),
+    path('about-us/', about_us, name='about_us'),
     path('cart/add/<int:listing_id>/', add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:listing_id>/', remove_from_cart, name='remove_from_cart'),
     path("cart/summary/", cart_summary, name="cart_summary"),
@@ -46,7 +47,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('', home, name='home'),
-    path("<slug:slug>/",blog_detail,name="blog_detail"),
+    path("blog/<slug:slug>/",blog_detail,name="blog_detail"),
     path('project/<slug:slug>/', project_detail, name='project_detail'),
     
     path("delivery/dashboard/", delivery_dashboard, name="delivery_dashboard"),
@@ -59,7 +60,7 @@ urlpatterns = [
     path("vendor/dashboard/", vendor_dashboard, name="vendor_dashboard"),
     path("vendor/update/", vendor_update, name="vendor_update"),
     path("vendor/delete/", vendor_delete, name="vendor_delete"),
-    path('product/<int:product_id>/', product_detail, name='product_detail'),
+    path('product/<str:name>/', product_detail, name='product_detail'),
 
     path("category/<str:name>/",category_products, name="category_products"),
     path("search/", search_products, name="search_products"),
