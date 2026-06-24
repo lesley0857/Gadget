@@ -1,0 +1,165 @@
+{% load static %}
+
+<section class="projects-section">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <style>
+        .projects-section {
+            padding: 100px 0;
+            background: #F8FAFC;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+        }
+
+        .project-card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+        }
+
+        .project-body {
+            padding: 25px;
+        }
+
+        .project-location {
+            color: #DC2626;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .project-body h3 {
+            margin: 10px 0;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .project-body p {
+            color: #6B7280;
+            line-height: 1.8;
+        }
+    </style>
+    <div class="container">
+
+        <div class="section-header">
+
+            <span class="badge">
+                Our Projects
+            </span>
+
+            <h2>
+                Engineering Projects Delivered
+            </h2>
+
+        </div>
+
+        <div class="swiper projectsSwiper">
+
+            <div class="swiper-wrapper">
+
+                {% for project in featured_projects %}
+
+                <div class="swiper-slide">
+
+                    <div class="project-card">
+
+                        {% with image=project.images.first %}
+
+                        {% if image %}
+
+                        <img src="{{ image.image.url }}" alt="{{ project.title }}">
+
+                        {% endif %}
+
+                        {% endwith %}
+
+                        <div class="project-body">
+
+                            <span class="project-location">
+
+                                {{ project.location }}
+
+                            </span>
+
+                            <h3>
+
+                                {{ project.title }}
+
+                            </h3>
+
+                            <p>
+
+                                {{ project.short_description }}
+
+                            </p>
+
+                            <a href="{% url 'project_detail' project.slug %}">
+
+                                View Project
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <div class="swiper-pagination"></div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+
+        new Swiper(".projectsSwiper", {
+
+            slidesPerView: 1,
+
+            spaceBetween: 25,
+
+            loop: true,
+
+            autoplay: {
+
+                delay: 3500,
+
+                disableOnInteraction: false,
+
+            },
+
+            pagination: {
+
+                el: ".swiper-pagination",
+
+                clickable: true,
+
+            },
+
+            breakpoints: {
+
+                768: {
+                    slidesPerView: 2
+                },
+
+                1200: {
+                    slidesPerView: 3
+                }
+
+            }
+
+        });
+
+    </script>
+
+</section>

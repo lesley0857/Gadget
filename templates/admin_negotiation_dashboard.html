@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h2 class="mb-4">
+
+        Negotiation Dashboard
+
+    </h2>
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h3>
+
+                        {{ pending_count }}
+
+                    </h3>
+
+                    <p>Pending</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h3>
+
+                        {{ quoted_count }}
+
+                    </h3>
+
+                    <p>Quoted</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h3>
+
+                        {{ paid_count }}
+
+                    </h3>
+
+                    <p>Paid</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <form method="GET">
+
+        <div class="row mb-3">
+
+            <div class="col-md-4">
+
+                <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search...">
+
+            </div>
+
+            <div class="col-md-3">
+
+                <select name="status" class="form-control">
+
+                    <option value="">
+
+                        All
+
+                    </option>
+
+                    <option value="pending">
+
+                        Pending
+
+                    </option>
+
+                    <option value="quoted">
+
+                        Quoted
+
+                    </option>
+
+                    <option value="paid">
+
+                        Paid
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <button class="btn btn-primary">
+
+                    Filter
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <table class="table table-bordered">
+
+        <thead>
+
+            <tr>
+
+                <th>Code</th>
+
+                <th>Customer</th>
+
+                <th>Status</th>
+
+                <th>Date</th>
+
+                <th></th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for negotiation in negotiations %}
+
+            <tr>
+
+                <td>
+
+                    {{ negotiation.code }}
+
+                </td>
+
+                <td>
+
+                    {{ negotiation.customer_name }}
+
+                </td>
+
+                <td>
+
+                    {{ negotiation.status }}
+
+                </td>
+
+                <td>
+
+                    {{ negotiation.created_at }}
+
+                </td>
+
+                <td>
+
+                    <a href="{% url 'admin_negotiation_detail' negotiation.pk %}" class="btn btn-sm btn-danger">
+
+                        Open
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

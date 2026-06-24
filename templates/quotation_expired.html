@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+    <div class="card shadow border-0">
+
+        <div class="card-body text-center p-5">
+
+            <h1 class="text-danger">
+
+                Quotation Expired
+
+            </h1>
+
+            <p class="lead">
+
+                This quotation payment link
+                has expired.
+
+            </p>
+
+            <a href="{% url 'cart' %}" class="btn btn-danger">
+
+                Return To Cart
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

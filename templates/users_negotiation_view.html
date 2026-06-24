@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<section class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <div class="alert alert-success">
+
+                <h5 class="mb-2">
+
+                    Custom Quote Prepared
+
+                </h5>
+
+                <p class="mb-0">
+
+                    This quotation has been specially prepared
+                    for your request.
+
+                    Reference:
+
+                    <strong>
+
+                        {{ negotiation.code }}
+
+                    </strong>
+
+                </p>
+
+            </div>
+            <a href="{% url 'pay_negotiation' negotiation.code %}" class="btn btn-success btn-lg w-100">
+
+                Proceed To Payment
+
+            </a>
+
+            <h2 class="fw-bold">
+                Negotiation {{ negotiation.code }}
+            </h2>
+
+            <small class="text-muted">
+
+                Created:
+                {{ negotiation.created_at }}
+
+            </small>
+
+        </div>
+
+
+
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-body">
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for item in negotiation.items.all %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ item.product_listing.product.name }}
+
+                        </td>
+
+                        <td>
+
+                            {{ item.quantity }}
+
+                        </td>
+
+                        <td>
+
+                            ₦{{ item.negotiated_price|floatformat:2|intcomma }}
+
+                        </td>
+
+                        <td>
+
+                            ₦{{ item.get_total|floatformat:2|intcomma }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-lg-4 ms-auto">
+
+            <div class="card shadow-sm border-0 rounded-4">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>Subtotal</span>
+
+                        <strong>
+                            ₦{{ subtotal|intcomma }}
+                        </strong>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>Shipping</span>
+
+                        <strong>
+                            ₦{{ negotiation.shipping_fee|intcomma }}
+                        </strong>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <h5>Total</h5>
+
+                        <h5>
+
+                            ₦{{ total|intcomma }}
+
+                        </h5>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

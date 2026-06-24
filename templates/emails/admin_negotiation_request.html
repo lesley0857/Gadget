@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            max-width: 700px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+        }
+
+        .header {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            background: #dc3545;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <div class="header">
+            <h2>New Negotiation Request</h2>
+        </div>
+
+        <div class="info">
+
+            <p><strong>Code:</strong> {{ negotiation.code }}</p>
+
+            <p><strong>Name:</strong> {{ negotiation.customer_name }}</p>
+
+            <p><strong>Email:</strong> {{ negotiation.customer_email }}</p>
+
+            <p><strong>Phone:</strong> {{ negotiation.customer_phone }}</p>
+
+            <p><strong>Created:</strong> {{ negotiation.created_at }}</p>
+
+        </div>
+
+        <br>
+
+        <a href="{{ admin_url }}" class="btn">
+
+            Review Quotation
+
+        </a>
+
+
+    </div>
+
+</body>
+
+</html>

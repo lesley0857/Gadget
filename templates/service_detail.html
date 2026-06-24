@@ -1,0 +1,1063 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+{% if messages %}
+
+<div class="message-wrapper">
+
+    {% for message in messages %}
+
+    <div class="success-message">
+
+        <i class="fa fa-check-circle"></i>
+
+        <span>
+            {{ message }}
+        </span>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
+<section class="service-detail-section">
+
+    <!-- HERO -->
+    <div class="service-hero">
+
+        <!-- BACKGROUND IMAGE -->
+        <div class="hero-bg">
+
+            {% if service.hero_image %}
+            <img src="{{ service.hero_image.url }}" alt="{{ service.title }}">
+            {% else %}
+            <img src="{% static 'img/service-default.jpg' %}" alt="{{ service.title }}">
+            {% endif %}
+
+        </div>
+
+        <!-- DARK OVERLAY -->
+        <div class="hero-overlay"></div>
+
+        <div class="container">
+
+            <div class="service-hero-content">
+
+                <div class="service-badge">
+                    {{ service.slug|upper }}
+                </div>
+
+                <h1 class="service-title">
+                    {{ service.title }}
+                </h1>
+
+                <p class="service-short-description">
+                    {{ service.short_description }}
+                </p>
+
+                <div class="service-actions">
+
+                    <a href="#rfq-section" class="primary-btn">
+                        Request Quote
+                    </a>
+
+                    <a href="{% url 'services' %}" class="secondary-btn">
+                        All Services
+                    </a>
+
+                </div>
+
+                <!-- FEATURES -->
+                <div class="service-features">
+
+                    <div class="feature-card">
+                        <i class="fa fa-check-circle"></i>
+                        <span>Industrial Grade Standards</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <i class="fa fa-bolt"></i>
+                        <span>Fast Technical Support</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <i class="fa fa-shield"></i>
+                        <span>Reliable Installation</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="service-main">
+
+        <div class="container">
+
+            <div class="service-layout">
+
+                <!-- CONTENT -->
+                <div class="service-content">
+
+                    <div class="service-card">
+
+                        <div class="section-header">
+                            <span class="section-mini-title">
+                                SERVICE OVERVIEW
+                            </span>
+
+                            <h2>
+                                Professional {{ service.title }}
+                            </h2>
+                        </div>
+
+                        <div class="service-description">
+                            {{ service.full_description|safe }}
+                        </div>
+
+                    </div>
+
+                    <!-- PROCESS -->
+                    <div class="service-card">
+
+                        <div class="section-header">
+                            <span class="section-mini-title">
+                                OUR PROCESS
+                            </span>
+
+                            <h2>
+                                How We Execute Projects
+                            </h2>
+                        </div>
+
+                        <div class="process-grid">
+
+                            <div class="process-item">
+                                <div class="process-number">01</div>
+                                <h4>Consultation</h4>
+                                <p>
+                                    We understand your project requirements,
+                                    technical specifications and site conditions.
+                                </p>
+                            </div>
+
+                            <div class="process-item">
+                                <div class="process-number">02</div>
+                                <h4>Planning & Design</h4>
+                                <p>
+                                    Our team develops professional implementation
+                                    plans and material schedules.
+                                </p>
+                            </div>
+
+                            <div class="process-item">
+                                <div class="process-number">03</div>
+                                <h4>Installation</h4>
+                                <p>
+                                    Certified technicians execute installation
+                                    following industrial standards.
+                                </p>
+                            </div>
+
+                            <div class="process-item">
+                                <div class="process-number">04</div>
+                                <h4>Testing & Support</h4>
+                                <p>
+                                    We test, commission and provide ongoing
+                                    technical support.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- SIDEBAR -->
+                <div class="service-sidebar">
+
+                    <!-- CONTACT CARD -->
+                    <div class="sidebar-card">
+
+                        <h3>
+                            Need This Service?
+                        </h3>
+
+                        <p>
+                            Contact our technical team for quotations,
+                            consultation and project execution.
+                        </p>
+
+                        <div class="contact-list">
+
+                            <div class="contact-item">
+                                <i class="fa fa-phone"></i>
+                                <span>+2348100911189</span>
+                            </div>
+
+                            <div class="contact-item">
+                                <i class="fa fa-envelope"></i>
+                                <span>lemarobenigeria@gmail.com</span>
+                            </div>
+
+                            <div class="contact-item">
+                                <i class="fa fa-map-marker"></i>
+                                <span>Satelite Town, Lagos, Nigeria</span>
+                            </div>
+
+                        </div>
+
+                        <a href="#rfq-section" class="sidebar-btn">
+                            Get Free Quote
+                        </a>
+
+                    </div>
+
+                    <!-- RELATED SERVICES -->
+                    <div class="sidebar-card">
+
+                        <h3>
+                            Related Services
+                        </h3>
+
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="service-gallery-section">
+
+        <div class="section-header">
+
+            <span class="section-mini-title">
+                PROJECT GALLERY
+            </span>
+
+            <h2>
+                Service Images & Videos
+            </h2>
+
+        </div>
+
+        <div class="service-gallery-grid">
+
+            {% for media in service.media.all %}
+
+            <div class="gallery-card">
+
+                <div class="gallery-media">
+
+                    {% if media.media_type == "image" %}
+
+                    <img src="{{ media.file.url }}" alt="{{ media.title }}">
+
+                    {% elif media.media_type == "video" %}
+
+                    <video controls playsinline>
+                        <source src="{{ media.file.url }}">
+                    </video>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="gallery-content">
+
+                    <h4>
+                        {{ media.title }}
+                    </h4>
+
+                    <p>
+                        {{ media.description }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- RFQ -->
+    <div class="service-rfq" id="rfq-section">
+
+        <div class="container">
+
+            <div class="rfq-card">
+
+                <div class="rfq-left">
+
+                    <span class="rfq-badge">
+                        REQUEST FOR QUOTATION
+                    </span>
+
+                    <h2>
+                        Start Your Project Today
+                    </h2>
+
+                    <p>
+                        Send us your technical specifications,
+                        BOQ, drawings or project details and our
+                        engineers will respond quickly.
+                    </p>
+
+                </div>
+
+                <div class="rfq-right">
+
+                    <form method="POST" enctype="multipart/form-data">
+
+                        {% csrf_token %}
+
+                        <div class="rfq-grid">
+
+                            <input type="text" placeholder="Full Name" name="name">
+
+                            <input type="email" placeholder="Email Address" name="email">
+
+                            <input type="text" placeholder="Phone Number" name="phone">
+
+                            <input type="text" placeholder="Company Name" name="company">
+
+                        </div>
+
+                        <textarea placeholder="Project Description" name="message"></textarea>
+
+                        <div class="upload-box">
+
+                            <label for="document-upload">
+
+                                <i class="fa fa-cloud-upload"></i>
+
+                                Upload Drawings, BOQ or Technical Files
+
+                            </label>
+
+                            <input type="file" id="document-upload" name="document">
+
+                        </div>
+
+                        <button type="submit" class="rfq-btn">
+                            Submit Request
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<style>
+    /* =========================================
+RESET / GLOBAL
+========================================= */
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    img,
+    video {
+        max-width: 100%;
+        display: block;
+    }
+
+    .service-detail-section {
+        background: #F8FAFC;
+        overflow: hidden;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1400px;
+        margin: auto;
+    }
+
+    /* =========================================
+MESSAGES
+========================================= */
+
+    .message-wrapper {
+        width: 90%;
+        max-width: 1200px;
+        margin: 30px auto 0;
+    }
+
+    .success-message {
+        background: #DCFCE7;
+        color: #166534;
+        padding: 18px 22px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+    }
+
+    /* =========================================
+HERO
+========================================= */
+
+    .service-hero {
+        position: relative;
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        color: white;
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .hero-bg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.05);
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(135deg,
+                rgba(2, 6, 23, 0.88),
+                rgba(15, 23, 42, 0.80),
+                rgba(17, 24, 39, 0.88));
+        z-index: 2;
+    }
+
+    .service-hero .container {
+        position: relative;
+        z-index: 5;
+    }
+
+    .service-hero-content {
+        max-width: 760px;
+        padding: 120px 0;
+    }
+
+    .service-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-radius: 40px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 28px;
+        letter-spacing: 1px;
+    }
+
+    .service-title {
+        font-size: 72px;
+        font-weight: 900;
+        line-height: 1.05;
+        margin-bottom: 28px;
+        color: white;
+    }
+
+    .service-short-description {
+        font-size: 19px;
+        line-height: 2;
+        color: rgba(255, 255, 255, 0.82);
+        max-width: 700px;
+        margin-bottom: 40px;
+    }
+
+    .service-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 50px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        padding: 16px 30px;
+        border-radius: 14px;
+        font-weight: 700;
+        transition: 0.35s ease;
+        text-decoration: none;
+    }
+
+    .primary-btn {
+        background: #DC2626;
+        color: white;
+        box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35);
+    }
+
+    .primary-btn:hover {
+        transform: translateY(-3px);
+        background: #B91C1C;
+        color: white;
+    }
+
+    .secondary-btn {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(10px);
+        color: white;
+    }
+
+    .secondary-btn:hover {
+        background: white;
+        color: #111827;
+    }
+
+    .service-features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        max-width: 720px;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 24px;
+        text-align: center;
+        transition: 0.35s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .feature-card i {
+        font-size: 24px;
+        margin-bottom: 14px;
+        color: #FCA5A5;
+    }
+
+    .feature-card span {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.6;
+    }
+
+    /* =========================================
+MAIN
+========================================= */
+
+    .service-main {
+        padding: 90px 0;
+    }
+
+    .service-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    .service-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        margin-bottom: 35px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-mini-title {
+        color: #DC2626;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .section-header h2 {
+        font-size: 34px;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        color: #111827;
+    }
+
+    .service-description {
+        color: #4B5563;
+        line-height: 2;
+        font-size: 16px;
+    }
+
+    /* =========================================
+PROCESS
+========================================= */
+
+    .process-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    .process-item {
+        border: 1px solid #E5E7EB;
+        border-radius: 20px;
+        padding: 28px;
+        transition: 0.3s ease;
+        background: white;
+    }
+
+    .process-item:hover {
+        transform: translateY(-5px);
+        border-color: #DC2626;
+    }
+
+    .process-number {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: #DC2626;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .process-item h4 {
+        margin-bottom: 14px;
+        font-size: 20px;
+    }
+
+    .process-item p {
+        color: #6B7280;
+        line-height: 1.8;
+    }
+
+    /* =========================================
+SIDEBAR
+========================================= */
+
+    .sidebar-card {
+        background: white;
+        border-radius: 24px;
+        padding: 35px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-card h3 {
+        font-size: 24px;
+        margin-bottom: 18px;
+    }
+
+    .sidebar-card p {
+        color: #6B7280;
+        line-height: 1.8;
+    }
+
+    .contact-list {
+        margin: 30px 0;
+    }
+
+    .contact-item {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 18px;
+        color: #374151;
+        word-break: break-word;
+    }
+
+    .contact-item i {
+        color: #DC2626;
+    }
+
+    .sidebar-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #DC2626;
+        color: white;
+        padding: 15px;
+        border-radius: 14px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .sidebar-btn:hover {
+        background: #B91C1C;
+        color: white;
+    }
+
+    /* =========================================
+GALLERY GRID
+========================================= */
+
+    .service-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-top: 30px;
+    }
+
+    /* LARGE TABLETS */
+
+    @media(max-width:1200px) {
+
+        .service-gallery-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* SMALL TABLETS */
+
+    @media(max-width:768px) {
+
+        .service-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+    }
+
+    /* MOBILE */
+
+    @media(max-width:540px) {
+
+        .service-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .gallery-content {
+            padding: 14px;
+        }
+
+        .gallery-content h4 {
+            font-size: 15px;
+        }
+
+        .gallery-content p {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+    }
+
+
+    /* =========================================
+RFQ
+========================================= */
+
+    .service-rfq {
+        padding: 0 0 100px;
+    }
+
+    .rfq-card {
+        background: white;
+        border-radius: 30px;
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+    }
+
+    .rfq-left {
+        max-width: 700px;
+    }
+
+    .rfq-badge {
+        display: inline-block;
+        background: #FEE2E2;
+        color: #DC2626;
+        padding: 10px 18px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 22px;
+    }
+
+    .rfq-left h2 {
+        font-size: 42px;
+        margin-bottom: 20px;
+    }
+
+    .rfq-left p {
+        color: #6B7280;
+        line-height: 1.9;
+    }
+
+    .rfq-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .rfq-grid input,
+    .rfq-right textarea {
+        width: 100%;
+        min-width: 0;
+        padding: 16px 18px;
+        border-radius: 14px;
+        border: 1px solid #E5E7EB;
+        outline: none;
+        font-size: 15px;
+        transition: 0.3s ease;
+    }
+
+    .rfq-grid input:focus,
+    .rfq-right textarea:focus {
+        border-color: #DC2626;
+    }
+
+    .rfq-right textarea {
+        min-height: 160px;
+        resize: none;
+        margin-bottom: 20px;
+    }
+
+    .upload-box {
+        border: 2px dashed #CBD5E1;
+        border-radius: 18px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .upload-box label {
+        display: block;
+        color: #6B7280;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .upload-box i {
+        display: block;
+        font-size: 34px;
+        margin-bottom: 12px;
+        color: #DC2626;
+    }
+
+    .upload-box input {
+        display: none;
+    }
+
+    .rfq-btn {
+        width: 100%;
+        border: none;
+        background: #DC2626;
+        color: white;
+        padding: 18px;
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    .rfq-btn:hover {
+        background: #B91C1C;
+    }
+
+    /* =========================================
+RESPONSIVE
+========================================= */
+
+    @media(max-width:1200px) {
+
+        .service-gallery-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .service-title {
+            font-size: 58px;
+        }
+    }
+
+    @media(max-width:992px) {
+
+        .service-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .service-sidebar {
+            display: none;
+        }
+
+        .service-features {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .service-title {
+            font-size: 48px;
+        }
+
+        .service-card {
+            padding: 32px;
+        }
+    }
+
+    @media(max-width:768px) {
+
+        .service-hero {
+            min-height: auto;
+        }
+
+        .service-hero-content {
+            padding: 110px 0 90px;
+        }
+
+        .service-title {
+            font-size: 40px;
+            line-height: 1.15;
+        }
+
+        .service-short-description {
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .service-features {
+            grid-template-columns: 1fr;
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .rfq-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .service-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .service-card,
+        .rfq-card {
+            padding: 26px;
+        }
+
+        .rfq-left h2 {
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
+        }
+    }
+
+    @media(max-width:540px) {
+
+        .container {
+            width: 92%;
+        }
+
+        .service-title {
+            font-size: 32px;
+        }
+
+        .service-actions {
+            flex-direction: column;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .process-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .process-item {
+            padding: 18px;
+        }
+
+        .process-item h4 {
+            font-size: 16px;
+        }
+
+        .process-item p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .process-number {
+            width: 44px;
+            height: 44px;
+            font-size: 14px;
+        }
+
+        .service-gallery-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .gallery-content {
+            padding: 16px;
+        }
+
+        .gallery-content h4 {
+            font-size: 16px;
+        }
+
+        .gallery-content p {
+            font-size: 13px;
+        }
+
+        .rfq-card {
+            padding: 22px;
+            border-radius: 22px;
+        }
+
+        .upload-box {
+            padding: 22px 16px;
+        }
+
+        .upload-box label {
+            font-size: 14px;
+        }
+
+        .rfq-btn {
+            padding: 16px;
+        }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            Negotiation {{ negotiation.code }}
+        </h2>
+
+        <span class="badge bg-primary">
+            {{ negotiation.status|upper }}
+        </span>
+    </div>
+
+
+    <!-- CUSTOMER INFO -->
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            Customer Information
+        </div>
+
+        <div class="card-body">
+
+            <p>
+                <strong>Name:</strong>
+                {{ negotiation.customer_name }}
+            </p>
+
+            <p>
+                <strong>Email:</strong>
+                {{ negotiation.customer_email }}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                {{ negotiation.customer_phone }}
+            </p>
+
+            <p>
+                <strong>Shipping Address:</strong><br>
+                {{ negotiation.shipping_address }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- NEGOTIATION ITEMS -->
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                Negotiated Pricing
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-bordered">
+
+                    <thead>
+
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Original Price</th>
+                            <th>Negotiated Price</th>
+                            <th>Total</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in negotiation.items.all %}
+
+                        <tr>
+
+                            <td>
+                                {{ item.product_listing.name }}
+                            </td>
+
+
+                            <td>
+
+                                <input type="number" name="qty_{{ item.id }}" value="{{ item.quantity }}" min="1"
+                                    class="form-control">
+
+                            </td>
+                            <td>
+                                ₦{{ item.original_price }}
+                            </td>
+
+                            <td>
+
+                                <input type="number" step="0.01" class="form-control" name="price_{{ item.id }}"
+                                    value="{{ item.negotiated_price|default:item.original_price }}"
+                                    class="form-control">
+
+                            </td>
+
+                            <td>
+
+                                ₦{{ item.get_total }}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- SHIPPING -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                Shipping
+            </div>
+
+            <div class="card-body">
+
+                <label>
+                    Shipping Fee
+                </label>
+
+                <input type="number" step="0.01" class="form-control" name="shipping_fee"
+                    value="{{ negotiation.shipping_fee }}">
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTES -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                Admin Notes
+            </div>
+
+            <div class="card-body">
+
+                <textarea name="admin_notes" rows="5" class="form-control">{{ negotiation.admin_notes }}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTALS -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                Totals
+            </div>
+
+            <div class="card-body">
+
+                <h5>
+                    Subtotal:
+                    ₦{{ subtotal }}
+                </h5>
+
+                <h5>
+                    Shipping:
+                    ₦{{ negotiation.shipping_fee }}
+                </h5>
+
+                <h3 class="text-success">
+                    Total:
+                    ₦{{ total }}
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="d-flex gap-2 mb-5">
+
+            <button type="submit" name="action" value="save_quote" class="btn btn-primary">
+                Save Changes
+            </button>
+
+            <button type="submit" name="action" value="generate_quote" class="btn btn-success">
+                Generate Quote
+            </button>
+
+            <button type="submit" name="action" value="send_payment_link" class="btn btn-warning">
+                Send Payment Link
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- ORDER -->
+
+    {% if negotiation.order %}
+
+    <div class="card mb-4">
+
+        <div class="card-header">
+            Order
+        </div>
+
+        <div class="card-body">
+
+            <p>
+
+                Order Number:
+
+                <strong>
+                    {{ negotiation.order.order_number }}
+                </strong>
+
+            </p>
+
+            <a href="/admin/orders/order/{{ negotiation.order.id }}/change/" class="btn btn-outline-primary">
+                View Order
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- SHIPMENT -->
+
+    {% if shipment %}
+
+    <div class="card">
+
+        <div class="card-header">
+            Shipment Tracking
+        </div>
+
+        <div class="card-body">
+
+            <p>
+
+                Tracking ID:
+
+                <strong>
+                    {{ shipment.tracking_id }}
+                </strong>
+
+            </p>
+
+            <p>
+
+                Status:
+
+                <span class="badge bg-success">
+                    {{ shipment.status }}
+                </span>
+
+            </p>
+
+            <a href="/admin/logistics/shipment/{{ shipment.id }}/change/" class="btn btn-outline-success">
+                View Shipment
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

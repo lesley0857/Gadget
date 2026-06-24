@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<section class="auth-section">
+
+    <style>
+        .auth-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            padding: 40px 15px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            border-color: #dc2626;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: #111827;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .auth-btn:hover {
+            background: #dc2626;
+        }
+
+        .auth-google {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+
+    <div class="auth-card">
+
+        <h2 class="auth-title">Welcome Back</h2>
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <input class="auth-input" type="email" name="email" placeholder="Email" required>
+
+            <input class="auth-input" type="password" name="password" placeholder="Password" required>
+
+            <button class="auth-btn" type="submit">Login</button>
+        </form>
+
+        <a class="auth-google" href="/accounts/google/login/">
+            Continue with Google
+        </a>
+
+        <div class="auth-footer">
+            Don't have an account?
+            <a href="{% url 'account_signup' %}">Create account</a>
+        </div>
+
+        <div class="auth-footer">
+            Forgot Password?
+            <a href="{% url 'account_reset_password' %}">Reset Password</a>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Phone Ecommerce{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h2>Welcome to Phone Ecommerce</h2>
+    <p>Shop the best phones, laptops, and accessories.</p>
+    <a href="{% url 'products' %}" class="btn">Shop Now</a>
+</section>
+
+<section class="featured-products">
+    <h3>Featured Products</h3>
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <h4>{{ product.name }}</h4>
+            <p>${{ product.price }}</p>
+            <a href="{% url 'product_detail' product.id %}" class="btn">View</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,695 @@
+{% load static %}
+
+<!-- =========================
+HEADER SCRIPT
+========================= -->
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /* =========================
+        MOBILE NAVIGATION
+        ========================= */
+
+        const menuBtn = document.getElementById("mobile-menu-btn");
+
+        const nav = document.getElementById("responsive-nav");
+
+        if (menuBtn && nav) {
+
+            menuBtn.addEventListener("click", function (e) {
+
+                e.stopPropagation();
+
+                nav.classList.toggle("active");
+
+                /* LOCK BODY SCROLL */
+                document.body.classList.toggle("nav-open");
+
+            });
+
+            /* CLOSE WHEN CLICKING OUTSIDE */
+            document.addEventListener("click", function (e) {
+
+                if (
+                    !nav.contains(e.target) &&
+                    !menuBtn.contains(e.target)
+                ) {
+
+                    nav.classList.remove("active");
+
+                    document.body.classList.remove("nav-open");
+
+                }
+
+            });
+
+        }
+
+    });
+
+</script>
+
+<!-- =========================
+TOP HEADER
+========================= -->
+<div id="top-header">
+
+    <div class="container top-header-container">
+
+        <!-- LEFT -->
+        <div class="top-left">
+
+            <a href="#">
+                <i class="fa fa-phone"></i>
+                +2348100911189
+            </a>
+
+            <a href="#">
+                <i class="fa fa-envelope-o"></i>
+                lemarobenigeria@gmail.com
+            </a>
+
+            <a href="#">
+                <i class="fa fa-map-marker"></i>
+                Satellite Town, Lagos
+            </a>
+            <a href="{% url 'about_us'%}">
+
+                About Us
+            </a>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="top-right">
+
+            {% if user.is_authenticated %}
+
+            <a href="{% url 'profile' %}">
+                <i class="fa fa-user-o"></i>
+                Account:{{request.user.email}}
+            </a>
+
+            <a href="{% url 'orders_page' %}" class="profile-btn">
+                <i class="fa fa-truck"></i>
+                Orders
+            </a>
+
+            <a href="{% url 'account_logout' %}">
+                <i class="fa fa-sign-out"></i>
+                Logout
+            </a>
+
+            {% else %}
+
+            <a href="{% url 'account_login' %}">
+                <i class="fa fa-sign-in"></i>
+                Login
+            </a>
+
+            <a href="{% url 'account_signup' %}">
+                <i class="fa fa-user-plus"></i>
+                Register
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+MAIN HEADER
+========================= -->
+<header id="main-header">
+
+    <div class="container navbar-container">
+
+        <!-- LOGO -->
+        <div class="logo-area">
+
+            <a href="/" class="logo">
+                <img src="{% static 'logo/Remarobelogo.png' %}" alt="Remarobe" class="logo-icon">
+
+                <div class="logo-text-wrap">
+                    <span class="logo-main">
+                        REMAROBE
+                    </span>
+
+                    <span class="logo-sub">
+                        Electrical Engineering
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="nav-actions">
+
+            <button type="button" class="cart-link" id="cart-toggle-btn">
+
+                <i class="fa fa-shopping-cart"></i>
+
+                <span>Cart</span>
+
+                <div class="qty cart-count">
+                    0
+                </div>
+
+            </button>
+
+
+            <!-- MENU -->
+            <div class="menu-toggle" id="mobile-menu-btn">
+
+                <i class="fa fa-bars"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH SECTION -->
+    <div class="container search-container">
+
+        <div class="search-area">
+
+            <form action="{% url 'search_products' %}" method="GET">
+
+                <div class="search-wrapper">
+
+                    <!-- CATEGORY -->
+                    <select class="search-category" onchange="if(this.value){location=this.value;}">
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                        {% for category in categories %}
+
+                        <option value="{% url 'category_products' category.name %}">
+                            {{ category.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <!-- SEARCH -->
+                    <input type="text" name="q" id="search-input"
+                        placeholder="Search electrical products, earthing materials, contactors...">
+
+                    <!-- BUTTON -->
+                    <button type="submit" class="search-btn">
+
+                        <i class="fa fa-search"></i>
+
+                    </button>
+
+                    <!-- DROPDOWN -->
+                    <div id="search-suggestions" class="suggestions-box"></div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================
+NAVIGATION
+========================= -->
+<nav id="navigation">
+
+    <div id="responsive-nav">
+
+        <ul class="main-nav">
+
+            <li class="active">
+                <a href="/">Home</a>
+            </li>
+
+            {% for cat in nav_categories %}
+
+            <li>
+                <a href="{% url 'category_products' cat.name %}">
+                    {{ cat.name }}
+                </a>
+            </li>
+
+            {% endfor %}
+
+
+
+        </ul>
+
+    </div>
+
+</nav>
+
+<!-- =========================
+STYLES
+========================= -->
+<style>
+    /* =========================
+GENERAL
+========================= */
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #F9FAFB;
+        overflow-x: hidden;
+    }
+
+    body.nav-open {
+        overflow: hidden;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .container {
+        width: 92%;
+        margin: auto;
+    }
+
+    /* =========================
+TOP HEADER
+========================= */
+
+    #top-header {
+        background: #2F2F34;
+        color: #F9FAFB;
+        font-size: 13px;
+        padding: 10px 0;
+    }
+
+    .top-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .top-left,
+    .top-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .top-left a,
+    .top-right a {
+        color: #E5E7EB;
+        font-size: 13px;
+        transition: 0.3s ease;
+    }
+
+    .top-left a:hover,
+    .top-right a:hover {
+        color: #2A7DB4;
+    }
+
+    /* =========================
+MAIN HEADER
+========================= */
+
+    #main-header {
+        background: #FFFFFF;
+        border-bottom: 1px solid #E5E7EB;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+
+    .navbar-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0;
+    }
+
+    /* =========================
+LOGO
+========================= */
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+    }
+
+    .logo-icon {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+
+        transition: 0.3s ease;
+    }
+
+    .logo:hover .logo-icon {
+        transform: scale(1.05);
+    }
+
+
+    .logo-text-wrap {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-main {
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #2A7DB4;
+        line-height: 1;
+    }
+
+    .logo-sub {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #6B7280;
+        margin-top: 4px;
+    }
+
+    /* =========================
+SEARCH
+========================= */
+
+    .search-container {
+        padding-bottom: 18px;
+    }
+
+    .search-area {
+        width: 100%;
+    }
+
+    .search-wrapper {
+        position: relative;
+        display: flex;
+        width: 100%;
+    }
+
+    .search-category {
+        width: 220px;
+        border: 1px solid #D1D5DB;
+        border-right: none;
+        padding: 14px;
+        background: #F9FAFB;
+        outline: none;
+    }
+
+    #search-input {
+        flex: 1;
+        border: 1px solid #D1D5DB;
+        padding: 14px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .search-btn {
+        width: 65px;
+        border: none;
+        background: #2A7DB4;
+        color: white;
+        cursor: pointer;
+    }
+
+    .search-btn:hover {
+        background: #1f6796;
+    }
+
+    /* =========================
+ACTIONS
+========================= */
+
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .cart-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #111827;
+        font-weight: 600;
+    }
+
+    .cart-link i {
+        font-size: 22px;
+    }
+
+    .qty {
+        background: #2A7DB4;
+        color: white;
+        border-radius: 50%;
+        padding: 3px 7px;
+        font-size: 12px;
+    }
+
+    /* =========================
+MENU TOGGLE
+========================= */
+
+    .menu-toggle {
+        display: none;
+        cursor: pointer;
+    }
+
+    .menu-toggle i {
+        font-size: 26px;
+        color: #111827;
+    }
+
+    /* =========================
+DESKTOP NAVIGATION
+========================= */
+
+    #navigation {
+        background: #FFFFFF;
+        border-bottom: 1px solid #E5E7EB;
+    }
+
+    .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        list-style: none;
+        margin: 0;
+        padding: 16px 30px;
+    }
+
+    .main-nav li {
+        list-style: none;
+    }
+
+    .main-nav li a {
+        color: #111827;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.3s ease;
+    }
+
+    .main-nav li a:hover {
+        color: #2A7DB4;
+    }
+
+    .main-nav li.active a {
+        color: #2A7DB4;
+    }
+
+    /* =========================
+SEARCH SUGGESTIONS
+========================= */
+
+    .suggestions-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #eee;
+        z-index: 9999;
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 12px;
+        border-bottom: 1px solid #F3F4F6;
+        cursor: pointer;
+        color: #111827;
+    }
+
+    .suggestion-item:hover {
+        background: #F9FAFB;
+    }
+
+    /* =========================
+TABLET
+========================= */
+
+    @media(max-width: 992px) {
+
+        .top-header-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+    }
+
+    /* =========================
+MOBILE
+========================= */
+
+    @media (max-width: 768px) {
+
+        /* TOP HEADER */
+
+        .top-left,
+        .top-right {
+            width: 100%;
+            gap: 12px;
+        }
+
+        .top-left a,
+        .top-right a {
+            font-size: 12px;
+        }
+
+        /* LOGO */
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+        }
+
+        .logo-main {
+            font-size: 24px;
+        }
+
+        .logo-sub {
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+
+        /* SEARCH */
+
+        .search-container {
+            padding-bottom: 15px;
+        }
+
+        .search-wrapper {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-category {
+            width: 100%;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+        }
+
+        #search-input {
+            width: 100%;
+            border-radius: 6px;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+        }
+
+        /* MENU */
+
+        .menu-toggle {
+            display: block;
+        }
+
+        /* OVERLAY NAVIGATION */
+
+        #responsive-nav {
+
+            position: fixed;
+
+            top: 0;
+            right: -100%;
+
+            width: 85%;
+            max-width: 340px;
+
+            height: 100vh;
+
+            background: #ffffff;
+
+            z-index: 99999;
+
+            overflow-y: auto;
+
+            transition: 0.35s ease;
+
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.12);
+
+            padding-top: 80px;
+        }
+
+        #responsive-nav.active {
+            right: 0;
+            z-index: 999;
+        }
+
+        .main-nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            padding: 0;
+        }
+
+        .main-nav li {
+            width: 100%;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .main-nav li a {
+            display: block;
+            width: 100%;
+            padding: 18px 25px;
+            color: #111827 !important;
+            background: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .main-nav li.active a {
+            background: #F9FAFB;
+            color: #2A7DB4 !important;
+        }
+
+        .main-nav li a:hover {
+            background: #F3F4F6;
+            color: #2A7DB4 !important;
+        }
+
+    }
+</style>

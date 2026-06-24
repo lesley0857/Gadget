@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <i class="fa fa-exclamation-triangle auth-error-icon"></i>
+
+        <h2>Authentication Failed</h2>
+
+        <p class="auth-text">
+
+            We could not authenticate your Google account.
+
+            Please try again.
+
+        </p>
+
+        <a href="{% url 'account_login' %}" class="btn-auth">
+
+            Back To Login
+
+        </a>
+
+    </div>
+
+</div>
+
+{% include "partials/auth_styles.html" %}
+
+{% endblock %}

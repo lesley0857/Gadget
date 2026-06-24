@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<style>
+    /* 🔍 HEADER */
+    .search-header {
+        margin-bottom: 20px;
+    }
+
+    .search-header h2 {
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    /* 🧱 GRID */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    /* 🛍 PRODUCT CARD */
+    .product-card {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        transition: 0.2s ease;
+        position: relative;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-3px);
+    }
+
+    /* 🖼 IMAGE */
+    .product-image {
+        width: 100%;
+        height: 200px;
+        background: #f9f9f9;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* 🧾 DETAILS */
+    .product-info {
+        padding: 12px;
+    }
+
+    .product-name {
+        font-size: 14px;
+        font-weight: 500;
+        height: 40px;
+        overflow: hidden;
+    }
+
+    /* 💰 PRICE */
+    .price {
+        margin-top: 6px;
+        font-weight: bold;
+        color: #D10024;
+    }
+
+    .old-price {
+        text-decoration: line-through;
+        font-size: 12px;
+        color: #999;
+        margin-left: 5px;
+    }
+
+    /* 🏷 BADGE */
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #D10024;
+        color: white;
+        font-size: 11px;
+        padding: 4px 6px;
+        border-radius: 4px;
+    }
+
+    /* 🏪 VENDOR */
+    .vendor-name {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    /* ⭐ RATING (placeholder) */
+    .rating {
+        font-size: 12px;
+        color: #f5a623;
+    }
+
+    /* ❌ EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #888;
+    }
+</style>
+
+<div class="container">
+
+    <!-- 🔍 HEADER -->
+    <div class="search-header">
+        <h2>
+            Search results for:
+            <strong>"{{ query }}"</strong>
+        </h2>
+    </div>
+
+    {% if products %}
+
+    <!-- 🧱 GRID -->
+    <div class="products-grid">
+
+        {% for p in products %}
+
+        <div class="product-card">
+
+            <!-- 🏷 DISCOUNT (optional logic) -->
+            {% if p.discount_percentage %}
+            <div class="discount-badge">
+                -{{ p.discount_percentage }}%
+            </div>
+            {% endif %}
+
+            <!-- 🖼 IMAGE -->
+            <div class="product-image">
+                {% with media=p.media.all|first %}
+                {% if media %}
+                <img src="{{ media.file.url }}">
+                {% else %}
+                <img src="/static/img/default.png">
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- 🧾 INFO -->
+            <div class="product-info">
+
+                <div class="product-name">
+                    {{ p.name }}
+                </div>
+
+                <div class="vendor-name">
+                    {{ p.vendor.store_name }}
+                </div>
+
+                <!-- ⭐ (placeholder) -->
+                <div class="rating">★★★★☆</div>
+
+                <!-- 💰 PRICE -->
+                <div class="price">
+                    ₦{{ p.final_price|floatformat:2|intcomma }}
+
+                    {% if p.old_price %}
+                    <span class="old-price">
+                        ₦{{ p.old_price|intcomma }}
+                    </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- ❌ EMPTY -->
+    <div class="empty-state">
+        <h3>No results found</h3>
+        <p>Try searching with different keywords.</p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

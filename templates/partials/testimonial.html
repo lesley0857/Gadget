@@ -1,0 +1,104 @@
+{% load static %}
+
+<section class="testimonial-section">
+
+    <style>
+        .testimonial-slider {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+        }
+
+        .testimonial-card {
+            min-width: 350px;
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+            scroll-snap-align: start;
+        }
+
+        .stars {
+            color: #F59E0B;
+            margin-bottom: 15px;
+        }
+
+        .client {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .client img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <span class="badge">
+                Testimonials
+            </span>
+
+            <h2>
+                What Our Clients Say
+            </h2>
+
+        </div>
+
+        <div class="testimonial-slider">
+
+            {% for testimonial in featured_testimonials %}
+
+            <div class="testimonial-card">
+
+                <div class="stars">
+
+                    {% for i in "12345" %}
+
+                    <i class="fa fa-star"></i>
+
+                    {% endfor %}
+
+                </div>
+
+                <p>
+                    "{{ testimonial.message }}"
+                </p>
+
+                <div class="client">
+
+                    {% if testimonial.photo %}
+                    <img src="{{ testimonial.photo.url }}">
+                    {% endif %}
+
+                    <div>
+
+                        <strong>
+                            {{ testimonial.name }}
+                        </strong>
+
+                        <span>
+                            {{ testimonial.company }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>

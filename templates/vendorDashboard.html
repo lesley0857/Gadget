@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<h2>Vendor Dashboard</h2>
+
+<div class="dashboard">
+
+    <div class="card">
+        <h3>Balance</h3>
+        <p>₦{{ wallet.balance }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Total Orders</h3>
+        <p>{{ items.count }}</p>
+    </div>
+
+</div>
+
+<h3>Orders</h3>
+
+{% for item in items %}
+<div class="order-row">
+    <p>{{ item.product.name }}</p>
+    <p>Status: {{ item.status }}</p>
+
+    {% if item.status == "pending" %}
+    <a href="{% url 'mark_shipped' item.id %}">Mark as Shipped</a>
+    {% endif %}
+</div>
+{% endfor %}
+<h2>{{ request.user.vendor.store_name }} Dashboard</h2>
+
+<p>Total Sales: ₦{{ total_sales }}</p>
+<p>Total Orders: {{ total_orders }}</p>
+
+<table>
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Status</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item.product_listing.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</html>

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<div class="social-auth-wrapper">
+
+    <div class="social-auth-card">
+
+        <div class="brand-header">
+
+            <h2>REMAROBE</h2>
+
+            <p>
+                Complete Your Google Sign Up
+            </p>
+
+        </div>
+
+        <div class="social-icon">
+
+            <i class="fa fa-google"></i>
+
+        </div>
+
+        <p class="social-message">
+
+            You are about to sign in using your Google account.
+
+            Please confirm your details below.
+
+        </p>
+
+        {% if form.errors %}
+
+        <div class="alert-box">
+
+            An account already exists with this email address.
+
+            Please login first and connect Google from your profile.
+
+        </div>
+
+        {% endif %}
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit" class="social-btn">
+
+                Continue With Google
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+    .social-auth-wrapper {
+
+        min-height: 80vh;
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+
+        padding: 60px 20px;
+
+        background: #f8fafc;
+    }
+
+    .social-auth-card {
+
+        width: 100%;
+
+        max-width: 500px;
+
+        background: white;
+
+        padding: 40px;
+
+        border-radius: 24px;
+
+        box-shadow:
+            0 15px 40px rgba(0, 0, 0, .08);
+    }
+
+    .brand-header {
+
+        text-align: center;
+
+        margin-bottom: 25px;
+    }
+
+    .brand-header h2 {
+
+        color: #dc2626;
+
+        font-size: 36px;
+
+        font-weight: 800;
+
+        margin-bottom: 8px;
+    }
+
+    .brand-header p {
+
+        color: #6b7280;
+    }
+
+    .social-icon {
+
+        text-align: center;
+
+        margin-bottom: 20px;
+    }
+
+    .social-icon i {
+
+        font-size: 60px;
+
+        color: #dc2626;
+    }
+
+    .social-message {
+
+        text-align: center;
+
+        color: #4b5563;
+
+        margin-bottom: 25px;
+    }
+
+    .alert-box {
+
+        background: #fee2e2;
+
+        color: #991b1b;
+
+        padding: 14px;
+
+        border-radius: 10px;
+
+        margin-bottom: 20px;
+    }
+
+    .social-auth-card input {
+
+        width: 100%;
+
+        padding: 14px;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 10px;
+
+        margin-bottom: 15px;
+    }
+
+    .social-btn {
+
+        width: 100%;
+
+        border: none;
+
+        background: #dc2626;
+
+        color: white;
+
+        padding: 15px;
+
+        border-radius: 12px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+    }
+
+    .social-btn:hover {
+
+        background: #b91c1c;
+    }
+</style>
+
+{% endblock %}

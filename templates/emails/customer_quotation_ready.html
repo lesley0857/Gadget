@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        body {
+            background: #f5f7fb;
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+        }
+
+        .header {
+            background: #198754;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background: #f7f7f7;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 15px 30px;
+            background: #198754;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .warning {
+            margin-top: 25px;
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .total {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="card">
+
+
+        <div class="header">
+
+            <h2>Your Quotation Is Ready</h2>
+
+        </div>
+
+        <p>Hello {{ negotiation.customer_name }},</p>
+
+        <p>
+            We have completed your quotation review.
+        </p>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Product</th>
+
+                    <th>Qty</th>
+
+                    <th>Unit Price</th>
+
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for item in negotiation.items.all %}
+
+                <tr>
+
+                    <td>{{ item.product_listing.name }}</td>
+
+                    <td>{{ item.quantity }}</td>
+
+                    <td>₦{{ item.get_price }}</td>
+
+                    <td>₦{{ item.get_total }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <p>
+            Shipping: ₦{{ negotiation.shipping_fee }}
+        </p>
+
+        <div class="total">
+
+            Total: ₦{{ total }}
+
+        </div>
+
+        <a href="{{ payment_url }}" class="btn">
+
+            Pay Now
+
+        </a>
+
+        <div class="warning">
+
+            This quotation expires in 12 hours.
+            After expiry, a new quotation request
+            may be required.
+
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>

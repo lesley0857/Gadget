@@ -1,0 +1,1356 @@
+{% load static %}
+{% load humanize%}
+{% load cloudinary %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>REMAROBE ELECTRICAL ENGINEERING</title>
+    <link rel="icon" type="image/png" href="{% static 'logo/Remarobelogo.png' %}">
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+
+    <!-- Slick -->
+    <link type="text/css" rel="stylesheet" href="{% static 'css/slick.css' %}" />
+    <link type="text/css" rel="stylesheet" href="{% static 'css/slick-theme.css' %}" />
+
+    <!-- nouislider -->
+    <link type="text/css" rel="stylesheet" href="{% static 'css/nouislider.min.css' %}" />
+
+    <!-- Font Awesome Icon -->
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+
+    <!-- Custom stlylesheet -->
+    <link type="text/css" rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+</head>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // =========================
+        // ELEMENTS
+        // =========================
+
+        const cartSidebar = document.getElementById("cart-sidebar");
+
+        const cartBody = document.getElementById("cart-body");
+
+        const overlay = document.getElementById("cart-overlay");
+
+        const openBtn = document.getElementById("cart-toggle-btn");
+
+        const closeBtn = document.getElementById("close-cart-btn");
+
+        const cartTotals = document.querySelectorAll(".cart-total");
+
+        const cartCounts = document.querySelectorAll(".cart-count");
+
+
+
+        // =========================
+        // OPEN CART
+        // =========================
+        function formatMoney(value) {
+            return Number(value).toLocaleString('en-NG', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        window.openCart = function () {
+
+            cartSidebar.classList.add("active");
+        }
+
+        // =========================
+        // CLOSE CART
+        // =========================
+
+        function closeCart() {
+
+            cartSidebar.classList.remove("active");
+        }
+
+        openBtn?.addEventListener("click", openCart);
+
+        closeBtn?.addEventListener("click", closeCart);
+
+        overlay?.addEventListener("click", closeCart);
+
+        // =========================
+        // UPDATE UI
+        // =========================
+
+        window.updateCartUI = function (data) {
+            cartCounts.forEach(el => {
+
+                el.innerText = data.cart_count;
+            });
+
+            cartTotals.forEach(el => {
+
+                el.innerText = data.total;
+            });
+
+            renderCartItems(data.cart_items);
+        }
+
+        // =========================
+        // RENDER ITEMS
+        // =========================
+
+        window.renderCartItems = function (items) {
+
+            if (!items || items.length === 0) {
+
+                cartBody.innerHTML = `
+                <div class="cart-empty">
+
+                    <i class="fa fa-shopping-cart"></i>
+
+                    <p>Your cart is empty</p>
+
+                </div>
+            `;
+
+                return;
+            }
+
+            cartBody.innerHTML = "";
+
+            items.forEach(item => {
+
+                cartBody.innerHTML += `
+                <div class="cart-item">
+
+                    <img src="${item.image}" alt="">
+
+                    <div class="cart-item-info">
+
+                        <div class="cart-item-title">
+                            ${item.name}
+                        </div>
+
+                        <div class="cart-item-price">
+                            ₦${formatMoney(item.price)}
+                        </div>
+
+                        <div class="cart-controls">
+
+                            <button
+                                class="cart-action"
+                                data-id="${item.id}"
+                                data-action="decrement"
+                            >
+                                -
+                            </button>
+
+                            <span>${item.quantity}</span>
+
+                            <button
+                                class="cart-action"
+                                data-id="${item.id}"
+                                data-action="increment"
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                        <button
+                            class="remove-item cart-action"
+                            data-id="${item.id}"
+                            data-action="remove"
+                        >
+                            Remove
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+            });
+        }
+
+        // =========================
+        // LOAD CART
+        // =========================
+
+        window.loadCart = function () {
+
+            fetch("/cart/summary/")
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+                });
+        }
+
+        // =========================
+        // ADD TO CART
+        // =========================
+
+        document.addEventListener("click", function (e) {
+
+            const btn = e.target.closest(".add-to-cart-btn");
+
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+
+            btn.disabled = true;
+
+            fetch(`/cart/add/${id}/`, {
+
+                method: "POST",
+
+                headers: {
+
+                    "X-CSRFToken": getCSRFToken()
+                }
+
+            })
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+
+                    openCart();
+                })
+
+                .finally(() => {
+
+                    btn.disabled = false;
+                });
+        });
+
+        // =========================
+        // CART ACTIONS
+        // =========================
+
+        document.addEventListener("click", function (e) {
+
+            const btn = e.target.closest(".cart-action");
+
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+
+            const action = btn.dataset.action;
+
+            fetch("/cart/update/", {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/x-www-form-urlencoded",
+
+                    "X-CSRFToken":
+                        getCSRFToken()
+                },
+
+                body:
+                    `product_id=${id}&action=${action}`
+            })
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    updateCartUI(data);
+                });
+        });
+
+        // =========================
+        // CSRF
+        // =========================
+
+        window.getCSRFToken = function () {
+
+            return document.cookie
+                .split("; ")
+                .find(row =>
+                    row.startsWith("csrftoken")
+                )
+                ?.split("=")[1];
+        }
+
+        // =========================
+        // INITIAL LOAD
+        // =========================
+
+        loadCart();
+
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+
+    new Swiper(".trendingSwiper", {
+
+        loop: true,
+
+        spaceBetween: 18,
+
+        autoplay: {
+
+            delay: 4000,
+
+            disableOnInteraction: false,
+
+        },
+
+        navigation: {
+
+            nextEl: ".swiper-button-next",
+
+            prevEl: ".swiper-button-prev",
+
+        },
+
+        breakpoints: {
+
+            0: {
+
+                slidesPerView: 3,
+
+            },
+
+            768: {
+
+                slidesPerView: 5,
+
+            },
+
+        },
+
+    });
+
+</script>
+
+<body>
+    <style>
+        /* =========================
+   SHARED SECTION STYLING
+========================= */
+        .catalog-container {
+            width: min(95%, 1500px);
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .featured-section,
+        .carousel-section {
+            margin: 50px auto;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-heading h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #111827;
+            margin: 0;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-heading h2::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 70px;
+            height: 4px;
+            background: #2A7DB4;
+            border-radius: 20px;
+        }
+
+        /* =========================
+   FEATURED GRID
+========================= */
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        /* =========================
+   SMALLER PRODUCT CARDS
+========================= */
+
+        .product-card {
+            max-width: 250px;
+            margin: auto;
+        }
+
+        .product-card .product-image {
+            height: 180px;
+        }
+
+        .product-card .product-body {
+            padding: 12px;
+        }
+
+        .product-card .product-title {
+            font-size: 14px;
+            line-height: 1.4;
+            min-height: 40px;
+        }
+
+        .product-card .price {
+            font-size: 18px;
+        }
+
+        .product-card .btn {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        /* =========================
+   TRENDING SWIPER
+========================= */
+
+        .trendingSwiper {
+            width: 100%;
+            padding: 10px 5px 50px;
+        }
+
+        .trendingSwiper .swiper-slide {
+            width: 250px !important;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* center cards */
+        .featured-grid .product-card,
+        .swiper-slide .product-card {
+            margin: auto;
+        }
+
+        /* =========================
+   SWIPER ARROWS
+========================= */
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .12);
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 16px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* =========================
+   MOBILE
+========================= */
+
+        @media(max-width:768px) {
+
+            .featured-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .product-card {
+                max-width: 100%;
+            }
+
+            .product-card .product-image {
+                height: 140px;
+            }
+
+            .section-heading h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (min-width: 768px) {
+
+            .featured-grid {
+
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+
+        /* =========================================
+MESSAGES
+========================================= */
+
+        .message-wrapper {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto 0;
+        }
+
+        .success-message {
+            background: #DCFCE7;
+            color: #166534;
+            padding: 18px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .product-img {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* IMAGE */
+        .product-image {
+            width: 100%;
+            display: block;
+            transition: opacity 0.4s ease;
+        }
+
+        /* VIDEO */
+        .product-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        /* HOVER EFFECT */
+        .product:hover .product-image {
+            opacity: 0;
+        }
+
+        .product:hover .product-video {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* =========================
+   PRODUCTS GRID
+========================= */
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 20px;
+        }
+
+        /* TABLET */
+        @media (max-width: 992px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+
+        /* VERY SMALL SCREENS */
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+
+        /* PRODUCT CARD */
+        .product-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: #f8f8f8;
+        }
+
+        /* IMAGE */
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+
+            transition: opacity 0.4s ease;
+        }
+
+        /* VIDEO */
+        .product-video {
+            position: absolute;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            opacity: 0;
+            transition: opacity 0.4s ease;
+
+            pointer-events: none;
+        }
+
+        /* HOVER EFFECT */
+        .product-card:hover .product-image {
+            opacity: 0;
+        }
+
+        .product-card:hover .product-video {
+            opacity: 1;
+        }
+
+        /* PRODUCT BODY */
+        .product-body {
+            padding: 10px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .product-price {
+            color: #D10024;
+            font-weight: bold;
+        }
+
+        /* BUTTON */
+        .add-to-cart-btn {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: #D10024;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #a8001c;
+        }
+
+
+        /* =========================
+CART SIDEBAR
+========================= */
+
+        .cart-sidebar {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 999999;
+
+            pointer-events: none;
+        }
+
+        .cart-sidebar.active {
+
+            pointer-events: all;
+        }
+
+        /* OVERLAY */
+
+        .cart-overlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.45);
+
+            opacity: 0;
+
+            transition: 0.3s ease;
+        }
+
+        .cart-sidebar.active .cart-overlay {
+
+            opacity: 1;
+        }
+
+        /* PANEL */
+
+        .cart-panel {
+
+            position: absolute;
+
+            top: 0;
+            right: -420px;
+
+            width: 400px;
+            max-width: 100%;
+
+            height: 100vh;
+
+            background: white;
+
+            display: flex;
+
+            flex-direction: column;
+
+            transition: 0.35s ease;
+
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .cart-sidebar.active .cart-panel {
+
+            right: 0;
+        }
+
+        /* HEADER */
+
+        .cart-top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 20px;
+
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-top h3 {
+
+            margin: 0;
+
+            font-size: 20px;
+        }
+
+        #close-cart-btn {
+
+            border: none;
+
+            background: none;
+
+            font-size: 28px;
+
+            cursor: pointer;
+        }
+
+        /* BODY */
+
+        .cart-body {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 20px;
+        }
+
+        /* EMPTY */
+
+        .cart-empty {
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            height: 100%;
+
+            color: #888;
+        }
+
+        .cart-empty i {
+
+            font-size: 40px;
+
+            margin-bottom: 15px;
+        }
+
+        /* ITEM */
+
+        .cart-item {
+
+            display: flex;
+
+            gap: 14px;
+
+            margin-bottom: 20px;
+
+            padding-bottom: 20px;
+
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .cart-item img {
+
+            width: 80px;
+
+            height: 80px;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+        }
+
+        .cart-item-info {
+
+            flex: 1;
+        }
+
+        .cart-item-title {
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 10px;
+        }
+
+        .cart-item-price {
+
+            color: #2A7DB4;
+
+            font-weight: 700;
+
+            margin-bottom: 10px;
+        }
+
+        /* CONTROLS */
+
+        .cart-controls {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .cart-controls button {
+
+            width: 30px;
+
+            height: 30px;
+
+            border: 1px solid #ddd;
+
+            background: white;
+
+            cursor: pointer;
+
+            border-radius: 6px;
+        }
+
+        /* REMOVE */
+
+        .remove-item {
+
+            margin-top: 10px;
+
+            border: none;
+
+            background: none;
+
+            color: red;
+
+            cursor: pointer;
+
+            padding: 0;
+        }
+
+        /* FOOTER */
+
+        .cart-bottom {
+
+            border-top: 1px solid #eee;
+
+            padding: 20px;
+        }
+
+        .cart-summary {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-bottom: 15px;
+
+            font-size: 18px;
+        }
+
+        .checkout-link {
+
+            display: block;
+
+            width: 100%;
+
+            padding: 15px;
+
+            background: #2A7DB4;
+
+            color: white;
+
+            text-align: center;
+
+            border-radius: 10px;
+
+            font-weight: 700;
+        }
+
+        /* MOBILE */
+
+        @media(max-width:768px) {
+
+            .cart-panel {
+
+                width: 100%;
+            }
+        }
+
+
+
+
+        /* 📱 MOBILE */
+
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f8f8;
+        }
+    </style>
+
+
+    <!-- MAIN CONTENT -->
+    {% include 'partials/header.html' %}
+
+    {% for message in messages %}
+    <div class="success-message">
+
+        <i class="fa fa-check-circle"></i>
+
+        <span>
+            {{ message }}
+        </span>
+
+    </div>
+    {% endfor %}
+
+    <main>
+        {% block content %}
+        {% include 'partials/products.html' %}
+
+        <div class="catalog-container">
+
+            <section class="featured-section">
+                <div class="section-heading">
+                    <h2>Featured Products</h2>
+                </div>
+
+                <div class="featured-grid">
+                    {% for product in featured_products %}
+                    {% include "partials/product_card.html" %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="carousel-section">
+
+                <div class="section-heading">
+                    <h2>Trending Products</h2>
+                </div>
+
+                <div class="swiper trendingSwiper">
+
+                    <div class="swiper-wrapper">
+
+                        {% for product in trending_products %}
+                        <div class="swiper-slide">
+                            {% include "partials/product_card.html" %}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        {% include 'partials/services.html' %}
+        {% include 'partials/product_category.html' %}
+        {% include 'partials/rfq.html' %}
+        {% include 'partials/projects.html' %}
+        {% include "partials/blogs.html" %}
+        {% include 'partials/testimonial.html' %}
+        {% include 'partials/footer.html' %}
+        {% endblock %}
+    </main>
+
+    <div id="negotiation-modal" class="negotiation-modal">
+        <style>
+            .negotiation-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.65);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                padding: 20px;
+            }
+
+            .negotiation-modal.show {
+                display: flex;
+            }
+
+            .negotiation-content {
+                background: #fff;
+                width: 100%;
+                max-width: 550px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                animation: popup .25s ease;
+            }
+
+            @keyframes popup {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .negotiation-header {
+                background: #f8f9fa;
+                padding: 18px 24px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .negotiation-header h3 {
+                margin: 0;
+            }
+
+            .negotiation-body {
+                padding: 24px;
+            }
+
+            .negotiation-body ul {
+                padding-left: 20px;
+                margin: 15px 0;
+            }
+
+            .negotiation-body li {
+                margin-bottom: 10px;
+            }
+
+            .negotiation-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                padding: 20px 24px;
+                border-top: 1px solid #eee;
+            }
+
+            .btn-secondary {
+                border: none;
+                background: #ddd;
+                padding: 10px 18px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+        </style>
+        <div class="negotiation-content">
+
+            <div class="negotiation-header">
+                <h3>Request a Price Negotiation</h3>
+            </div>
+
+            <div class="negotiation-body">
+
+                <p>
+                    You are about to submit a negotiation request for the
+                    items currently in your cart.
+                </p>
+
+                <ul>
+                    <li>Our team will review your request.</li>
+                    <li>You might be offered discounted prices.</li>
+                    <li>You will receive a quotation with the negotiated prices.</li>
+                    <li>You can review and pay for the quotation later.</li>
+                    <li>
+                        If your profile information is incomplete, you may be
+                        redirected to update your phone number, address, or
+                        delivery details before proceeding.
+                    </li>
+                </ul>
+
+                <p>
+                    By continuing, a negotiation request will be created using
+                    the products currently in your cart.
+                </p>
+
+            </div>
+
+            <div class="negotiation-actions">
+
+                <button id="cancel-negotiation" class="btn btn-secondary">
+                    Cancel
+                </button>
+
+                <button id="continue-negotiation" class="btn btn-yellow">
+                    Continue to Negotiation
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+CART SIDEBAR
+========================= -->
+
+    <div id="cart-sidebar" class="cart-sidebar">
+
+        <!-- OVERLAY -->
+        <div id="cart-overlay" class="cart-overlay"></div>
+
+        <!-- PANEL -->
+        <div class="cart-panel">
+
+            <!-- HEADER -->
+            <div class="cart-top">
+
+                <h3>Your Cart</h3>
+
+                <button id="close-cart-btn">
+                    &times;
+                </button>
+
+            </div>
+
+            <!-- ITEMS -->
+            <div id="cart-body" class="cart-body">
+
+                <div class="cart-empty">
+
+                    <i class="fa fa-shopping-cart"></i>
+
+                    <p>Your cart is empty</p>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="cart-bottom">
+
+                <div class="cart-summary">
+
+                    <span>Total</span>
+
+                    <strong>
+                        ₦<span class="cart-total">0</span>
+                    </strong>
+
+                </div>
+                <a href="#" id="negotiate-btn" class="checkout-link btn">
+                    Negotiate
+                </a>
+
+                <a href="{% url 'checkout' %}" class="checkout-link">
+                    Proceed To Checkout
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <!-- jQuery Plugins -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/slick.min.js' %}"></script>
+    <script src="{% static 'js/nouislider.min.js' %}"></script>
+    <script src="{% static 'js/jquery.zoom.min.js' %}"></script>
+
+
+    <script>
+        document.querySelectorAll('.product').forEach(product => {
+            const video = product.querySelector('.product-video');
+
+            if (video) {
+                product.addEventListener('mouseenter', () => {
+                    video.play();
+                });
+
+                product.addEventListener('mouseleave', () => {
+                    video.pause();
+                    video.currentTime = 0;
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.querySelectorAll('.product-card').forEach(card => {
+            const video = card.querySelector('.product-video');
+
+            if (video) {
+                card.addEventListener('mouseenter', () => {
+                    video.play();
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    video.pause();
+                    video.currentTime = 0;
+                });
+            }
+        });
+    </script>
+
+    <script>
+
+        const negotiateBtn = document.getElementById('negotiate-btn');
+        const modal = document.getElementById('negotiation-modal');
+
+        const cancelBtn = document.getElementById('cancel-negotiation');
+        const continueBtn = document.getElementById('continue-negotiation');
+
+        negotiateBtn.addEventListener('click', function (e) {
+
+            e.preventDefault();
+
+            modal.classList.add('show');
+
+        });
+
+        cancelBtn.addEventListener('click', function () {
+
+            modal.classList.remove('show');
+
+        });
+
+        continueBtn.addEventListener('click', function () {
+
+            window.location.href = "{% url 'negotiate_cart' %}";
+
+        });
+
+        modal.addEventListener('click', function (e) {
+
+            if (e.target === modal) {
+
+                modal.classList.remove('show');
+
+            }
+
+        });
+
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+
+
+
+</body>
+
+</html>

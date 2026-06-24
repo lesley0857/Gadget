@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<head>
+    <title>
+        {{ blog.meta_title|default:blog.title }}
+    </title>
+
+    <meta name="description" content="{{ blog.meta_description }}">
+
+    <meta name="keywords" content="{{ blog.keywords }}">
+</head>
+
+<style>
+    .blog-hero {
+        padding: 80px 0 40px;
+        background: #F8FAFC;
+    }
+
+    .blog-header {
+        max-width: 900px;
+        margin: auto;
+        text-align: center;
+    }
+
+    .blog-category {
+        background: #DC2626;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+    }
+
+    .blog-date {
+        margin-left: 10px;
+        color: #6B7280;
+    }
+
+    .blog-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-top: 20px;
+        color: #111827;
+    }
+
+    .blog-excerpt {
+        color: #6B7280;
+        font-size: 18px;
+        line-height: 1.8;
+    }
+
+    .featured-image {
+        width: 100%;
+        border-radius: 18px;
+    }
+
+    .blog-layout {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 50px;
+        padding: 60px 0;
+    }
+
+    .blog-content {
+        font-size: 17px;
+        line-height: 1.9;
+        color: #374151;
+    }
+
+    .blog-content h2 {
+        margin-top: 40px;
+        color: #111827;
+    }
+
+    .blog-content img {
+        max-width: 100%;
+        border-radius: 12px;
+    }
+
+    .blog-sidebar {
+        position: sticky;
+        top: 120px;
+        height: max-content;
+    }
+
+    .sidebar-card {
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        padding: 25px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-btn {
+        display: block;
+        text-align: center;
+        padding: 14px;
+        background: #DC2626;
+        color: #fff;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .related-post {
+        display: block;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .blog-cta {
+        padding: 80px 0;
+    }
+
+    .cta-box {
+        background: #111827;
+        color: #fff;
+        text-align: center;
+        padding: 60px;
+        border-radius: 20px;
+    }
+
+    .cta-btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: #DC2626;
+        color: #fff;
+        padding: 16px 28px;
+        border-radius: 10px;
+    }
+
+    .related-articles {
+        padding: 80px 0;
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+
+    .related-card {
+        background: #fff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, .05);
+    }
+
+    .related-card img {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+    }
+
+    .related-body {
+        padding: 20px;
+    }
+
+    @media(max-width:991px) {
+
+        .blog-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .blog-title {
+            font-size: 34px;
+        }
+
+    }
+</style>
+<section class="blog-hero">
+
+    <div class="container">
+
+        <div class="blog-header">
+
+            <div class="blog-meta">
+
+                <span class="blog-category">
+                    {{ blog.category.name }}
+                </span>
+
+                <span class="blog-date">
+                    {{ blog.created_at|date:"F d, Y" }}
+                </span>
+
+            </div>
+
+            <h1 class="blog-title">
+
+                {{ blog.title }}
+
+            </h1>
+
+            <p class="blog-excerpt">
+
+                {{ blog.excerpt }}
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="blog-featured-image">
+
+    <div class="container">
+
+        <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" class="featured-image">
+
+    </div>
+
+</section>
+
+
+<section class="blog-content-section">
+
+    <div class="container blog-layout">
+
+        <!-- MAIN ARTICLE -->
+
+        <article class="blog-content">
+
+            {{ blog.content|safe }}
+
+        </article>
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="blog-sidebar">
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Need Engineering Support?
+
+                </h3>
+
+                <p>
+
+                    Contact REMAROBE for
+                    electrical earthing,
+                    switchgear installation,
+                    industrial electrical works,
+                    automation systems and
+                    cathodic protection services.
+
+                </p>
+
+                <a href="#rfq" class="sidebar-btn">
+
+                    Request A Quote
+
+                </a>
+
+            </div>
+
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Share Article
+
+                </h3>
+
+                <div class="share-buttons">
+
+                    <a target="_blank"
+                        href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}">
+
+                        LinkedIn
+
+                    </a>
+
+                    <a target="_blank" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}">
+
+                        X
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="sidebar-card">
+
+                <h3>
+
+                    Related Articles
+
+                </h3>
+
+                {% for item in related_blogs %}
+
+                <a href="{% url 'blog_detail' item.slug %}" class="related-post">
+
+                    {{ item.title }}
+
+                </a>
+
+                {% endfor %}
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</section>
+
+
+<section class="blog-cta">
+
+    <div class="container">
+
+        <div class="cta-box">
+
+            <h2>
+
+                Need Electrical Materials
+                Or Engineering Services?
+
+            </h2>
+
+            <p>
+
+                REMAROBE supplies industrial
+                electrical products and delivers
+                engineering solutions across
+                multiple sectors.
+
+            </p>
+
+            <a href="#rfq" class="cta-btn">
+
+                Request A Quote
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="related-articles">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <h2>
+
+                More Engineering Insights
+
+            </h2>
+
+        </div>
+
+        <div class="related-grid">
+
+            {% for post in latest_posts %}
+
+            <a href="{% url 'blog_detail' post.slug %}" class="related-card">
+
+                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+
+                <div class="related-body">
+
+                    <h3>
+
+                        {{ post.title }}
+
+                    </h3>
+
+                    <p>
+
+                        {{ post.excerpt|truncatechars:120 }}
+
+                    </p>
+
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

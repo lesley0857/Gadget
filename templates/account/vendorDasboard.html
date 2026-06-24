@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<h2>Vendor Dashboard</h2>
+
+<p>Balance: ₦{{ wallet.balance }}</p>
+
+{% for item in items %}
+<div>
+    <p>{{ item.product.name }}</p>
+    <p>Status: {{ item.status }}</p>
+    <p>Escrow: ₦{{ item.escrow_amount }}</p>
+</div>
+{% endfor %}
+
+</html>

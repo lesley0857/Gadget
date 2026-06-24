@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<section class="success-page">
+    <style>
+        .account-page,
+        .success-page {
+            padding: 80px 20px;
+            background: #f8fafc;
+        }
+
+        .account-card,
+        .success-card {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 50px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .08);
+        }
+
+        .account-icon,
+        .success-icon i {
+            font-size: 70px;
+            color: #1b4965;
+            margin-bottom: 20px;
+        }
+
+        .account-card h1,
+        .success-card h1 {
+            margin-bottom: 15px;
+        }
+
+        .account-card p,
+        .success-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 14px 30px;
+            background: #1b4965;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            padding: 14px 30px;
+            border: 2px solid #1b4965;
+            color: #1b4965;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
+
+        .account-actions {
+            margin-top: 25px;
+        }
+    </style>
+    <div class="success-card">
+
+        <div class="success-icon">
+            <i class="fa fa-check-circle"></i>
+        </div>
+
+        <h1>
+            Payment Successful
+        </h1>
+
+        <p>
+            Your payment has been received successfully.
+            Our team is now processing your order and logistics arrangements.
+        </p>
+
+        <div class="success-actions">
+
+            <a href="{% url 'profile' %}" class="btn-primary">
+                View Dashboard
+            </a>
+
+            <a href="/" class="btn-secondary">
+                Continue Browsing
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    .update-profile-page {
+        padding: 60px 0;
+        background: #F9FAFB;
+        min-height: 80vh;
+    }
+
+    .profile-form-card {
+        max-width: 850px;
+        margin: auto;
+        background: #fff;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .profile-form-card h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+        color: #111827;
+    }
+
+    .profile-form-card p {
+        color: #6B7280;
+        margin-bottom: 35px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full {
+        grid-column: span 2;
+    }
+
+    .form-group label {
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 15px;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        outline: none;
+        font-size: 15px;
+        transition: .3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        border-color: #DC2626;
+    }
+
+    .save-btn {
+        margin-top: 35px;
+        background: #DC2626;
+        color: #fff;
+        border: none;
+        padding: 16px 30px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: .3s;
+    }
+
+    .save-btn:hover {
+        background: #B91C1C;
+    }
+
+    /* MOBILE */
+
+    @media(max-width:768px) {
+
+        .profile-form-card {
+            padding: 25px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full {
+            grid-column: span 1;
+        }
+
+    }
+</style>
+
+<div class="update-profile-page">
+
+    <div class="container">
+
+        <div class="profile-form-card">
+
+            <h1>Update Profile</h1>
+
+            <p>
+                Keep your shipping and contact information updated.
+            </p>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label>First Name</label>
+
+                        <input type="text" name="first_name" value="{{ request.user.first_name }}">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Last Name</label>
+
+                        <input type="text" name="last_name" value="{{ request.user.last_name }}">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Phone Number</label>
+
+                        <input type="text" name="phone" value="{{ profile.phone }}">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>City</label>
+
+                        <input type="text" name="city" value="{{ profile.city }}">
+
+                    </div>
+
+                    <div class="form-group full">
+
+                        <label>Address</label>
+
+                        <textarea rows="4" name="address">{{ profile.address }}</textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>State</label>
+
+                        <input type="text" name="state" value="{{ profile.state }}">
+
+                    </div>
+
+                </div>
+
+                <button type="submit" class="save-btn">
+                    Save Changes
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

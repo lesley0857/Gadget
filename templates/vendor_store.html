@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<h2>{{ vendor.store_name }}</h2>
+
+<div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <img src="{{ product.media.first.file.url }}">
+        <h4>{{ product.product.name }}</h4>
+        <p>₦{{ product.calculate_price }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+</html>

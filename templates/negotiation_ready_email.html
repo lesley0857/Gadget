@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:40px;">
+
+    <table width="600" align="center" style="
+background:white;
+border-radius:12px;
+overflow:hidden;
+">
+
+        <tr>
+
+            <td style="
+background:#dc2626;
+padding:25px;
+color:white;
+">
+
+                <h2 style="margin:0;">
+                    REMAROBE Electrical Engineering
+                </h2>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:35px;">
+
+                <h3>
+
+                    Your Negotiated Quote Is Ready
+
+                </h3>
+
+                <p>
+
+                    Dear {{ negotiation.customer.first_name|default:"Customer" }},
+
+                </p>
+
+                <p>
+
+                    We have reviewed your negotiation request and prepared a custom quotation for you.
+
+                </p>
+
+                <p>
+
+                    Reference Code:
+
+                    <strong>
+
+                        {{ negotiation.code }}
+
+                    </strong>
+
+                </p>
+
+                <p>
+
+                    Click the button below to view the negotiated pricing and proceed with payment.
+
+                </p>
+
+                <p style="margin-top:35px;">
+
+                    <a href="{{ detail_url }}" style="
+background:#dc2626;
+padding:14px 30px;
+color:white;
+text-decoration:none;
+border-radius:8px;
+font-weight:bold;
+">
+
+                        View Negotiated Quote
+
+                    </a>
+
+                </p>
+
+                <p style="margin-top:40px;">
+
+                    If the button above does not work:
+
+                </p>
+
+                <a href="{{detail_url}}">
+                    Click here
+                </a>
+
+                <hr>
+
+                <p style="
+font-size:13px;
+color:#666;
+">
+
+                    REMAROBE Electrical Engineering<br>
+                    Industrial Electrical Products & Services
+
+                </p>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</body>
+
+</html>

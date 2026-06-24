@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* =========================
+        PAGE
+    ========================= */
+
+    .orders-page {
+        background: #F5F7FA;
+        padding: 40px 0 70px;
+        min-height: 100vh;
+    }
+
+    .orders-wrapper {
+        max-width: 1300px;
+        margin: auto;
+        padding: 0 15px;
+    }
+
+    /* =========================
+        TOP HEADER
+    ========================= */
+
+    .orders-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .orders-title h2 {
+        font-size: 34px;
+        font-weight: 800;
+        margin: 0;
+        color: #111827;
+    }
+
+    .orders-title p {
+        margin-top: 8px;
+        color: #6B7280;
+        font-size: 15px;
+    }
+
+    .orders-summary {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .summary-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 18px 24px;
+        min-width: 180px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-card h4 {
+        margin: 0;
+        font-size: 13px;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .summary-card h3 {
+        margin-top: 10px;
+        color: #DC2626;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .negotiation-badge {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 5px 12px;
+        border-radius: 30px;
+        background: #FEF3C7;
+        color: #B45309;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    /* =========================
+        ORDER CARD
+    ========================= */
+
+    .order-card {
+        background: #fff;
+        border-radius: 22px;
+        margin-bottom: 30px;
+        overflow: hidden;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    .order-head {
+        padding: 25px 30px;
+        border-bottom: 1px solid #EEF2F7;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .order-id {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .order-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    .order-status {
+        padding: 10px 18px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-processing {
+        background: #FEF3C7;
+        color: #B45309;
+    }
+
+    .status-delivered {
+        background: #DCFCE7;
+        color: #15803D;
+    }
+
+    .status-cancelled {
+        background: #FEE2E2;
+        color: #B91C1C;
+    }
+
+    .status-shipped {
+        background: #DBEAFE;
+        color: #1D4ED8;
+    }
+
+    /* =========================
+        ITEMS
+    ========================= */
+
+    .order-items {
+        padding: 25px 30px;
+    }
+
+    .order-item {
+        display: grid;
+        grid-template-columns: 100px 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding: 18px 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 16px;
+        background: #F9FAFB;
+    }
+
+    .item-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .item-meta {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    .item-price {
+        text-align: right;
+    }
+
+    .item-price h4 {
+        color: #DC2626;
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .item-price p {
+        margin-top: 8px;
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    /* =========================
+        FOOTER
+    ========================= */
+
+    .order-footer {
+        padding: 25px 30px;
+        background: #FAFBFC;
+        border-top: 1px solid #EEF2F7;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .order-total {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .order-total span {
+        color: #6B7280;
+        font-size: 14px;
+    }
+
+    .order-total h3 {
+        margin: 0;
+        font-size: 30px;
+        color: #DC2626;
+        font-weight: 800;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-order {
+        padding: 12px 22px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary-order {
+        background: #DC2626;
+        color: #fff;
+    }
+
+    .btn-primary-order:hover {
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    .btn-outline-order {
+        border: 1px solid #D1D5DB;
+        color: #111827;
+        background: #fff;
+    }
+
+    .btn-outline-order:hover {
+        background: #F3F4F6;
+        color: #111827;
+    }
+
+    /* =========================
+        EMPTY
+    ========================= */
+
+    .empty-orders {
+        background: #fff;
+        border-radius: 22px;
+        padding: 80px 20px;
+        text-align: center;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-orders img {
+        width: 120px;
+        margin-bottom: 20px;
+        opacity: 0.8;
+    }
+
+    .empty-orders h3 {
+        font-size: 30px;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .empty-orders p {
+        color: #6B7280;
+        margin-bottom: 30px;
+    }
+
+    /* =========================
+        MOBILE
+    ========================= */
+
+    @media(max-width:768px) {
+
+        .orders-title h2 {
+            font-size: 28px;
+        }
+
+        .summary-card {
+            width: 100%;
+        }
+
+        .order-head,
+        .order-items,
+        .order-footer {
+            padding: 20px;
+        }
+
+        .order-item {
+            grid-template-columns: 80px 1fr;
+        }
+
+        .order-item img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .item-price {
+            grid-column: span 2;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .order-total h3 {
+            font-size: 24px;
+        }
+
+        .order-actions {
+            width: 100%;
+        }
+
+        .btn-order {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+</style>
+
+<section class="orders-page">
+
+    <div class="orders-wrapper">
+
+        <!-- =========================
+            TOP
+        ========================= -->
+
+        <div class="orders-top">
+
+            <div class="orders-title">
+                <h2>My Orders</h2>
+                <p>
+                    Track all your purchases, deliveries and disputes.
+                </p>
+            </div>
+
+            <div class="orders-summary">
+
+                <div class="summary-card">
+                    <h4>Total Orders</h4>
+                    <h3>{{ orders.count }}</h3>
+                </div>
+
+                <div class="summary-card">
+                    <h4>Completed</h4>
+                    <h3>{{ delivered_count }}</h3>
+                </div>
+
+            </div>
+            <div class="order-id">
+
+                Order #{{ order.order_number }}
+
+                {% if order.negotiation %}
+                <span class="negotiation-badge">
+                    Negotiated
+                </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- =========================
+            ORDERS
+        ========================= -->
+
+        {% if orders %}
+
+        {% for order in orders %}
+
+        <div class="order-card">
+
+            <div class="order-head">
+
+                <div>
+
+                    <div class="order-id">
+                        #{{ order.order_number }}
+                    </div>
+
+                    <div class="order-meta">
+
+                        <span>
+                            {{ order.created_at|date:"M d, Y" }}
+                        </span>
+
+                        <span>
+                            {{ order.items.count }} item{{ order.items.count|pluralize }}
+                        </span>
+
+                        <span>
+                            Ref:
+                            {{ order.reference }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <span class="order-status status-{{ order.status }}">
+                    {{ order.status|title }}
+                </span>
+
+            </div>
+
+            <div class="order-footer">
+
+                <div class="order-total">
+
+                    <span>Total Amount</span>
+
+                    <h3>
+                        ₦{{ order.total_amount|floatformat:2|intcomma }}
+                    </h3>
+
+                </div>
+
+                <div class="order-actions">
+
+                    <a href="{% url 'order_detail' order.order_number %}" class="btn-order btn-outline-order">
+
+                        View Details
+
+                    </a>
+
+                    <a href="{% url 'track_order' order.order_number %}" class="btn-order btn-primary-order">
+
+                        Track Order
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+        {% else %}
+
+        <!-- EMPTY -->
+
+        <div class="empty-orders">
+
+            <img src="{% static 'img/empty-cart.png' %}">
+
+            <h3>No Orders Yet</h3>
+
+            <p>
+                You have not placed any orders yet.
+            </p>
+
+            <a href="{% url 'home' %}" class="btn-order btn-primary-order">
+                Start Shopping
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<!-- checkout31:27-->
+
+<body>
+
+    <!--[if lt IE 8]>
+		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+	<![endif]-->
+    {% block content %}
+
+    <style>
+        .your-order-table table {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .your-order-table th {
+            background: #f8f8f8;
+            font-weight: 600;
+        }
+
+        .order-total {
+            font-size: 18px;
+            color: #D10024;
+        }
+
+        /* ########## delivery banner######## */
+        .delivery-banner {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.6);
+
+            z-index: 9999;
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+        .delivery-banner.show {
+
+            display: flex;
+        }
+
+        .delivery-content {
+
+            background: #fff;
+
+            max-width: 550px;
+
+            width: 90%;
+
+            border-radius: 18px;
+
+            padding: 30px;
+
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, .2);
+
+            animation:
+                bannerPop .3s ease;
+        }
+
+        @keyframes bannerPop {
+
+            from {
+
+                opacity: 0;
+
+                transform:
+                    translateY(20px);
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform:
+                    translateY(0);
+            }
+        }
+
+        /* ########## delivery banner######## */
+        .shipping-box {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .shipping-option {
+            display: block;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .shipping-option:hover {
+            background: #f1f1f1;
+        }
+
+        .summary-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .order-button-payment {
+            width: 100%;
+            padding: 12px;
+            background: #D10024;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+    </style>
+    <input type="hidden" name="csrfmiddlewaretoken" ...>
+    <div id="delivery-banner" class="delivery-banner">
+
+        <div class="delivery-content">
+
+            <h3>
+                Negotiate Delivery
+            </h3>
+
+            <p>
+
+                Your order requires
+                delivery negotiation.
+
+                Our logistics team
+                will review your request
+                and contact you with
+                the best shipping option.
+
+            </p>
+
+            <ul>
+
+                <li>
+                    Shipping quote by email
+                </li>
+
+                <li>
+                    WhatsApp follow-up
+                </li>
+
+                <li>
+                    No obligation to proceed
+                </li>
+
+            </ul>
+
+            <div class="banner-actions">
+
+                <button class="btn btn-light" onclick="closeDeliveryBanner()">
+
+                    Cancel
+
+                </button>
+
+                <button class="btn btn-success" onclick="submitNegotiation()">
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Begin Body Wrapper -->
+    <div class="body-wrapper">
+
+        <!--Checkout Area Strat-->
+        <div class="checkout-area pt-60 pb-30">
+            <div class="container">
+
+                <div class="checkout-area pt-60 pb-30">
+                    <div class="container">
+                        <div class="row">
+                            {% if missing_profile %}
+                            <div class="alert alert-warning">
+                                Please complete your shipping details.
+                            </div>
+                            {% endif %}
+                            <!-- ==================CUSTOMER FORM========================== -->
+
+
+                            <div class="col-lg-6 col-12">
+                                <form id="checkout-form">
+
+                                    <input type="text" name="first_name" placeholder="First Name" required>
+                                    <input type="text" name="last_name" placeholder="Last Name" required>
+                                    <input type="email" name="email" placeholder="Email" required>
+                                    <input type="text" name="phone" placeholder="Phone" required>
+
+                                    <input type="text" name="address" placeholder="Billing Address" required>
+                                    <input type="text" name="city" placeholder="City" required>
+                                    <input type="text" name="state" placeholder="State" required>
+
+                                    <h4 style="margin-top:20px;">Shipping Address</h4>
+
+                                    <input type="text" name="shipping_address" placeholder="Shipping Address" required>
+                                    <input type="text" name="shipping_city" placeholder="City" required>
+                                    <input type="text" name="shipping_state" placeholder="State" required>
+                                    <input type="text" name="shipping_phone" placeholder="Phone" required>
+
+                                </form>
+                            </div>
+
+                            <!-- =========================
+             ORDER SUMMARY
+        ========================== -->
+                            <div class="col-lg-6 col-12">
+                                <div class="your-order">
+
+                                    <h3>Your Order</h3>
+
+                                    <!-- =========================
+                     ITEMS TABLE
+                ========================== -->
+                                    <table class="table">
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th>Product</th>
+
+                                                <th>Price</th>
+
+                                                <th>Qty</th>
+
+                                                <th>Total</th>
+
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody>
+
+                                            {% for item in items %}
+
+                                            <tr>
+
+                                                <td>{{ item.product_listing.name }}</td>
+
+                                                <td>
+                                                    ₦{{ item.product_listing.final_price|floatformat:2|intcomma }}
+                                                </td>
+
+                                                <td>{{ item.quantity }}</td>
+
+                                                <td>
+                                                    ₦{{ item.get_total_price|floatformat:2|intcomma }}
+                                                </td>
+
+                                            </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                    <!-- =========================
+                     GLOBAL SHIPPING
+                ========================== -->
+
+                                    <!-- SHIPPING SECTION -->
+
+                                    {% if requires_negotiation %}
+
+                                    <div class="shipping-box">
+
+                                        {% if requires_negotiation %}
+
+                                        <div class="alert alert-warning">
+
+                                            <strong>
+
+                                                Delivery requires negotiation.
+
+                                            </strong>
+
+                                            <br>
+
+                                            One or more products require quotation
+                                            or your shipment exceeds 15kg.
+
+                                        </div>
+
+                                        {% else %}
+
+                                        <div class="alert alert-success">
+
+                                            Shipping Included:
+
+                                            ₦{{ shipping|floatformat:2|intcomma }}
+
+                                        </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% elif requires_shipping %}
+
+                                    <div class="shipping-box">
+
+                                        <h4>Shipping Method</h4>
+
+                                        <select id="global-shipping-select" name="shipping_option" class="form-control">
+
+                                            {% for opt in shipping_options %}
+
+                                            <option value="{{ opt.id }}" data-fee="{{ opt.fee }}">
+                                                {{ opt.provider }}
+                                                -
+                                                {{ opt.name }}
+                                                (₦{{ opt.fee }})
+                                            </option>
+
+                                            {% empty %}
+
+                                            <option value="">
+                                                No shipping options available
+                                            </option>
+
+                                            {% endfor %}
+                                        </select>
+
+                                    </div>
+
+                                    {% endif %}
+                                    <!-- =========================
+                                   
+                     SUMMARY
+                ========================== -->
+
+                                    <div class="summary-box">
+
+                                        <p data-amount="{{ paystack_amount }}">
+
+                                            Subtotal:
+
+                                            ₦{{ subtotal|floatformat:2|intcomma }}
+
+                                        </p>
+
+                                        <p>
+
+                                            Shipping:
+
+                                            ₦{{ shipping|floatformat:2|intcomma }}
+
+                                        </p>
+
+
+
+                                        <h3>
+
+                                            Total:
+
+                                            ₦{{ total|floatformat:2|intcomma }}
+
+                                        </h3>
+
+                                    </div>
+
+                                    <!-- =========================
+                     PAYMENT BUTTON
+                ========================== -->
+                                    <!-- PAYMENT BUTTON -->
+
+                                    <div class="checkout-actions">
+
+                                        {% if requires_negotiation %}
+
+                                        <form method="post" action="{% url 'negotiate_cart' %}">
+                                            {% csrf_token %}
+
+                                            <button type="submit">
+                                                Negotiate Shipping
+                                            </button>
+                                        </form>
+
+                                        {% else %}
+
+                                        <button type="button" id="pay-btn" class="btn btn-danger">
+
+                                            Pay with Paystack
+
+                                        </button>
+
+                                        <button type="button" class="btn btn-warning" onclick="showDeliveryBanner()">
+                                            Negotiate Delivery
+                                        </button>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--Checkout Area End-->
+    </div>
+
+    <script>
+        function getCookie(name) {
+
+            let cookieValue = null;
+
+            if (
+                document.cookie &&
+                document.cookie !== ''
+            ) {
+
+                const cookies =
+                    document.cookie.split(';');
+
+                for (
+                    let i = 0;
+                    i < cookies.length;
+                    i++
+                ) {
+
+                    const cookie =
+                        cookies[i].trim();
+
+                    if (
+                        cookie.substring(
+                            0,
+                            name.length + 1
+                        ) ===
+                        (name + '=')
+                    ) {
+
+                        cookieValue =
+                            decodeURIComponent(
+                                cookie.substring(
+                                    name.length + 1
+                                )
+                            );
+
+                        break;
+                    }
+                }
+            }
+
+            return cookieValue;
+        }
+        function showDeliveryBanner() {
+
+            document
+                .getElementById(
+                    "delivery-banner"
+                )
+                .classList.add("show");
+        }
+
+        function closeDeliveryBanner() {
+
+            document
+                .getElementById(
+                    "delivery-banner"
+                )
+                .classList.remove("show");
+        }
+
+        function submitNegotiation() {
+
+            window.location.href =
+                "/negotiation/request/?type=shipping";
+
+        }
+    </script>
+
+    <script>
+        // ✅ BACKEND CALCULATED VALUES
+        const vendorToHubTotal = parseFloat("{{ vendor_to_hub_total|default:'0' }}");
+
+        const subtotal = parseFloat("{{ subtotal|default:'0' }}");
+
+
+
+        function updateTotals() {
+
+            let shippingSelect = document.getElementById(
+                "global-shipping-select"
+            );
+
+            if (!shippingSelect) return;
+
+            let selectedOption =
+                shippingSelect.options[
+                shippingSelect.selectedIndex
+                ];
+
+            // ✅ HUB → CUSTOMER ONLY
+            let hubFee = parseFloat(
+                selectedOption.dataset.fee || 0
+            );
+
+            // ✅ FULL SHIPPING
+            let totalShipping =
+                vendorToHubTotal + hubFee;
+
+            // ✅ FINAL TOTAL
+            let total =
+                subtotal +
+                totalShipping;
+
+            // =========================
+            // UPDATE UI
+            // =========================
+
+            document.getElementById(
+                "total_shipping"
+            ).innerText =
+                totalShipping.toFixed(2);
+
+            document.getElementById(
+                "total_amount"
+            ).innerText =
+                total.toFixed(2);
+        }
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                let select = document.getElementById(
+                    "global-shipping-select"
+                );
+
+                if (select) {
+                    select.addEventListener(
+                        "change",
+                        updateTotals
+                    );
+                }
+
+                updateTotals();
+            }
+        );
+
+        /* ================= PAY BUTTON ================= */
+        const payBtn =
+            document.getElementById(
+                "pay-btn"
+            );
+
+        if (payBtn) {
+
+            payBtn.addEventListener(
+                "click",
+
+                function (e) {
+
+                    e.preventDefault();
+
+                    let btn = this;
+
+                    btn.disabled = true;
+
+                    btn.innerText =
+                        "Processing...";
+
+                    let form =
+                        document.getElementById(
+                            "checkout-form"
+                        );
+
+                    let formData =
+                        new FormData(form);
+
+                    fetch(
+                        "/pay/",
+
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "X-CSRFToken":
+                                    getCSRFToken()
+
+                            },
+
+                            body: formData
+                        }
+                    )
+
+                        .then(res => {
+
+                            return res.json();
+
+                        })
+
+                        .then(data => {
+
+                            if (data.payment_url) {
+
+                                window.location.href =
+                                    data.payment_url;
+
+                            }
+
+                            else {
+
+                                alert(
+                                    data.error ||
+                                    "Payment failed"
+                                );
+
+                                btn.disabled =
+                                    false;
+
+                                btn.innerText =
+                                    "Pay with Paystack";
+
+                            }
+
+                        });
+
+                }
+
+            );
+
+        }
+
+
+        function getCSRFToken() {
+            return document.cookie.split('; ')
+                .find(row => row.startsWith('csrftoken'))
+                ?.split('=')[1];
+        }
+
+    </script>
+
+    {% endblock content %}
+
+
+</body>
+
+<!-- checkout31:27-->
+
+</html>
