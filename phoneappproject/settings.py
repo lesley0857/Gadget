@@ -132,7 +132,6 @@ DATABASES = {
     }
 }
 #postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
-print(os.environ['POSTGRES_DB'])
 
 # DATABASES = {
 #     'default': {
