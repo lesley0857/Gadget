@@ -155,12 +155,12 @@ class ProductListing(models.Model):
 )
 
     shipping_type = models.CharField(max_length=20,choices=SHIPPING_TYPES,default="automatic")
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255,db_index=True)
     vendor = models.ForeignKey("accounts.Vendor",on_delete=models.CASCADE)
     categories = models.ManyToManyField(Category,related_name="product_listings")
     fixed_shipping_fee = models.DecimalField(max_digits=10,decimal_places=2,default=0)
-    manufacturer = models.CharField(max_length=200,blank=True)
-    brand = models.CharField(max_length=200,blank=True)
+    manufacturer = models.CharField(max_length=200,db_index=True,blank=True)
+    brand = models.CharField(max_length=200,db_index=True,blank=True)
     model_number = models.CharField(max_length=200,blank=True)
     country_of_origin = models.CharField(max_length=100,blank=True)
     supplier_price = models.DecimalField(max_digits=12,decimal_places=2,default=0)
@@ -209,7 +209,22 @@ class ProductListing(models.Model):
     is_verified_supplier = models.BooleanField(
         default=False
     )
+    class Meta:
 
+        indexes = [
+
+            models.Index(
+                fields=["name"]
+            ),
+
+            models.Index(
+                fields=["brand"]
+            ),
+
+            models.Index(
+                fields=["manufacturer"]
+            ),
+        ]
     @property
     def auto_new(self):
         return self.created_at >= (

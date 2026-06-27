@@ -225,6 +225,8 @@ def update_profile(request):
     )
 
     if request.method == "POST":
+        profile.phone = request.POST.get("first_name")
+        profile.phone = request.POST.get("last_name")
         profile.phone = request.POST.get("phone")
         profile.address = request.POST.get("address")
         profile.city = request.POST.get("city")

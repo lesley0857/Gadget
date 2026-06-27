@@ -74,7 +74,7 @@ urlpatterns = [
 
     path("category/<str:name>/",category_products, name="category_products"),
     path("search/", search_products, name="search_products"),
-    path("search-suggestions/", search_suggestions, name="search_suggestions"),
+    path("search/suggestions/", search_suggestions, name="search_suggestions"),
 
     path('services/', services_page,name='services'),
     path('services/<slug:slug>/', service_detail,name='service_detail'),

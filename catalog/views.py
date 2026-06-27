@@ -32,43 +32,129 @@ def search_products(request):
             "query": query,
         }
     )
+
 def search_suggestions(request):
-    query = request.GET.get("q", "")
 
-    if not query:
-        return JsonResponse({"results": []})
+    query = request.GET.get("q","").strip()
 
-    products = ProductListing.objects.filter(
-        Q(name__icontains=query) |
-        Q(description__icontains=query)|
-        Q(categories__name__icontains=query)|
-        Q(brand__icontains=query) |
-        Q(manufacturer__icontains=query)
+    if len(query) < 2:
+        return JsonResponse({})
 
-    ).prefetch_related("media","categories")[:8] # limit results
+    products = (
+        ProductListing.objects
+        .filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query),
+            is_active=True
+        )
+        .prefetch_related(
+            "media"
+        )[:5]
+    )
 
-    results = []
+    categories = (
+        Category.objects
+        .filter(
+            name__icontains=query
+        )[:5]
+    )
+
+    brands = (
+        ProductListing.objects
+        .filter(
+            brand__icontains=query
+        )
+        .values_list(
+            "brand",
+            flat=True
+        )
+        .distinct()[:5]
+    )
+
+    product_results = []
 
     for p in products:
 
-        # 🔥 GET PRIMARY IMAGE
-        media = p.media.filter(is_primary=True).first()
+        media = (
+            p.media
+            .filter(is_primary=True)
+            .first()
+        )
 
-        # fallback to any image
         if not media:
             media = p.media.first()
 
-        image_url = media.file.url if media and media.file else ""
+        product_results.append({
 
-        results.append({
-            "id": p.id,
-            "name": p.name,
-            "image": image_url,
-            "price": str(p.final_price()),
-            "url": f"/product/{p.id}/",
+            "type":"product",
+
+            "name":
+                p.name,
+
+            "image":
+                media.file.url
+                if media and media.file
+                else "/static/images/product-placeholder.png",
+
+            "price":
+                str(p.final_price()),
+
+            "url":
+                f"/product/{p.name}/",
         })
 
-    return JsonResponse({"results": results})
+    category_results = []
+
+    for c in categories:
+
+        category_results.append({
+
+            "type":"category",
+
+            "name":
+                c.name,
+
+            # category image
+            "image":
+                c.image.url
+                if hasattr(c,"image")
+                and c.image
+                else "/static/images/category.png",
+
+            "url":
+                f"/category/{c.name}/",
+        })
+
+    brand_results = []
+
+    for brand in brands:
+
+        brand_results.append({
+
+            "type":"brand",
+
+            "name":
+                brand,
+
+            "image":
+                "/static/images/brand.png",
+
+            "url":
+                f"/search/?q={brand}",
+        })
+
+    return JsonResponse({
+
+        "products":
+            product_results,
+
+        "categories":
+            category_results,
+
+        "brands":
+            brand_results,
+    })
+
 
 def category_products(request, name):
 
