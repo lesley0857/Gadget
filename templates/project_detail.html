@@ -1,0 +1,220 @@
+<div class="project-wrapper">
+    <style>
+        .gallery {
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
+            gap: 20px;
+
+            margin: 50px 0;
+
+        }
+
+        .gallery img {
+
+            width: 100%;
+
+            height: 240px;
+
+            object-fit: cover;
+
+            border-radius: 14px;
+
+            transition: .3s;
+
+        }
+
+        .gallery img:hover {
+
+            transform: scale(1.04);
+
+        }
+
+        .project-wrapper {
+
+            background: #f8fafc;
+
+            padding-bottom: 80px;
+
+        }
+
+        .project-hero {
+
+            height: 520px;
+
+            overflow: hidden;
+
+        }
+
+        .project-hero img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+        }
+
+        .project-container {
+
+            max-width: 1200px;
+
+            margin: -90px auto 0;
+
+            background: white;
+
+            padding: 50px;
+
+            border-radius: 20px;
+
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .08);
+
+            position: relative;
+
+            z-index: 20;
+
+        }
+
+        .project-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 25px;
+
+        }
+
+        .project-header h1 {
+
+            font-size: 38px;
+
+            font-weight: 800;
+
+            color: #222;
+
+        }
+
+        .status {
+
+            padding: 10px 22px;
+
+            border-radius: 30px;
+
+            background: #16a34a;
+
+            color: white;
+
+            font-weight: 700;
+
+        }
+
+        .project-meta {
+
+            display: flex;
+
+            gap: 40px;
+
+            flex-wrap: wrap;
+
+            margin-bottom: 35px;
+
+            padding-bottom: 25px;
+
+            border-bottom: 1px solid #eee;
+
+        }
+
+        .project-meta div {
+
+            font-size: 15px;
+
+            color: #666;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+        }
+
+        .project-description {
+
+            font-size: 17px;
+
+            line-height: 1.9;
+
+            color: #555;
+
+        }
+    </style>
+    <div class="project-hero">
+
+        <img src="{{ project.cover_image.url }}" alt="">
+
+    </div>
+
+    <div class="project-container">
+
+        <div class="project-header">
+
+            <h1>{{ project.title }}</h1>
+
+            <span class="status completed">
+                Completed
+            </span>
+
+        </div>
+
+        <div class="project-meta">
+
+            <div>
+
+                <i class="fa fa-map-marker"></i>
+
+                {{ project.location }}
+
+            </div>
+
+            <div>
+
+                <i class="fa fa-calendar"></i>
+
+                {{ project.completed_at }}
+
+            </div>
+
+            <div>
+
+                <i class="fa fa-user"></i>
+
+                {{ project.client }}
+
+            </div>
+
+        </div>
+
+        <div class="project-description">
+
+            {{ project.description|safe }}
+
+        </div>
+
+        <div class="gallery">
+
+            {% for image in project.images.all %}
+
+            <img src="{{ image.image.url }}">
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>

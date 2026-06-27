@@ -103,7 +103,6 @@ def home(request):
         ServiceRFQ.objects.create(
             service = Service.objects.filter().first(),
             name=request.POST.get("name"),
-
             email=request.POST.get("email"),
 
             phone=request.POST.get("phone"),
