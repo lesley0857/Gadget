@@ -390,9 +390,12 @@ def negotiate_cart(request,negotiation_type="cart"):
             user=request.user
         )
     )
-    if profile.phone is None:
-        messages.warning(request,f'Pleaseupdate your phone number')
-        return(redirect,'update_profile')
+    if not profile.phone:
+        messages.error(
+            request,
+            "Please update your phone number first."
+        )
+        return redirect("profile")
     signature = generate_cart_signature(cart)
     active_negotiation = (
             NegotiationRequest.objects
@@ -425,7 +428,6 @@ def negotiate_cart(request,negotiation_type="cart"):
             f"({active_negotiation.code})."
         )
     )
-
         return redirect(
             "negotiation_detail",
             code=active_negotiation.code
@@ -445,14 +447,6 @@ def negotiate_cart(request,negotiation_type="cart"):
         cart_signature=signature,
 
     )
-    if not profile.phone:
-
-        messages.error(
-            request,
-            "Please update your phone number first."
-        )
-
-        return redirect("profile")
 
     whatsapp_lines = []
 
@@ -512,6 +506,7 @@ def negotiate_cart(request,negotiation_type="cart"):
     )
 
     return redirect(url)
+
 
 @login_required
 def negotiation_lookup(request):

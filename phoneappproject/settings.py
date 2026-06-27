@@ -125,27 +125,27 @@ WSGI_APPLICATION = 'phoneappproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST' : os.getenv("DB_HOST", "localhost"),         
-        'PORT': 5432,
-        'OPTIONS': {
-            'connect_timeout': 10,  # Recommended by Neon Docs
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         "NAME": os.getenv("DB_NAME"),
+#         "USER": os.getenv("DB_USER"),
+#         'PASSWORD': os.getenv("DB_PASSWORD"),
+#         'HOST' : os.getenv("DB_HOST", "localhost"),         
+#         'PORT': 5432,
+#         'OPTIONS': {
+#             'connect_timeout': 10,  # Recommended by Neon Docs
+#         },
+#     }
+# }
 
 
 # DATABASES = {
