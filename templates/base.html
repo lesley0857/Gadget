@@ -219,6 +219,10 @@
             const id = btn.dataset.id;
 
             btn.disabled = true;
+            const oldHtml = btn.innerHTML;
+
+            btn.innerHTML =
+                '<i class="fa fa-spinner fa-spin"></i>';
 
             fetch(`/cart/add/${id}/`, {
 
@@ -226,7 +230,8 @@
 
                 headers: {
 
-                    "X-CSRFToken": getCSRFToken()
+                    "X-CSRFToken": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest"
                 }
 
             })
@@ -237,12 +242,23 @@
 
                     updateCartUI(data);
 
+                    btn.innerHTML =
+                        '<i class="fa fa-check"></i>';
+
                     openCart();
+
+                    setTimeout(() => {
+
+                        btn.innerHTML =
+                            '<i class="fa fa-shopping-cart"></i>';
+
+                    }, 1500);
                 })
 
                 .finally(() => {
 
                     btn.disabled = false;
+                    btn.innerHTML = oldHtml;
                 });
         });
 
@@ -1085,7 +1101,200 @@ RESPONSIVE
         }
     </style>
 
+    <style>
+        .bottom-banner {
 
+            position: fixed;
+
+            bottom: 15px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            width: min(95%, 650px);
+
+            border-radius: 18px;
+
+            padding: 15px 20px;
+
+            display: none;
+
+            align-items: center;
+
+            gap: 15px;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, .2);
+
+            z-index: 999999;
+
+            animation: slideUp .4s ease;
+        }
+
+
+        .cookie-banner {
+
+            background: #111827;
+
+            color: white;
+        }
+
+
+        .cookie-banner button {
+
+            background: #0d6efd;
+
+            border: none;
+
+            color: white;
+
+            padding: 8px 18px;
+
+            border-radius: 30px;
+
+            cursor: pointer;
+        }
+
+
+        .solar-banner {
+
+            background: white;
+        }
+
+
+        .promo-icon {
+
+            width: 60px;
+
+            height: 60px;
+
+            border-radius: 50%;
+
+            background: #fff7ed;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 28px;
+
+            flex-shrink: 0;
+        }
+
+
+        .banner-content {
+
+            flex: 1;
+        }
+
+
+        .banner-content h5 {
+
+            margin: 0;
+
+            font-size: 18px;
+
+            font-weight: 700;
+        }
+
+
+        .banner-content p {
+
+            margin: 3px 0 0;
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+
+        .promo-btn {
+
+            background: #0d6efd;
+
+            color: white;
+
+            padding: 10px 20px;
+
+            border-radius: 30px;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+
+        .close-banner {
+
+            background: none;
+
+            border: none;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            color: #777;
+        }
+
+
+        @keyframes slideUp {
+
+            from {
+
+                opacity: 0;
+
+                transform:
+                    translate(-50%, 100px);
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform:
+                    translate(-50%, 0);
+            }
+        }
+
+
+        @media(max-width:768px) {
+
+            .bottom-banner {
+
+                width: 95%;
+
+                padding: 12px;
+            }
+
+            .banner-content h5 {
+
+                font-size: 15px;
+            }
+
+            .banner-content p {
+
+                font-size: 12px;
+            }
+
+            .promo-btn {
+
+                padding: 8px 15px;
+            }
+
+            .promo-icon {
+
+                width: 45px;
+
+                height: 45px;
+
+                font-size: 22px;
+            }
+        }
+    </style>
     <style>
         /* =========================
    WHATSAPP FLOATING
@@ -2441,9 +2650,179 @@ CART SIDEBAR
     </script>
     {% block extra_js %}{% endblock %}
 
+    <!-- ===========================
+COOKIE BANNER
+=========================== -->
+
+    <div id="cookieBanner" class="bottom-banner cookie-banner">
+
+        <div class="banner-text">
+            We use cookies to improve your experience.
+        </div>
+
+        <button id="acceptCookies">
+            Accept
+        </button>
+
+    </div>
 
 
+    <!-- ===========================
+SOLAR PROMO BANNER
+=========================== -->
+
+    <div id="solarPromo" class="bottom-banner solar-banner">
+
+        <div class="promo-icon">
+            ☀️
+        </div>
+
+        <div class="banner-content">
+
+            <h5>
+                Try our Solar Calculator
+            </h5>
+
+            <p>
+                Calculate solar panels, batteries,
+                inverter and system sizing instantly.
+            </p>
+
+        </div>
+
+        <a href="{% url 'solar_calculator' %}" class="promo-btn">
+
+            Try Now
+
+        </a>
+
+        <button class="close-banner" id="closePromo">
+
+            ×
+
+        </button>
+
+    </div>
 
 </body>
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            /*
+            ===================
+            COOKIE BANNER
+            ===================
+            */
+
+            const cookieBanner =
+                document.getElementById(
+                    "cookieBanner"
+                );
+
+            const accepted =
+                localStorage.getItem(
+                    "cookiesAccepted"
+                );
+
+            if (!accepted) {
+
+                cookieBanner.style.display =
+                    "flex";
+            }
+
+            document
+                .getElementById(
+                    "acceptCookies"
+                )
+                ?.addEventListener(
+                    "click",
+                    function () {
+
+                        localStorage.setItem(
+                            "cookiesAccepted",
+                            "yes"
+                        );
+
+                        cookieBanner.style.display =
+                            "none";
+                    }
+                );
+
+
+            /*
+            ===================
+            SOLAR PROMO
+            ===================
+            */
+
+            const promo =
+                document.getElementById(
+                    "solarPromo"
+                );
+
+            const now =
+                Date.now();
+
+            const lastVisit =
+                localStorage.getItem(
+                    "lastVisit"
+                );
+
+            const fiveHours =
+                5 * 60 * 60 * 1000;
+
+            if (
+                !lastVisit ||
+                now - lastVisit > fiveHours
+            ) {
+
+                setTimeout(
+                    function () {
+
+                        promo.style.display =
+                            "flex";
+
+                    },
+                    3000
+                );
+            }
+
+            localStorage.setItem(
+                "lastVisit",
+                now
+            );
+
+
+            /*
+            ===================
+            CLOSE PROMO
+            ===================
+            */
+
+            document
+                .getElementById(
+                    "closePromo"
+                )
+                ?.addEventListener(
+                    "click",
+                    function () {
+
+                        promo.style.display =
+                            "none";
+
+                        localStorage.setItem(
+                            "lastVisit",
+                            Date.now()
+                        );
+                    }
+                );
+
+        }
+    );
+
+</script>
 
 </html>

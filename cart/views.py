@@ -395,7 +395,7 @@ def negotiate_cart(request,negotiation_type="cart"):
             request,
             "Please update your phone number first."
         )
-        return redirect("profile")
+        return redirect("update_profile")
     signature = generate_cart_signature(cart)
     active_negotiation = (
             NegotiationRequest.objects

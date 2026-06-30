@@ -13,10 +13,16 @@ from catalog.views import *
 from services.views import *
 from remarobeprojects.views import *
 from blog.views import *
+from solar.views import *
 from logistics.views import *
+
+handler404 = "accounts.views.custom_404"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('accounts/login/', login_view, name='account_login'),
+    path('accounts/signup/', register_view, name='account_signup'),
+
     path('accounts/', include('allauth.urls')),
     path("summernote/", include("django_summernote.urls")),
     path('cart/', cart_view, name='cart'),
@@ -53,8 +59,7 @@ urlpatterns = [
     path("payment/verify/", verify_payment, name="verify_payment"),
     path("payment_success/", payment_success, name="payment_success"),
     path("resume-payment/<str:reference>/", resume_payment, name="resume_payment"),
-    path('register/', register_view, name='register'),
-    path('login/', login_view, name='login'),
+    
     path('logout/', logout_view, name='logout'),
     path('', home, name='home'),
     path("blog/<slug:slug>/",blog_detail,name="blog_detail"),
@@ -79,9 +84,11 @@ urlpatterns = [
     path('services/', services_page,name='services'),
     path('services/<slug:slug>/', service_detail,name='service_detail'),
 
+    path('solar/calculator/',solar_calculator ,name="solar_calculator"),
+
     path("webhooks/paystack/", paystack_webhook),
 ]
-handler404 = 'accounts.views.custom_404'
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

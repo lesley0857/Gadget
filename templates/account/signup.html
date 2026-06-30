@@ -122,9 +122,19 @@
     <div class="auth-card">
 
         <h2 class="auth-title">Create Account</h2>
+        {% for message in messages %}
+        <div class="success-message">
 
+            <i class="fa fa-check-circle"></i>
+
+            <span>
+                {{ message }}
+            </span>
+
+        </div>
+        {% endfor %}
         <!-- REGISTER FORM -->
-        <form method="POST" action="{% url 'register' %}">
+        <form method="POST" action="{% url 'account_signup' %}">
             {% csrf_token %}
 
             <input class="auth-input" type="text" name="username" placeholder="Username" required>

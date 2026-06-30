@@ -20,10 +20,13 @@ from services.models import *
 from blog.models import *
 
 def custom_404(request, exception):
-    return render(request, '404.html', status=404)
+    return render(request, "404.html", status=404)
 
 def register_view(request):
+    if request.user.is_authenticated:
+            return redirect("home")
     if request.method == "POST":
+        print('reg')
         email = request.POST['email']
         username = request.POST['username']
         password = request.POST['password']
@@ -47,6 +50,8 @@ def register_view(request):
     return render(request, 'account/signup.html')
 
 def login_view(request):
+    if request.user.is_authenticated:
+            return redirect("home")
     if request.method == "POST":
         email = request.POST['email']
         password = request.POST['password']
@@ -58,6 +63,7 @@ def login_view(request):
             return redirect('home')
 
     return render(request, 'account/login.html')
+
 
 def logout_view(request):
     logout(request)
@@ -225,8 +231,8 @@ def update_profile(request):
     )
 
     if request.method == "POST":
-        profile.phone = request.POST.get("first_name")
-        profile.phone = request.POST.get("last_name")
+        profile.first_name = request.POST.get("first_name")
+        profile.last_name = request.POST.get("last_name")
         profile.phone = request.POST.get("phone")
         profile.address = request.POST.get("address")
         profile.city = request.POST.get("city")

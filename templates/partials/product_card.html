@@ -45,56 +45,53 @@
 
 </script>
 <style>
-    .product-name {
-
-        font-size: 0.85rem;
-        min-height: 40px;
-        line-height: 1.2;
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-
     .product-card {
+
+        position: relative;
 
         display: flex;
 
         flex-direction: column;
 
-        width: 100%;
+        background: #fff;
 
-        border: 1px solid #eee;
+        border: 1px solid #ececec;
 
-        border-radius: 12px;
+        border-radius: 10px;
 
         overflow: hidden;
 
-        background: white;
+        transition: all .25s ease;
 
-        text-decoration: none;
+        width: 100%;
 
-        color: inherit;
-
-        transition: .2s ease;
+        max-width: 170px;
     }
 
     .product-card:hover {
 
-        transform: translateY(-3px);
+        transform: translateY(-4px);
 
-        box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+        box-shadow:
+            0 8px 25px rgba(0, 0, 0, .08);
+    }
+
+    .product-link {
+
+        text-decoration: none;
+
+        color: inherit;
     }
 
     .product-image {
 
+        width: 100%;
+
         aspect-ratio: 1;
 
-        padding: 10px;
+        padding: 8px;
 
-        background: white;
+        background: #fff;
     }
 
     .product-image img {
@@ -107,66 +104,79 @@
     }
 
     .product-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+
+        padding: 8px;
+    }
+
+    .product-name {
+
+        font-size: .75rem;
+
+        font-weight: 600;
+
+        line-height: 1.25;
+
+        height: 34px;
+
+        overflow: hidden;
+
+        display: -webkit-box;
+
+        -webkit-line-clamp: 2;
+
+        -webkit-box-orient: vertical;
+
+        margin-bottom: 6px;
+
+        color: #222;
     }
 
     .product-price {
 
-        font-size: 1rem;
+        font-size: .9rem;
 
         font-weight: 700;
 
         color: #0d6efd;
 
-        margin-top: 4px;
-
-        margin-bottom: 0;
+        margin-bottom: 2px;
     }
 
     .sold-count {
 
-        font-size: 0.75rem;
+        font-size: .68rem;
 
-        color: #666;
+        color: #777;
 
-        margin-top: 2px;
-
-        margin-bottom: 0;
-    }
-
-    .product-footer {
-
-        display: flex;
-
-        justify-content: space-between;
-
-        align-items: center;
-
-        margin-top: 6px;
+        margin-bottom: 6px;
     }
 
     .negotiable {
 
-        font-size: 0.7rem;
+        display: inline-block;
 
-        padding: 2px 6px;
+        font-size: .65rem;
+
+        padding: 3px 8px;
 
         border-radius: 20px;
 
         background: #fff4e5;
 
         color: #d97706;
-
-        line-height: 1;
     }
 
-    .cart-icon {
+    .cart-btn {
 
-        width: 30px;
+        position: absolute;
 
-        height: 30px;
+        bottom: 8px;
+
+        right: 8px;
+
+        width: 34px;
+
+        height: 34px;
 
         border: none;
 
@@ -183,69 +193,94 @@
         align-items: center;
 
         justify-content: center;
+
+        box-shadow:
+            0 3px 10px rgba(13, 110, 253, .3);
+
+        transition: .2s;
+    }
+
+    .cart-btn:hover {
+
+        transform: scale(1.1);
+
+        background: #0b5ed7;
+    }
+
+    /* ########MOBILE#### */
+    @media (max-width:768px) {
+
+        .product-card {
+
+            max-width: 140px;
+        }
+
+        .product-name {
+
+            font-size: .72rem;
+
+            height: 32px;
+        }
+
+        .product-price {
+
+            font-size: .85rem;
+        }
+
+        .cart-btn {
+
+            width: 30px;
+
+            height: 30px;
+        }
     }
 </style>
-<a href="{% url 'product_detail' product.name %}" class="product-card">
 
+<div class="product-card">
 
-    <div class="product-image">
+    <a href="{% url 'product_detail' product.name %}" class="product-link">
 
-        {% with media=product.media.first %}
+        <div class="product-image">
 
-        {% if media %}
-
-        <img src="{{ media.file.url }}" alt="{{ product.name }}">
-
-        {% endif %}
-
-        {% endwith %}
-
-    </div>
-
-    <div class="product-body">
-
-        <div class="product-name">
-
-            {{ product.name }}
+            {% with media=product.media.first %}
+            {% if media %}
+            <img src="{{ media.file.url }}">
+            {% endif %}
+            {% endwith %}
 
         </div>
 
-        <div class="product-price">
+        <div class="product-body">
 
-            ₦{{ product.final_price }}
+            <div class="product-name">
+                {{ product.name }}
+            </div>
 
-        </div>
+            <div class="product-price">
+                ₦{{ product.final_price }}
+            </div>
 
-        {% if product.units_sold > 0 %}
-
-        <div class="sold-count">
-
-            {{ product.units_sold }} sold
-
-        </div>
-
-        {% endif %}
-
-        <div class="product-footer">
-
-            {% if product.is_negotiable %}
-
-            <span class="negotiable">
-
-                Negotiable
-
-            </span>
-
+            {% if product.units_sold %}
+            <div class="sold-count">
+                {{ product.units_sold }} sold
+            </div>
             {% endif %}
 
-            <button class="cart-icon" title="Add to Cart" data-id="{{ product.id }}">
-
-                <i class="fa fa-shopping-cart"></i>
-
-            </button>
+            {% if product.is_negotiable %}
+            <span class="negotiable">
+                Negotiable
+            </span>
+            {% endif %}
 
         </div>
 
-    </div>
+    </a>
 
-</a>
+    <!-- OUTSIDE LINK -->
+    <button class="cart-btn add-to-cart-btn" data-id="{{ product.id }}" title="Add To Cart">
+
+        <i class="fa fa-shopping-cart"></i>
+
+    </button>
+
+</div>

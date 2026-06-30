@@ -1,0 +1,780 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+
+            <h3>
+                Solar Load Calculator
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Appliance</th>
+                        <th>Qty</th>
+                        <th>Hours/Day</th>
+                        <th>Watts</th>
+                        <th>Daily Consumption (Wh)</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+
+                <tbody id="rows">
+
+                </tbody>
+            </table>
+
+            <button type="button" class="btn btn-primary" onclick="addRow()">
+
+                Add Appliance
+
+            </button>
+
+            <hr>
+
+            <h4>
+                Total Daily Consumption:
+                <span id="total">
+                    0
+                </span>
+                Wh/day
+            </h4>
+
+            <div class="row mt-4">
+
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+
+                            <h6>Total Load</h6>
+
+                            <h3 id="totalLoad">
+                                0 W
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+
+                            <h6>Daily Energy</h6>
+
+                            <h3 id="dailyEnergy">
+                                0 Wh
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+
+                            <h6>Recommended Inverter</h6>
+
+                            <h3 id="inverter">
+                                0W
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+
+                            <h6>Battery Bank</h6>
+
+                            <h3 id="battery">
+                                0Ah
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row mt-4">
+
+                <div class="col-md-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+
+                            <h6>
+                                System Voltage
+                            </h6>
+
+                            <h3 id="systemVoltage">
+                                24V
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+
+                            <h6>
+                                Surge Load
+                            </h6>
+
+                            <h3 id="surgeLoad">
+                                0W
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+
+                            <h6>
+                                Charge Controller
+                            </h6>
+
+                            <h3 id="chargeController">
+                                0A
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+
+                            <h6>
+                                Battery Configuration
+                            </h6>
+
+                            <h3 id="batteryConfig">
+                                -
+                            </h3>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card shadow mt-4">
+
+                <div class="card-header">
+
+                    <h4>
+                        System Configuration
+                    </h4>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+
+                            <label>
+                                Battery Type
+                            </label>
+
+                            <select id="batteryType" class="form-select">
+
+                                <option value="lead">
+                                    Lead Acid
+                                </option>
+
+                                <option value="lithium">
+                                    Lithium
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label>
+                                Backup Days
+                            </label>
+
+                            <input type="number" id="autonomy" value="1" min="1" class="form-control">
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label>
+                                Peak Sun Hours
+                            </label>
+
+                            <input type="number" id="sunHours" value="4" min="1" step="0.5" class="form-control">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-body">
+
+                            <h5>Solar Panel Requirement</h5>
+
+                            <h2 id="solarPanels">
+                                0 W
+                            </h2>
+
+                            <small id="panelCount">
+                                0 panels
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-body">
+
+                            <h5>
+                                Estimated System
+                            </h5>
+
+                            <h2 id="systemEstimate">
+                                -
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    // ==========================
+    // APPLIANCES FROM DJANGO
+    // ==========================
+
+    const appliances =
+        JSON.parse(
+            '{{ appliances_json|escapejs }}'
+        ).map(a => ({
+            id: a.id,
+            name: a.name,
+            watt: a.wattage
+        }));
+
+
+    // ==========================
+    // ADD NEW ROW
+    // ==========================
+
+    function addRow() {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+        <td>
+            <select class="form-select appliance">
+
+                ${appliances.map(a => `
+
+                    <option value="${a.watt}">
+                        ${a.name}
+                    </option>
+
+                `).join("")}
+
+            </select>
+        </td>
+
+        <td>
+            <input type="number"
+                   class="form-control qty"
+                   value="1"
+                   min="1">
+        </td>
+
+        <td>
+            <input type="number"
+                   class="form-control hrs"
+                   value="1"
+                   min="1">
+        </td>
+
+        <td class="watts">
+            ${appliances[0]?.watt || 0}
+        </td>
+
+        <td class="daily">
+            0
+        </td>
+
+        <td>
+
+            <button class="remove-row">
+
+                ×
+
+            </button>
+
+        </td>
+    `;
+
+        document
+            .getElementById("rows")
+            .appendChild(row);
+
+        attachEvents(row);
+
+        row.querySelector(".remove-row")
+            .addEventListener(
+                "click",
+                () => {
+                    row.remove();
+                    calculate();
+                }
+            );
+
+        calculate();
+    }
+
+
+    // ==========================
+    // ATTACH EVENTS
+    // ==========================
+
+    function attachEvents(row) {
+
+        row.querySelectorAll(
+            "input,select"
+        ).forEach(el => {
+
+            el.addEventListener(
+                "input",
+                calculate
+            );
+
+            el.addEventListener(
+                "change",
+                calculate
+            );
+        });
+    }
+
+    // ==========================
+    // ESTIMATE 
+    // ==========================
+    let estimate = "";
+
+    if (totalLoad < 1000)
+        estimate = "Small Home";
+
+    else if (totalLoad < 3000)
+        estimate = "Medium Home";
+
+    else if (totalLoad < 7000)
+        estimate = "Large Home";
+
+    else
+        estimate = "Commercial";
+
+    document
+        .getElementById(
+            "systemEstimate"
+        )
+        .innerText =
+        estimate;
+
+    // ==========================
+    // CALCULATE
+    // ==========================
+
+    function calculate() {
+
+        let totalLoad = 0;
+
+        let totalEnergy = 0;
+
+
+        document
+            .querySelectorAll("#rows tr")
+            .forEach(row => {
+
+                const watt =
+                    Number(
+                        row.querySelector(
+                            ".appliance"
+                        ).value
+                    );
+
+                const qty =
+                    Number(
+                        row.querySelector(
+                            ".qty"
+                        ).value
+                    );
+
+                const hrs =
+                    Number(
+                        row.querySelector(
+                            ".hrs"
+                        ).value
+                    );
+
+                const load =
+                    watt *
+                    qty;
+
+                const energy =
+                    load *
+                    hrs;
+
+                totalLoad += load;
+
+                totalEnergy += energy;
+
+                row.querySelector(
+                    ".watts"
+                ).innerText = load;
+
+                row.querySelector(
+                    ".daily"
+                ).innerText = energy;
+            });
+
+
+        /*
+        -------------------
+        USER SETTINGS
+        -------------------
+        */
+
+        const batteryType =
+            document
+                .getElementById(
+                    "batteryType"
+                ).value;
+
+        const autonomy =
+            Number(
+                document
+                    .getElementById(
+                        "autonomy"
+                    ).value
+            );
+
+        const sunHours =
+            Number(
+                document
+                    .getElementById(
+                        "sunHours"
+                    ).value
+            );
+
+
+        /*
+        -------------------
+        SYSTEM VOLTAGE
+        -------------------
+        */
+
+        let systemVoltage = 12;
+
+        if (totalLoad > 1000)
+            systemVoltage = 24;
+
+        if (totalLoad > 3000)
+            systemVoltage = 48;
+
+
+        /*
+        -------------------
+        BATTERY DOD
+        -------------------
+        */
+
+        const dod =
+            batteryType === "lithium"
+                ? 0.9
+                : 0.5;
+
+
+        /*
+        -------------------
+        SURGE
+        -------------------
+        */
+
+        const surge =
+            totalLoad * 2;
+
+
+        /*
+        -------------------
+        INVERTER
+        -------------------
+        */
+
+        const inverter =
+            Math.ceil(
+                totalLoad *
+                1.3
+            );
+
+
+        /*
+        -------------------
+        BATTERY
+        -------------------
+        */
+
+        const batteryWh =
+            totalEnergy *
+            autonomy;
+
+        const batteryAh =
+            Math.ceil(
+                batteryWh
+                /
+                (
+                    systemVoltage *
+                    dod
+                )
+            );
+        /*
+        -------------------
+        SOLAR
+        -------------------
+        */
+
+        const solarSize =
+            Math.ceil(
+                totalEnergy
+                /
+                sunHours
+            );
+
+
+        /*
+        -------------------
+        PANELS
+        -------------------
+        */
+
+        const panelSize = 550;
+
+        const panels =
+            Math.ceil(
+                solarSize /
+                panelSize
+            );
+
+
+        /*
+        -------------------
+        CONTROLLER
+        -------------------
+        */
+
+        const controller =
+            Math.ceil(
+                solarSize
+                /
+                systemVoltage
+            );
+
+
+        /*
+        -------------------
+        BATTERY CONFIG
+        -------------------
+        */
+
+        const batteryUnit = 200;
+
+        let series = 1;
+
+        if (systemVoltage === 24)
+            series = 2;
+
+        if (systemVoltage === 48)
+            series = 4;
+
+        const parallel =
+            Math.ceil(
+                batteryAh /
+                batteryUnit
+            );
+
+        const batteryCount =
+            series *
+            parallel;
+        /*
+        -------------------
+        DISPLAY
+        -------------------
+        */
+
+        document
+            .getElementById(
+                "totalLoad"
+            )
+            .innerText =
+            totalLoad.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "dailyEnergy"
+            )
+            .innerText =
+            totalEnergy.toLocaleString()
+            + "Wh";
+
+        document
+            .getElementById(
+                "inverter"
+            )
+            .innerText =
+            inverter.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "battery"
+            )
+            .innerText =
+            batteryAh.toLocaleString()
+            + "Ah";
+
+        document
+            .getElementById(
+                "solarPanels"
+            )
+            .innerText =
+            solarSize.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "panelCount"
+            )
+            .innerText =
+            panels +
+            " × " +
+            panelSize +
+            "W";
+
+        document
+            .getElementById(
+                "surgeLoad"
+            )
+            .innerText =
+            surge.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "chargeController"
+            )
+            .innerText =
+            controller.toLocaleString()
+            + "A";
+
+        document
+            .getElementById(
+                "systemVoltage"
+            )
+            .innerText =
+            systemVoltage +
+            "V";
+
+        document
+            .getElementById(
+                "batteryConfig"
+            )
+            .innerText =
+            `${series}S × ${parallel}P
+(${batteryCount}
+batteries)`;
+    }
+
+    // ==========================
+    // INITIAL ROW
+    // ==========================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            addRow();
+            addRow();
+            addRow();
+        }
+    );
+
+    document
+        .getElementById("batteryType")
+        .addEventListener(
+            "change",
+            calculate
+        );
+
+    document
+        .getElementById("autonomy")
+        .addEventListener(
+            "input",
+            calculate
+        );
+
+    document
+        .getElementById("sunHours")
+        .addEventListener(
+            "input",
+            calculate
+        );
+</script>
+
+{% endblock %}

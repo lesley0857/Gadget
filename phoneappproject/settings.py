@@ -26,7 +26,7 @@ SECRET_KEY = '7gp+h+_c)q4i5afkc*zzh-4voojio9$7o6*g3)+9kfk=b)#u3@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 CLOUDINARY_STORAGE = {
@@ -80,9 +80,7 @@ INSTALLED_APPS = [
     'remarobeprojects',
     'testimonials',
     'blog',
-    
-
-    
+    'solar',    
 ]
 
 MIDDLEWARE = [
@@ -279,8 +277,9 @@ ACCOUNT_SIGNUP_FIELDS = [
     'password1*',
     'password2*',
 ]
-
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 LOGIN_REDIRECT_URL = '/'
 
 ADMIN_EMAIL="nwekelesley@gmail.com" #mail for viewing negotiations

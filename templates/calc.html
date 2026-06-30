@@ -1,0 +1,1313 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .solar-dashboard {
+
+        max-width: 1500px;
+
+        margin: auto;
+
+        padding: 25px;
+
+        background: #f4f8fc;
+    }
+
+
+    .hero-card {
+
+        background:
+            linear-gradient(135deg,
+                #003b95,
+                #0d6efd);
+
+        color: white;
+
+        border-radius: 25px;
+
+        padding: 35px;
+
+        display: flex;
+
+        gap: 25px;
+
+        align-items: center;
+
+        margin-bottom: 30px;
+    }
+
+    .hero-icon {
+
+        width: 120px;
+
+        height: 120px;
+
+        background: white;
+
+        border-radius: 50%;
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+    }
+
+    .hero-icon i {
+
+        font-size: 55px;
+
+        color: #0d6efd;
+    }
+
+    .hero-value {
+
+        font-size: 70px;
+
+        font-weight: 700;
+    }
+
+
+    .settings-card,
+    .appliance-card {
+
+        background: white;
+
+        padding: 30px;
+
+        border-radius: 20px;
+
+        box-shadow:
+            0 8px 30px rgba(0, 0, 0, .08);
+
+        margin-bottom: 25px;
+    }
+
+    .settings-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+    }
+
+
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin: 25px 0;
+    }
+
+
+    .metric-card {
+
+        background: white;
+
+        border-radius: 20px;
+
+        padding: 25px;
+
+        display: flex;
+
+        gap: 20px;
+
+        align-items: center;
+
+        box-shadow:
+            0 8px 25px rgba(0, 0, 0, .08);
+    }
+
+    .metric-card h2 {
+
+        margin: 0;
+
+        font-size: 24px;
+    }
+
+
+    .icon {
+
+        width: 90px;
+
+        height: 90px;
+
+        border-radius: 20px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+    }
+
+    .icon i {
+
+        font-size: 40px;
+    }
+
+
+    .blue {
+        background: #eaf1ff;
+    }
+
+    .blue i {
+        color: #2563eb;
+    }
+
+    .green {
+        background: #e8f7ec;
+    }
+
+    .green i {
+        color: #16a34a;
+    }
+
+    .purple {
+        background: #f2ebff;
+    }
+
+    .purple i {
+        color: #7c3aed;
+    }
+
+    .teal {
+        background: #e8fbfb;
+    }
+
+    .teal i {
+        color: #0f766e;
+    }
+
+    .orange {
+        background: #fff4e0;
+    }
+
+    .orange i {
+        color: #ea580c;
+    }
+
+    .red {
+        background: #ffe8e8;
+    }
+
+    .red i {
+        color: #dc2626;
+    }
+
+    .brown {
+        background: #fff7eb;
+    }
+
+    .brown i {
+        color: #92400e;
+    }
+
+
+    .result-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        width: 100%;
+    }
+
+
+    .solar-card {
+        background: #fff;
+        border-radius: 25px;
+        padding: 25px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .solar-card img {
+
+        width: 180px;
+    }
+
+    /* =========================
+   TABLE WRAPPER
+========================= */
+
+    .solar-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
+    }
+
+    /* =========================
+   TABLE
+========================= */
+    .solar-table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+        background: #fff;
+    }
+
+    .solar-table thead {
+        background: linear-gradient(135deg,
+                #0d6efd,
+                #4f46e5);
+    }
+
+    .solar-table th {
+        color: white;
+        padding: 18px;
+        text-align: center;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .solar-table td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .solar-table tbody tr {
+        transition: .3s;
+    }
+
+    .solar-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* =========================
+   FORM CONTROLS
+========================= */
+
+    .solar-table .form-control,
+    .solar-table .form-select {
+        min-width: 100px;
+        border-radius: 12px;
+        height: 45px;
+    }
+
+    /* =========================
+   MOBILE
+========================= */
+
+    @media(max-width:768px) {
+
+        .solar-table {
+            min-width: 800px;
+        }
+
+        .solar-table th,
+        .solar-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .solar-table .form-control,
+        .solar-table .form-select {
+            min-width: 90px;
+            font-size: 14px;
+        }
+    }
+
+    /* scrollbar */
+
+    .solar-table-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .solar-table-wrapper::-webkit-scrollbar-track {
+        background: #e5e7eb;
+        border-radius: 20px;
+    }
+
+    .solar-table-wrapper::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 20px;
+    }
+
+    table {
+
+        width: 100%;
+    }
+
+    thead {
+
+        background: #003b95;
+
+        color: white;
+    }
+
+    th,
+    td {
+
+        padding: 15px;
+    }
+
+
+    .add-btn {
+
+        margin-top: 20px;
+
+        background: #0d6efd;
+
+        color: white;
+
+        border: none;
+
+        padding: 12px 30px;
+
+        border-radius: 30px;
+    }
+
+
+    @media(max-width:768px) {
+
+        .hero-card,
+        .solar-card,
+        .metric-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .hero-value {
+
+            font-size: 24px;
+        }
+
+        .solar-card img {
+
+            width: 120px;
+        }
+    }
+
+
+    @media (max-width:768px) {
+
+        html,
+        body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .solar-dashboard {
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        .hero-card,
+        .metric-card,
+        .solar-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .hero-value {
+            font-size: 24px;
+        }
+
+        .metric-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .result-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .solar-card img {
+            width: 120px;
+        }
+
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-card h2 {
+            font-size: 24px;
+        }
+
+        .icon {
+            width: 70px;
+            height: 70px;
+        }
+
+        .icon i {
+            font-size: 24px;
+        }
+
+        .solar-table {
+            min-width: 750px;
+        }
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- APPLIANCES -->
+
+<div class="appliance-card">
+
+    <h3>
+
+        <i class="fa fa-table"></i>
+
+        Appliances
+
+    </h3>
+
+    <div class="solar-table-wrapper">
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Appliance
+                    </th>
+
+                    <th>
+                        Qty
+                    </th>
+
+                    <th>
+                        Hours
+                    </th>
+
+                    <th>
+                        Watts
+                    </th>
+
+                    <th>
+                        Daily
+                    </th>
+
+                    <th>
+                        Remove
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="rows">
+
+            </tbody>
+
+        </table>
+    </div>
+    <button class="add-btn" onclick="addRow()">
+
+        Add Appliance
+
+    </button>
+</div>
+
+
+<div class="solar-dashboard">
+
+    <!-- HERO -->
+    <div class="hero-card">
+
+        <div class="hero-icon">
+
+            <i class="fa-solid fa-bolt"></i>
+
+        </div>
+
+        <div>
+
+            <div class="hero-title">
+
+                Total Daily Consumption
+
+            </div>
+
+            <div class="hero-value">
+
+                <span id="total">
+                    0
+                </span>
+
+                Wh/day
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SETTINGS -->
+
+    <div class="settings-card">
+
+        <h3>
+            <i class="fa fa-gear"></i>
+            System Configuration
+        </h3>
+
+        <div class="settings-grid">
+
+            <div>
+
+                <label>
+                    Battery Type
+                </label>
+
+                <select id="batteryType">
+
+                    <option value="lead">
+                        Lead Acid
+                    </option>
+
+                    <option value="lithium">
+                        Lithium
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div>
+
+                <label>
+                    Backup Days
+                </label>
+
+                <input id="autonomy" type="number" value="1">
+
+            </div>
+
+            <div>
+
+                <label>
+                    Peak Sun Hours
+                </label>
+
+                <input id="sunHours" type="number" value="5.5" step=".5">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- METRICS -->
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+
+            <div class="icon blue">
+
+                <i class="fa fa-gauge"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Total Load</h6>
+
+                <h2 id="totalLoad">
+                    0W
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon green">
+
+                <i class="fa fa-chart-line"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Daily Energy</h6>
+
+                <h2 id="dailyEnergy">
+                    0Wh
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon purple">
+
+                <i class="fa fa-microchip"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Inverter</h6>
+
+                <h2 id="inverter">
+                    0W
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon teal">
+
+                <i class="fa fa-battery-three-quarters"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Battery Bank</h6>
+
+                <h2 id="battery">
+                    0Ah
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon orange">
+
+                <i class="fa fa-bolt"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Voltage</h6>
+
+                <h2 id="systemVoltage">
+                    12V
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon red">
+
+                <i class="fa fa-wave-square"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Surge</h6>
+
+                <h2 id="surgeLoad">
+                    0W
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon blue">
+
+                <i class="fa fa-server"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Controller</h6>
+
+                <h2 id="chargeController">
+                    0A
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="metric-card">
+
+            <div class="icon brown">
+
+                <i class="fa fa-car-battery"></i>
+
+            </div>
+
+            <div>
+
+                <h6>Battery Config</h6>
+
+                <h2 id="batteryConfig">
+                    -
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SOLAR RESULT -->
+
+    <div class="result-grid">
+
+        <div class="solar-card">
+
+            <img src="{% static 'img/solar_panel.png' %}">
+
+            <div>
+
+                <h4>
+
+                    Solar Panel Requirement
+
+                </h4>
+
+                <h1 id="solarPanels">
+
+                    0W
+
+                </h1>
+
+                <div id="panelCount">
+
+                    0 panels
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="solar-card">
+
+            <img src="{% static 'img/solar_house.png' %}">
+
+            <div>
+
+                <h4>
+
+                    Estimated System
+
+                </h4>
+
+                <h1 id="systemEstimate">
+
+                    Home
+
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    // ==========================
+    // APPLIANCES FROM DJANGO
+    // ==========================
+
+    const appliances =
+        JSON.parse(
+            '{{ appliances_json|escapejs }}'
+        ).map(a => ({
+            id: a.id,
+            name: a.name,
+            watt: a.wattage
+        }));
+
+
+    // ==========================
+    // ADD NEW ROW
+    // ==========================
+
+    function addRow() {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+<td>
+    <select class="form-select appliance">
+        ${appliances.map(a => `
+            <option value="${a.watt}">
+                ${a.name}
+            </option>
+        `).join("")}
+    </select>
+</td>
+
+<td>
+    <input type="number"
+           class="form-control qty"
+           value="1"
+           min="1">
+</td>
+
+<td>
+    <input type="number"
+           class="form-control hrs"
+           value="1"
+           min="1">
+</td>
+
+<td class="watts">
+    ${appliances[0].watt}
+</td>
+
+<td class="daily">
+    0
+</td>
+
+<td>
+    <button
+        class="btn btn-danger btn-sm remove-row">
+        <i class="fa fa-trash"></i>
+    </button>
+</td>
+`;
+        document
+            .getElementById("rows")
+            .appendChild(row);
+
+        attachEvents(row);
+
+        row.querySelector(".remove-row")
+            .addEventListener(
+                "click",
+                () => {
+                    row.remove();
+                    calculate();
+                }
+            );
+
+        calculate();
+    }
+
+
+    // ==========================
+    // ATTACH EVENTS
+    // ==========================
+
+    function attachEvents(row) {
+
+        row.querySelectorAll(
+            "input,select"
+        ).forEach(el => {
+
+            el.addEventListener(
+                "input",
+                calculate
+            );
+
+            el.addEventListener(
+                "change",
+                calculate
+            );
+        });
+    }
+
+    // ==========================
+    // CALCULATE
+    // ==========================
+
+    function calculate() {
+
+        let totalLoad = 0;
+
+        let totalEnergy = 0;
+
+
+        document
+            .querySelectorAll("#rows tr")
+            .forEach(row => {
+
+                const watt =
+                    Number(
+                        row.querySelector(
+                            ".appliance"
+                        ).value
+                    );
+
+                const qty =
+                    Number(
+                        row.querySelector(
+                            ".qty"
+                        ).value
+                    );
+
+                const hrs =
+                    Number(
+                        row.querySelector(
+                            ".hrs"
+                        ).value
+                    );
+
+                const load =
+                    watt *
+                    qty;
+
+                const energy =
+                    load *
+                    hrs;
+
+                totalLoad += load;
+
+                totalEnergy += energy;
+
+                row.querySelector(
+                    ".watts"
+                ).innerText = load;
+
+                row.querySelector(
+                    ".daily"
+                ).innerText = energy;
+            });
+
+        // ==========================
+        // ESTIMATE 
+        // ==========================
+        let estimate = "";
+
+        if (totalLoad < 1000)
+            estimate = "Small Home";
+
+        else if (totalLoad < 3000)
+            estimate = "Medium Home";
+
+        else if (totalLoad < 7000)
+            estimate = "Large Home";
+
+        else
+            estimate = "Commercial";
+
+        document
+            .getElementById(
+                "systemEstimate"
+            )
+            .innerText =
+            estimate;
+
+        /*
+        -------------------
+        USER SETTINGS
+        -------------------
+        */
+
+        const batteryType =
+            document
+                .getElementById(
+                    "batteryType"
+                ).value;
+
+        const autonomy =
+            Number(
+                document
+                    .getElementById(
+                        "autonomy"
+                    ).value
+            );
+
+        const sunHours =
+            Number(
+                document
+                    .getElementById(
+                        "sunHours"
+                    ).value
+            );
+
+
+        /*
+        -------------------
+        SYSTEM VOLTAGE
+        -------------------
+        */
+
+        let systemVoltage = 12;
+
+        if (totalLoad > 1000)
+            systemVoltage = 24;
+
+        if (totalLoad > 3000)
+            systemVoltage = 48;
+
+
+        /*
+        -------------------
+        BATTERY DOD
+        -------------------
+        */
+
+        const dod =
+            batteryType === "lithium"
+                ? 0.9
+                : 0.5;
+
+
+        /*
+        -------------------
+        SURGE
+        -------------------
+        */
+
+        const surge =
+            totalLoad * 2;
+
+
+        /*
+        -------------------
+        INVERTER
+        -------------------
+        */
+
+        const inverter =
+            Math.ceil(
+                totalLoad *
+                1.3
+            );
+
+
+        /*
+        -------------------
+        BATTERY
+        -------------------
+        */
+
+        const batteryWh =
+            totalEnergy *
+            autonomy;
+
+        const batteryAh =
+            Math.ceil(
+                batteryWh
+                /
+                (
+                    systemVoltage *
+                    dod
+                )
+            );
+        /*
+        -------------------
+        SOLAR
+        -------------------
+        */
+
+        const solarSize =
+            Math.ceil(
+                totalEnergy
+                /
+                sunHours
+            );
+
+
+        /*
+        -------------------
+        PANELS
+        -------------------
+        */
+
+        const panelSize = 550;
+
+        const panels =
+            Math.ceil(
+                solarSize /
+                panelSize
+            );
+
+
+        /*
+        -------------------
+        CONTROLLER
+        -------------------
+        */
+
+        const controller =
+            Math.ceil(
+                solarSize
+                /
+                systemVoltage
+            );
+
+
+        /*
+        -------------------
+        BATTERY CONFIG
+        -------------------
+        */
+
+        const batteryUnit = 200;
+
+        let series = 1;
+
+        if (systemVoltage === 24)
+            series = 2;
+
+        if (systemVoltage === 48)
+            series = 4;
+
+        const parallel =
+            Math.ceil(
+                batteryAh /
+                batteryUnit
+            );
+
+        const batteryCount =
+            series *
+            parallel;
+        /*
+        -------------------
+        DISPLAY
+        -------------------
+        */
+
+        document
+            .getElementById(
+                "totalLoad"
+            )
+            .innerText =
+            totalLoad.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "dailyEnergy"
+            )
+            .innerText =
+            totalEnergy.toLocaleString()
+            + "Wh";
+
+        document
+            .getElementById(
+                "inverter"
+            )
+            .innerText =
+            inverter.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "battery"
+            )
+            .innerText =
+            batteryAh.toLocaleString()
+            + "Ah";
+
+        document
+            .getElementById(
+                "solarPanels"
+            )
+            .innerText =
+            solarSize.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "panelCount"
+            )
+            .innerText =
+            panels +
+            " × " +
+            panelSize +
+            "W";
+
+        document
+            .getElementById(
+                "surgeLoad"
+            )
+            .innerText =
+            surge.toLocaleString()
+            + "W";
+
+        document
+            .getElementById(
+                "chargeController"
+            )
+            .innerText =
+            controller.toLocaleString()
+            + "A";
+
+        document
+            .getElementById(
+                "systemVoltage"
+            )
+            .innerText =
+            systemVoltage +
+            "V";
+
+        document
+            .getElementById(
+                "batteryConfig"
+            )
+            .innerText =
+            `${series}S × ${parallel}P
+(${batteryCount}
+batteries)`;
+    }
+
+    // ==========================
+    // INITIAL ROW
+    // ==========================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            addRow();
+            addRow();
+            addRow();
+        }
+    );
+
+    document
+        .getElementById("batteryType")
+        .addEventListener(
+            "change",
+            calculate
+        );
+
+    document
+        .getElementById("autonomy")
+        .addEventListener(
+            "input",
+            calculate
+        );
+
+    document
+        .getElementById("sunHours")
+        .addEventListener(
+            "input",
+            calculate
+        );
+</script>
+{% endblock %}

@@ -82,7 +82,7 @@
 
         <h2 class="auth-title">Welcome Back</h2>
 
-        <form method="POST" action="{% url 'login' %}">
+        <form method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
 
             <input class="auth-input" type="email" name="email" placeholder="Email" required>
