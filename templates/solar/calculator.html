@@ -1,0 +1,584 @@
+<style>
+    .solar-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+        transition: .3s;
+        margin-bottom: 25px;
+    }
+
+    .solar-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, .12);
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .calc-btn {
+        padding: 16px 50px;
+        border-radius: 50px;
+        transition: .3s;
+    }
+
+    .calc-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .table tbody tr {
+        transition: .2s;
+    }
+
+    .table tbody tr:hover {
+        transform: scale(1.01);
+    }
+
+    .fade-card {
+        animation: fadein .7s;
+    }
+
+    @keyframes fadein {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    .header-gradient {
+        background:
+            linear-gradient(135deg,
+                #0d6efd,
+                #20c997);
+        color: white;
+    }
+</style>
+
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .solar-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+        transition: .3s;
+        margin-bottom: 25px;
+    }
+
+    .solar-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, .12);
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .calc-btn {
+        padding: 16px 50px;
+        border-radius: 50px;
+        transition: .3s;
+    }
+
+    .calc-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .table tbody tr {
+        transition: .2s;
+    }
+
+    .table tbody tr:hover {
+        transform: scale(1.01);
+    }
+
+    .fade-card {
+        animation: fadein .7s;
+    }
+
+    @keyframes fadein {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    .header-gradient {
+        background:
+            linear-gradient(135deg,
+                #0d6efd,
+                #20c997);
+        color: white;
+    }
+</style>
+<div class="container-fluid py-4">
+    {% if error %}
+
+    <div class="alert alert-danger shadow-sm">
+
+        <h5>
+            ⚠ Engineering Validation Failed
+        </h5>
+
+        <hr>
+
+        {{ error }}
+
+    </div>
+
+    {% endif %}
+    <div class="row justify-content-center">
+
+        <div class="col-xl-11">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="solar-card fade-card">
+
+                    <div class="card-header header-gradient">
+
+                        <h2>
+
+                            ⚡ Solar Design Calculator
+
+                        </h2>
+
+                        <p class="mb-0">
+
+                            Engineering • Procurement • Quotation
+
+                        </p>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-3 mb-3">
+
+                                <label>
+
+                                    Autonomy Days
+
+                                </label>
+
+                                {{ form.autonomy }}
+
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+
+                                <label>
+
+                                    Peak Sun Hours
+
+                                </label>
+
+                                {{ form.peak_sun_hours }}
+
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+
+                                <label>
+
+                                    Battery
+
+                                </label>
+
+                                {{ form.battery }}
+
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+
+                                <label>
+
+                                    Panel
+
+                                </label>
+
+                                {{ form.panel }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="solar-card fade-card">
+
+                    <div class="card-header bg-success text-white">
+
+                        <div class="d-flex justify-content-between">
+
+                            <span class="section-title">
+
+                                Load Audit
+
+                            </span>
+
+                            <button type="button" id="addLoad" class="btn btn-light">
+
+                                +
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle" id="loadTable">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+
+                                            Appliance
+
+                                        </th>
+
+                                        <th>
+
+                                            Qty
+
+                                        </th>
+
+                                        <th>
+
+                                            Hours
+
+                                        </th>
+
+                                        <th>
+
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    <tr>
+
+                                        <td>
+
+                                            <select name="appliance_id" class="form-select">
+
+                                                {% for app in appliances %}
+
+                                                <option value="{{app.id}}">
+
+                                                    {{app.name}}
+                                                    -
+                                                    {{app.wattage}}W
+
+                                                </option>
+
+                                                {% endfor %}
+
+                                            </select>
+
+                                        </td>
+
+                                        <td>
+
+                                            <input name="quantity" value="1" class="form-control">
+
+                                        </td>
+
+                                        <td>
+
+                                            <input name="hours" value="6" class="form-control">
+
+                                        </td>
+
+                                        <td>
+
+                                            <button type="button" class="btn btn-danger remove">
+
+                                                ✕
+
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="solar-card fade-card">
+
+                    <div class="card-header bg-warning">
+
+                        <div class="d-flex justify-content-between">
+
+                            <span class="section-title">
+
+                                Custom Appliances
+
+                            </span>
+
+                            <button type="button" id="addCustom" class="btn btn-dark">
+
+                                +
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="table-responsive">
+
+                            <table class="table" id="customTable">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Name</th>
+                                        <th>W</th>
+                                        <th>Qty</th>
+                                        <th>Hrs</th>
+                                        <th></th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="solar-card fade-card">
+
+                    <div class="card-header bg-info text-white">
+
+                        Cable Distances
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-4">
+
+                                <label>
+
+                                    PV Cable
+
+                                </label>
+
+                                {{form.pv_distance}}
+
+                            </div>
+
+                            <div class="col-md-4">
+
+                                <label>
+
+                                    Battery Cable
+
+                                </label>
+
+                                {{form.battery_distance}}
+
+                            </div>
+
+                            <div class="col-md-4">
+
+                                <label>
+
+                                    AC Cable
+
+                                </label>
+
+                                {{form.ac_distance}}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-center">
+
+                    <button class="btn btn-success btn-lg calc-btn">
+
+                        ⚡ Calculate Solar System
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+    document
+        .getElementById(
+            'addLoad'
+        )
+        .onclick = function () {
+
+            let row =
+                document
+                    .querySelector(
+                        '#loadTable tbody tr'
+                    )
+                    .cloneNode(true);
+
+            document
+                .querySelector(
+                    '#loadTable tbody'
+                )
+                .appendChild(
+                    row
+                );
+
+        };
+
+    document
+        .getElementById(
+            'addCustom'
+        )
+        .onclick = function () {
+
+            let html = `
+
+<tr class="fade-card">
+
+<td>
+<input
+name="custom_name"
+class="form-control">
+</td>
+
+<td>
+<input
+name="custom_watts"
+class="form-control">
+</td>
+
+<td>
+<input
+name="custom_qty"
+value="1"
+class="form-control">
+</td>
+
+<td>
+<input
+name="custom_hours"
+value="6"
+class="form-control">
+</td>
+
+<td>
+
+<button
+type="button"
+class="btn btn-danger remove">
+
+✕
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+            document
+                .querySelector(
+                    '#customTable tbody'
+                )
+                .insertAdjacentHTML(
+                    'beforeend',
+                    html
+                );
+
+        };
+
+    document
+        .addEventListener(
+            'click',
+            function (e) {
+
+                if (
+                    e.target.classList
+                        .contains(
+                            'remove'
+                        )
+                ) {
+
+                    e.target
+                        .closest(
+                            'tr'
+                        )
+                        .remove();
+
+                }
+
+            }
+        );
+
+</script>
+{% endblock content %}

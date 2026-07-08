@@ -1,0 +1,2799 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --info: #0dcaf0;
+        --dark: #212529;
+
+        --card-radius: 18px;
+
+        --shadow:
+            0 10px 30px rgba(0, 0, 0, .08);
+
+        --shadow-hover:
+            0 15px 40px rgba(0, 0, 0, .15);
+    }
+
+    body {
+        background: #f5f7fb;
+    }
+
+    .report-container {
+        max-width: 1400px;
+        margin: auto;
+    }
+
+    .report-banner {
+
+        background:
+            linear-gradient(135deg,
+                #0d6efd,
+                #003b8e);
+
+        color: white;
+
+        border-radius: 20px;
+
+        padding: 35px;
+
+        margin-bottom: 25px;
+
+        box-shadow: var(--shadow);
+    }
+
+    .report-title {
+
+        font-size: 2rem;
+
+        font-weight: 700;
+
+        margin-bottom: 10px;
+    }
+
+    .report-subtitle {
+
+        opacity: .9;
+
+        font-size: 15px;
+    }
+
+    .report-meta {
+
+        margin-top: 20px;
+
+        display: flex;
+
+        gap: 20px;
+
+        flex-wrap: wrap;
+    }
+
+    .report-meta-item {
+
+        background:
+            rgba(255,
+                255,
+                255,
+                .15);
+
+        padding: 10px 15px;
+
+        border-radius: 12px;
+    }
+
+    .summary-card {
+
+        background: white;
+
+        border: none;
+
+        border-radius: 18px;
+
+        box-shadow: var(--shadow);
+
+        transition: .3s;
+
+        overflow: hidden;
+
+        height: 100%;
+    }
+
+    .summary-card:hover {
+
+        transform:
+            translateY(-5px);
+
+        box-shadow:
+            var(--shadow-hover);
+    }
+
+    .summary-body {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 15px;
+
+        padding: 25px;
+    }
+
+    .summary-icon {
+
+        width: 65px;
+
+        height: 65px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 15px;
+
+        font-size: 28px;
+
+        color: white;
+
+        flex-shrink: 0;
+    }
+
+    .icon-load {
+        background: var(--primary);
+    }
+
+    .icon-energy {
+        background: var(--success);
+    }
+
+    .icon-voltage {
+        background: var(--warning);
+    }
+
+    .icon-price {
+        background: var(--danger);
+    }
+
+    .summary-label {
+
+        color: #6c757d;
+
+        font-size: 13px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 1px;
+
+        margin-bottom: 5px;
+    }
+
+    .summary-value {
+
+        font-size: 28px;
+
+        font-weight: 700;
+
+        color: #212529;
+    }
+
+    .section-card {
+
+        background: white;
+
+        border: none;
+
+        border-radius: 18px;
+
+        box-shadow: var(--shadow);
+
+        margin-bottom: 25px;
+
+        overflow: hidden;
+    }
+
+    .section-header {
+
+        padding: 18px 25px;
+
+        color: white;
+
+        font-weight: 700;
+
+        font-size: 18px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+    }
+
+    .section-body {
+        padding: 25px;
+    }
+
+    .bg-load {
+        background: #0d6efd;
+    }
+
+    .bg-battery {
+        background: #ffc107;
+        color: #212529 !important;
+    }
+
+    .bg-panel {
+        background: #198754;
+    }
+
+    .bg-inverter {
+        background: #dc3545;
+    }
+
+    .bg-controller {
+        background: #0dcaf0;
+    }
+
+    .bg-cable {
+        background: #212529;
+    }
+
+    .bg-protection {
+        background: #6c757d;
+    }
+
+    .info-card {
+
+        background: #f8f9fa;
+
+        border-radius: 15px;
+
+        padding: 20px;
+
+        height: 100%;
+
+        border-left: 5px solid #0d6efd;
+    }
+
+    .info-title {
+
+        font-size: 12px;
+
+        color: #6c757d;
+
+        text-transform: uppercase;
+
+        margin-bottom: 8px;
+
+        letter-spacing: 1px;
+    }
+
+    .info-value {
+
+        font-size: 18px;
+
+        font-weight: 600;
+
+        color: #212529;
+
+        word-wrap: break-word;
+    }
+
+    .status-ok {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-width: 110px;
+
+        padding: 8px 14px;
+
+        border-radius: 30px;
+
+        background: #198754;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+    }
+
+    .status-missing {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-width: 110px;
+
+        padding: 8px 14px;
+
+        border-radius: 30px;
+
+        background: #dc3545;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+    }
+
+    .status-column {
+
+        width: 160px;
+
+        text-align: center;
+
+        vertical-align: middle;
+
+    }
+
+    .table-modern {
+
+        width: 100%;
+    }
+
+    .table-modern th {
+
+        background: #f8f9fa;
+
+        font-weight: 600;
+
+        border: none;
+
+        padding: 14px;
+    }
+
+    .table-modern td {
+
+        padding: 14px;
+
+        vertical-align: middle;
+    }
+
+    .alert-engineering {
+
+        border: none;
+
+        border-left: 6px solid #dc3545;
+
+        border-radius: 12px;
+    }
+
+    @media(max-width:768px) {
+
+        .summary-value {
+
+            font-size: 22px;
+        }
+
+        .report-title {
+
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 report-container">
+
+    <!-- REPORT HEADER -->
+
+    <div class="report-banner">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-8">
+
+                <div class="report-title">
+
+                    <i class="fas fa-solar-panel me-2"></i>
+
+                    REMAROBE SOLAR ENGINEERING REPORT
+
+                </div>
+
+                <div class="report-subtitle">
+
+                    Professional Off-Grid Solar System Design & Engineering Report
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="text-lg-end mt-3 mt-lg-0">
+
+                    <a href="" class="btn btn-light btn-lg">
+
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+
+                        Generate Quotation
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="report-meta">
+
+            <div class="report-meta-item">
+
+                <i class="fas fa-calendar-alt me-2"></i>
+
+                {{ now|date:"d M Y" }}
+
+            </div>
+
+            <div class="report-meta-item">
+
+                <i class="fas fa-bolt me-2"></i>
+
+                Engineering Calculation
+
+            </div>
+
+            <div class="report-meta-item">
+
+                <i class="fas fa-check-circle me-2"></i>
+
+                Professional Design
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- CONNECTED LOAD -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <div class="summary-body">
+
+                    <div class="summary-icon icon-load">
+
+                        <i class="fas fa-plug"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="summary-label">
+
+                            Connected Load
+
+                        </div>
+
+                        <div class="summary-value">
+
+                            {{ result.load.load_watts|floatformat:0 }}
+
+                            W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAILY ENERGY -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <div class="summary-body">
+
+                    <div class="summary-icon icon-energy">
+
+                        <i class="fas fa-battery-three-quarters"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="summary-label">
+
+                            Daily Energy
+
+                        </div>
+
+                        <div class="summary-value">
+
+                            {{ result.load.daily_energy_wh|floatformat:0 }}
+
+                            Wh
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SYSTEM VOLTAGE -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <div class="summary-body">
+
+                    <div class="summary-icon icon-voltage">
+
+                        <i class="fas fa-bolt"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="summary-label">
+
+                            System Voltage
+
+                        </div>
+
+                        <div class="summary-value">
+
+                            {{ result.battery.required.system_voltage }}
+
+                            V
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ESTIMATED COST -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <div class="summary-body">
+
+                    <div class="summary-icon icon-price">
+
+                        <i class="fas fa-money-bill-wave"></i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="summary-label">
+
+                            Estimated Cost
+
+                        </div>
+
+                        <div class="summary-value">
+
+                            ₦{{ result.pricing.grand_total|floatformat:0|intcomma }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- LOAD ANALYSIS -->
+    <!-- ============================================= -->
+
+    <div class="section-card">
+
+        <div class="section-header bg-load">
+
+            <i class="fas fa-plug"></i>
+
+            Load Analysis
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="row g-4 mb-4">
+
+                <div class="col-lg-4">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Connected Load
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.load_watts|floatformat:0 }} W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Surge Load
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.surge_watts|floatformat:0 }} W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Daily Energy
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.daily_energy_wh|floatformat:0 }} Wh
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-modern table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+
+                                <i class="fas fa-lightbulb me-2"></i>
+
+                                Appliance
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Qty
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Power
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Hours
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Running Load
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Daily Energy
+
+                            </th>
+
+                            <th class="text-center">
+
+                                Surge
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for load in result.loads %}
+
+                        <tr>
+
+                            <td>
+
+                                <strong>
+
+                                    {{ load.name }}
+
+                                </strong>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ load.qty }}
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ load.watts }}
+
+                                W
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ load.hours }}
+
+                                hrs
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ load.running_load }}
+
+                                W
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ load.daily_energy }}
+
+                                Wh
+
+                            </td>
+
+                            <td class="text-center">
+
+                                ×{{ load.surge }}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="7" class="text-center text-muted py-5">
+
+                                <i class="fas fa-folder-open fa-2x mb-3"></i>
+
+                                <br>
+
+                                No load information available.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="row mt-4">
+
+                <div class="col-md-3">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Total Appliances
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.total_quantity }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Motor Load
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.motor_load|floatformat:0 }}
+
+                            W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Resistive Load
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.resistive_load|floatformat:0 }}
+
+                            W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Diversity Factor
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.diversity_factor }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- BATTERY BANK -->
+    <!-- ============================================= -->
+
+    <div class="section-card">
+
+        <div class="section-header bg-battery">
+
+            <i class="fas fa-car-battery"></i>
+
+            Battery Bank
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="row g-4">
+
+                <!-- Battery Information -->
+
+                <div class="col-lg-4">
+
+                    <div class="equipment-card">
+
+                        <div class="equipment-icon">
+
+                            <i class="fas fa-car-battery"></i>
+
+                        </div>
+
+                        <h5 class="mt-3">
+
+                            {{ result.battery_name }}
+
+                        </h5>
+
+                        <hr>
+
+                        <table class="table table-borderless mb-0">
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>Battery Type</strong>
+
+                                </td>
+
+                                <td>
+
+                                    {{ result.battery.selected.battery_type }} Battery
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>DOD</strong>
+
+                                </td>
+
+                                <td>
+
+                                    {{ result.battery.selected.dod }}%
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>System Voltage</strong>
+
+                                </td>
+
+                                <td>
+
+                                    {{ result.battery.required.system_voltage }}V
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Configuration -->
+
+                <div class="col-lg-8">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Configuration
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.selected.series }}S × {{ result.battery.selected.parallel }}P
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Total Batteries
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.selected.quantity }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Installed Capacity
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.selected.bank_capacity }}
+
+                                    Ah
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Installed Energy
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.selected.bank_energy|floatformat:0 }}
+
+                                    Wh
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Required Energy
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.required.energy_wh|floatformat:0 }}
+
+                                    Wh
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Required Capacity
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.battery.required.capacity_ah|floatformat:0 }}
+
+                                    Ah
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="mb-3">
+
+                        Battery Utilization
+
+                    </h6>
+
+                    <div class="progress" style="height:28px; background:#0df02f;">
+
+                        <div class="progress-bar bg-success" role="progressbar"
+                            style="width: '{{ result.battery.selected.utilization }}%'">
+
+                            <div class="text-center fw-bold mt-2">
+
+                                {{ result.battery.selected.utilization }}%
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-3 text-end">
+
+                        {% if result.battery.selected.utilization < 70 %} <span class="badge bg-success">
+
+                            Excellent Design Margin
+
+                            </span>
+
+                            {% elif result.battery.selected.utilization < 90 %} <span
+                                class="badge bg-warning text-dark">
+
+                                Acceptable Design
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Battery Bank Near Maximum Capacity
+
+                                </span>
+
+                                {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- SOLAR ARRAY -->
+    <!-- ============================================= -->
+
+    <div class="section-card">
+
+        <div class="section-header text-white" style="background:#198754;">
+
+            <i class="fas fa-solar-panel me-2"></i>
+
+            Solar Array
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="row g-4">
+
+                <!-- Panel Information -->
+
+                <div class="col-lg-4">
+
+                    <div class="equipment-card text-center">
+
+                        <div class="equipment-icon text-warning">
+
+                            <i class="fas fa-solar-panel fa-4x"></i>
+
+                        </div>
+
+                        <h5 class="mt-3">
+
+                            {{ result.panel_name }}
+
+                        </h5>
+
+                        <hr>
+
+                        <table class="table table-borderless mb-0">
+
+                            <tr>
+
+                                <td><strong>Total Panels</strong></td>
+
+                                <td>
+
+                                    {{ result.panel.selected.quantity }}
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td><strong>Configuration</strong></td>
+
+                                <td>
+
+                                    {{ result.panel.selected.series }}S × {{ result.panel.selected.parallel }}P
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td><strong>Target Voltage</strong></td>
+
+                                <td>
+
+                                    {{ result.panel.required.target_voltage }}V
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- Array Statistics -->
+
+                <div class="col-lg-8">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Required PV
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.required.pv_power|floatformat:0 }}
+
+                                    W
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Installed PV
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.installed_power|floatformat:0 }}
+
+                                    W
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Array Voltage
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.array_voltage }}
+
+                                    V
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Open Circuit Voltage
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.array_voc }}
+
+                                    V
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Array Current
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.array_current }}
+
+                                    A
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Short Circuit Current
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.array_isc }}
+
+                                    A
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Daily Generation
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.daily_generation|floatformat:0 }}
+
+                                    Wh
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="info-card">
+
+                                <div class="info-title">
+
+                                    Peak Sun Hours
+
+                                </div>
+
+                                <div class="info-value">
+
+                                    {{ result.panel.selected.peak_sun_hours }}
+
+                                    hrs
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="mb-3">
+
+                        PV Utilization
+
+                    </h6>
+
+                    <div class="progress" style="height:28px; background-color: #0df02f;">
+
+                        <div class="progress-bar bg-success" role="progressbar"
+                            style="width: '{{  result.panel.selected.utilization }}%'">
+                            <div class="text-center fw-bold mt-2">
+
+                                {{ result.panel.selected.utilization|floatformat:1 }}%
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-3 text-end">
+
+                        {% if result.panel.selected.utilization < 70 %} <span class="badge bg-success">
+
+                            Excellent PV Margin
+
+                            </span>
+
+                            {% elif result.panel.selected.utilization < 90 %}<span class="badge bg-warning text-dark">
+
+                                Good Design
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    PV Array Near Maximum Capacity
+
+                                </span>
+
+                                {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- INVERTER & CHARGE CONTROLLER -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header text-white" style="background:#dc3545;">
+
+            <i class="fas fa-bolt me-2"></i>
+
+            Power Electronics
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="row">
+
+                <!-- ====================================== -->
+                <!-- INVERTER -->
+                <!-- ====================================== -->
+
+                <div class="col-lg-6 mb-4">
+
+                    <h5 class="mb-3">
+
+                        <i class="fas fa-plug text-danger me-2"></i>
+
+                        Inverter
+
+                    </h5>
+
+                    {% if result.inverter.success %}
+
+                    <div class="card border-success shadow-sm">
+
+                        <div class="card-header bg-success text-white">
+
+                            <i class="fas fa-check-circle"></i>
+
+                            Product Available
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Brand</th>
+
+                                    <td>{{ result.inverter.selected.brand }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Model</th>
+
+                                    <td>{{ result.inverter.selected.model }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Battery Voltage</th>
+
+                                    <td>{{ result.inverter.selected.battery_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Rated Power</th>
+
+                                    <td>{{ result.inverter.selected.rated_power }}W</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Surge Power</th>
+
+                                    <td>{{ result.inverter.selected.surge_power }}W</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Utilization</th>
+
+                                    <td>
+
+                                        {{ result.inverter.selected.utilization }}%
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Price</th>
+
+                                    <td>
+
+                                        ₦{{ result.inverter.selected.price }}
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="card border-danger shadow-sm">
+
+                        <div class="card-header bg-danger text-white">
+
+                            <i class="fas fa-times-circle"></i>
+
+                            Product Available On Demand
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="alert alert-warning">
+
+                                <strong>
+
+                                    Required Specification
+
+                                </strong>
+
+                            </div>
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Battery Voltage</th>
+
+                                    <td>{{ result.inverter.required.battery_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Continuous Power</th>
+
+                                    <td>{{ result.inverter.required.continuous_power }}W</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Surge Power</th>
+
+                                    <td>{{ result.inverter.required.surge_power }}W</td>
+
+                                </tr>
+
+                            </table>
+
+                            {% if result.inverter.closest %}
+
+                            <hr>
+
+                            <h6>
+
+                                Closest Available
+
+                            </h6>
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Brand</th>
+
+                                    <td>{{ result.inverter.closest.brand }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Model</th>
+
+                                    <td>{{ result.inverter.closest.model }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Power</th>
+
+                                    <td>{{ result.inverter.closest.rated_power }}W</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Price</th>
+
+                                    <td>
+
+                                        ₦{{ result.inverter.closest.price }}
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- ====================================== -->
+                <!-- CHARGE CONTROLLER -->
+                <!-- ====================================== -->
+
+                <div class="col-lg-6 mb-4">
+
+                    <h5 class="mb-3">
+
+                        <i class="fas fa-charging-station text-info me-2"></i>
+
+                        Charge Controller
+
+                    </h5>
+
+                    {% if result.controller.success %}
+
+                    <div class="card border-info shadow-sm">
+
+                        <div class="card-header bg-info text-white">
+
+                            <i class="fas fa-check-circle"></i>
+
+                            Product Available
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Brand</th>
+
+                                    <td>{{ result.controller.selected.brand }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Model</th>
+
+                                    <td>{{ result.controller.selected.model }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Battery Voltage</th>
+
+                                    <td>{{ result.controller.selected.battery_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>PV Voltage</th>
+
+                                    <td>{{ result.controller.selected.max_pv_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Charge Current</th>
+
+                                    <td>{{ result.controller.selected.max_charge_current }}A</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Price</th>
+
+                                    <td>
+
+                                        ₦{{ result.controller.selected.price }}
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="card border-danger shadow-sm">
+
+                        <div class="card-header bg-danger text-white">
+
+                            <i class="fas fa-times-circle"></i>
+
+                            Available On Demand
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="alert alert-warning">
+
+                                <strong>
+
+                                    Required Specification
+
+                                </strong>
+
+                            </div>
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Battery Voltage</th>
+
+                                    <td>{{ result.controller.required.battery_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>PV Voltage</th>
+
+                                    <td>{{ result.controller.required.pv_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Charge Current</th>
+
+                                    <td>{{ result.controller.required.charge_current }}A</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>PV Power</th>
+
+                                    <td>{{ result.controller.required.pv_power }}W</td>
+
+                                </tr>
+
+                            </table>
+
+                            {% if result.controller.closest %}
+
+                            <hr>
+
+                            <h6>
+
+                                Closest Available
+
+                            </h6>
+
+                            <table class="table table-sm">
+
+                                <tr>
+
+                                    <th>Brand</th>
+
+                                    <td>{{ result.controller.closest.brand }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Model</th>
+
+                                    <td>{{ result.controller.closest.model }}</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Charge Current</th>
+
+                                    <td>{{ result.controller.closest.max_charge_current }}A</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>PV Voltage</th>
+
+                                    <td>{{ result.controller.closest.max_pv_voltage }}V</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <th>Price</th>
+
+                                    <td>
+
+                                        ₦{{ result.controller.closest.price }}
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- CABLE SCHEDULE -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <div class="section-header" style="background:#ffc107;">
+
+            <i class="fas fa-network-wired me-2"></i>
+
+            Cable Schedule
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>Cable</th>
+
+                            <th>Selected Cable</th>
+
+                            <th>Required Size</th>
+
+                            <th>Voltage Drop</th>
+
+                            <th class="status-column">Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>PV Cable</td>
+
+                            <td class="text-center align-middle">
+
+                                {% if result.pv_cable.success %}
+
+                                <span>
+                                    {{ result.pv_cable.selected.name }}
+                                </span>
+
+                                {% else %}
+                                <span>
+                                    Available On Demand
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.pv_cable.required.size }} mm²
+
+                            </td>
+
+                            <td>
+
+                                {% if result.pv_cable.success %}
+
+                                {{ result.pv_cable.selected.voltage_drop }} %
+
+                                {% else %}
+
+                                —
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.pv_cable.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="status-missing">
+
+                                    <i class="fas fa-times-circle me-1"></i>
+
+                                    Required
+
+                                </span>
+
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>Battery Cable</td>
+
+                            <td>
+
+                                {% if result.battery_cable.success %}
+
+                                {{ result.battery_cable.selected.name }}
+
+                                {% else %}
+
+                                Available On Demand
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.battery_cable.required.size }} mm²
+
+                            </td>
+
+                            <td>
+
+                                {% if result.battery_cable.success %}
+
+                                {{ result.battery_cable.selected.voltage_drop }} %
+
+                                {% else %}
+
+                                —
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.battery_cable.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="status-missing">
+
+                                    <i class="fas fa-times-circle me-1"></i>
+
+                                    Required
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>AC Cable</td>
+
+                            <td>
+
+                                {% if result.ac_cable.success %}
+
+                                {{ result.ac_cable.selected.name }}
+
+                                {% else %}
+
+                                Available On Demand
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.ac_cable.required.size }} mm²
+
+                            </td>
+
+                            <td>
+
+                                {% if result.ac_cable.success %}
+
+                                {{ result.ac_cable.selected.voltage_drop }} %
+
+                                {% else %}
+
+                                —
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.ac_cable.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="status-missing">
+
+                                    <i class="fas fa-times-circle me-1"></i>
+
+                                    Required
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- PROTECTION DEVICES -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-lg border-0 rounded-4 mb-4">
+
+        <div class="card-header bg-danger text-white">
+
+            <h4 class="mb-0">
+
+                <i class="fas fa-shield-alt me-2"></i>
+
+                Protection Devices
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th width="25%">Device</th>
+
+                            <th width="30%">Selected</th>
+
+                            <th width="20%">Required</th>
+
+                            <th width="25%" class="status-column">
+                                Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <!-- PV Fuse -->
+
+                        <tr>
+
+                            <td>
+
+                                <i class="fas fa-bolt text-warning me-2"></i>
+
+                                PV Fuse
+
+                            </td>
+
+                            <td>
+
+                                {% if result.protection.pv_fuse.success %}
+
+                                {{ result.protection.pv_fuse.selected.object }}
+
+                                <br>
+
+                                <small class="text-muted">
+
+                                    {{ result.protection.pv_fuse.selected.rating }} A
+
+                                </small>
+
+                                {% else %}
+
+                                <span class="text-danger">
+
+                                    Available On Demand
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.protection.pv_fuse.required.current }} A
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.protection.pv_fuse.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    <i class="fas fa-times-circle"></i>
+
+                                    Missing
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Battery Breaker -->
+
+                        <tr>
+
+                            <td>
+
+                                <i class="fas fa-car-battery text-primary me-2"></i>
+
+                                Battery Breaker
+
+                            </td>
+
+                            <td>
+
+                                {% if result.protection.battery_breaker.success %}
+
+                                {{ result.protection.battery_breaker.selected.object }}
+
+                                <br>
+
+                                <small class="text-muted">
+
+                                    {{ result.protection.battery_breaker.selected.rating }} A
+
+                                </small>
+
+                                {% else %}
+
+                                <span class="text-danger">
+
+                                    Available On Demand
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.protection.battery_breaker.required.current }} A
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.protection.battery_breaker.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Missing
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        <!-- AC Breaker -->
+
+                        <tr>
+
+                            <td>
+
+                                <i class="fas fa-plug text-success me-2"></i>
+
+                                AC Breaker
+
+                            </td>
+
+                            <td>
+
+                                {% if result.protection.ac_breaker.success %}
+
+                                {{ result.protection.ac_breaker.selected.object }}
+
+                                <br>
+
+                                <small>
+
+                                    {{ result.protection.ac_breaker.selected.rating }} A
+
+                                </small>
+
+                                {% else %}
+
+                                <span class="text-danger">
+
+                                    Available On Demand
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.protection.ac_breaker.required.current }} A
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.protection.ac_breaker.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Missing
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        <!-- DC SPD -->
+
+                        <tr>
+
+                            <td>
+
+                                <i class="fas fa-bolt text-danger me-2"></i>
+
+                                DC SPD
+
+                            </td>
+
+                            <td>
+
+                                {% if result.protection.dc_spd.success %}
+
+                                {{ result.protection.dc_spd.selected.object }}
+
+                                <br>
+
+                                <small>
+
+                                    {{ result.protection.dc_spd.selected.rating }} V
+
+                                </small>
+
+                                {% else %}
+
+                                <span class="text-danger">
+
+                                    Available On Demand
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ result.protection.dc_spd.required.voltage }} V
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.protection.dc_spd.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Missing
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        <!-- AC SPD -->
+
+                        <tr>
+
+                            <td>
+
+                                <i class="fas fa-bolt text-info me-2"></i>
+
+                                AC SPD
+
+                            </td>
+
+                            <td>
+
+                                {% if result.protection.ac_spd.success %}
+
+                                {{ result.protection.ac_spd.selected.object }}
+
+                                <br>
+
+                                <small>
+
+                                    {{ result.protection.ac_spd.selected.rating }} V
+
+                                </small>
+
+                                {% else %}
+
+                                <span class="text-danger">
+
+                                    Available On Demand
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                230 V
+
+                            </td>
+
+                            <td class="status-column">
+
+                                {% if result.protection.ac_spd.success %}
+
+                                <span class="status-ok">
+
+                                    <i class="fas fa-check-circle me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    Missing
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ACCESSORIES -->
+    <!-- ========================================================= -->
+
+    <div class="card result-card shadow-sm mb-4">
+
+        <div class="card-header bg-warning">
+
+            <h5 class="mb-0">
+
+                <i class="fas fa-toolbox me-2"></i>
+
+                Accessories
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if result.accessories.items %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Accessory</th>
+
+                            <th class="text-center">Qty</th>
+
+                            <th class="text-center">Unit</th>
+
+                            <th class="text-end">Unit Price</th>
+
+                            <th class="text-end">Total</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in result.accessories.items %}
+
+                        <tr>
+
+                            <td>
+
+                                <strong>
+
+                                    {{ item.name }}
+
+                                </strong>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ item.quantity }}
+
+                            </td>
+
+                            <td class="text-center">
+
+                                {{ item.unit }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                ₦{{ item.unit_price|floatformat:2 }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                ₦{{ item.total_price|floatformat:2 }}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                    <tfoot>
+
+                        <tr class="table-warning">
+
+                            <th colspan="4" class="text-end">
+
+                                Total Accessories Cost
+
+                            </th>
+
+                            <th class="text-end">
+
+                                ₦{{ result.accessories.summary.total_cost|floatformat:2 }}
+
+                            </th>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-center py-5">
+
+                <i class="fas fa-box-open fa-3x text-secondary mb-3"></i>
+
+                <h5>
+
+                    No Accessories Required
+
+                </h5>
+
+                <p class="text-muted">
+
+                    The engineering engine did not require any additional accessories.
+
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+    {% endblock content %}

@@ -277,7 +277,7 @@ def vendor_dashboard(request):
     items = OrderItem.objects.filter(vendor=vendor)
     wallet, _ = VendorWallet.objects.get_or_create(vendor=vendor)
 
-    total_sales = items.aggregate(total=Sum("total"))["total"] or 0
+    total_sales = items.aggregate(total=sum("total"))["total"] or 0
     total_orders = items.count()
 
     return render(request, "accounts/vendor_dashboard.html", {

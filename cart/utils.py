@@ -32,7 +32,7 @@ def build_vendor_checkout(user):
         qty = item.quantity
 
         price = Decimal(
-            str(product.final_price())
+            str(product.cached_price())
         )
 
         line_total = price * qty

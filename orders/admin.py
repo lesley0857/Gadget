@@ -136,7 +136,7 @@ class OrderAdmin(admin.ModelAdmin):
         for s in shipments:
             html += f"""
             <tr>
-                <td>{s.stage}</td>
+                <td>{s.status}</td>
                 <td>{s.vendor or '-'}</td>
                 <td>{s.provider}</td>
                 <td>{s.pickup_address}</td>

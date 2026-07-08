@@ -93,17 +93,6 @@ class ShipmentAdmin(admin.ModelAdmin):
 
     mark_delivered.short_description = "Mark selected as Delivered"
 
-
-
-    list_display = [
-        "pk",
-        "tracking_id",
-        "status",
-        "created_at"
-    ]
-
- 
-
     list_filter = [
         "status",
         "created_at"

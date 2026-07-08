@@ -44,7 +44,7 @@ class ProductListingAdmin(admin.ModelAdmin):
         "is_active",]
     
     def display_final_price(self, obj):
-        return obj.final_price
+        return obj.final_price()
 
     display_final_price.short_description = "Final Price"
     
@@ -58,7 +58,7 @@ class ProductListingAdmin(admin.ModelAdmin):
 
     # 🔍 REQUIRED
     search_fields = [
-        "product__name",
+        "name",
         "vendor__store__name",
         "vendor__user__email"
     ]

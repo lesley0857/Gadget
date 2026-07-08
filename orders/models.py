@@ -63,7 +63,7 @@ class Order(models.Model):
     shipping_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     vat_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    status = models.CharField(max_length=20,choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=20,choices=STATUS_CHOICES, default="pending",db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     payment_url = models.URLField(null=True, blank=True)
     paid_at=models.DateTimeField(null=True,blank=True)
@@ -100,6 +100,18 @@ class Order(models.Model):
         
     def __str__(self):
         return f"{self.pk}--{self.customer.email}--{self.total_amount}--{self.status}--{self.created_at.date()}--{self.created_at.time()}"
+
+    class Meta:
+        indexes = [models.Index(fields=["reference"]),
+                models.Index(fields=["status"]),
+
+            models.Index(
+                fields=["created_at"]
+            ),
+            models.Index(
+        fields=["order_number"]
+    ),
+        ]
 
 class OrderItem(models.Model):
     STATUS_CHOICES = [

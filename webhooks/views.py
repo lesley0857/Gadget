@@ -9,7 +9,14 @@ from payments.tasks import process_payment
 
 @csrf_exempt
 def paystack_webhook(request):
-    signature = request.headers.get("x-paystack-signature")
+
+    if request.method != "POST":
+        return HttpResponse(status=405)
+
+    signature = request.headers.get(
+        "x-paystack-signature",
+        ""
+    )
 
     computed = hmac.new(
         settings.PAYSTACK_SECRET_KEY.encode(),
@@ -17,12 +24,24 @@ def paystack_webhook(request):
         hashlib.sha512
     ).hexdigest()
 
-    if signature != computed:
+    if not hmac.compare_digest(
+        signature,
+        computed
+    ):
         return HttpResponse(status=401)
 
-    payload = json.loads(request.body)
+    try:
+        payload = json.loads(
+            request.body
+        )
+    except json.JSONDecodeError:
+        return HttpResponse(status=400)
 
-    if payload["event"] == "charge.success":
-        process_payment.delay(payload["data"])
+    if payload.get("event") == "charge.success":
+
+        process_payment.delay(
+            payload.get("data")
+        )
 
     return HttpResponse(status=200)
+

@@ -97,7 +97,7 @@ def search_suggestions(request):
                 else "/static/images/product-placeholder.png",
 
             "price":
-                str(p.final_price()),
+                str(p.cached_price()),
 
             "url":
                 f"/product/{p.name}/",
@@ -164,7 +164,18 @@ def category_products(request, name):
         categories__name=name,
         is_active=True
     ).distinct()
-    categories = Category.objects.all()
+    categories = (
+    Category.objects
+    .filter(parent=None)
+    .prefetch_related(
+        Prefetch(
+            "product_listings",
+            queryset=ProductListing.objects.filter(
+                is_active=True
+            )
+        )
+    )
+)
     return render(request, "category.html", {
         "category": category,
         "categories":categories,

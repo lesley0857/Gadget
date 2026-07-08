@@ -119,7 +119,7 @@ def add_to_cart(request, listing_id):
 
                 quantity = item["quantity"]
 
-                price = p.final_price()
+                price = p.cached_price()
 
                 subtotal = price * quantity
 
@@ -196,7 +196,7 @@ def cart_view(request):
         for listing_id, data in session_cart.items():
             listing = ProductListing.objects.get(id=listing_id)
             quantity = data['quantity']
-            total_price = listing.final_price() * quantity
+            total_price = listing.cached_price() * quantity
 
             items.append({
                 'listing': listing,
@@ -353,7 +353,7 @@ def cart_summary(request):
 
         for id, item in cart.items():
             listing = ProductListing.objects.get(id=id)
-            price = listing.final_price()
+            price = listing.cached_price()
             subtotal = price * item["quantity"]
 
             cart_items_data.append({
@@ -454,7 +454,7 @@ def negotiate_cart(request,negotiation_type="cart"):
         "product_listing"
     ):
 
-        price = item.product_listing.final_price()
+        price = item.product_listing.cached_price()
 
         NegotiationItem.objects.create(
 
@@ -538,6 +538,7 @@ def negotiation_lookup(request):
 # Admin is deirect here from email. 
 # can also edit prices and delivery here
 # http://127.0.0.1:8000/admin-negotiation/17/
+@transaction.atomic
 @login_required
 def approve_negotiation(request,pk):
     negotiation = get_object_or_404(
@@ -612,7 +613,7 @@ def approve_negotiation(request,pk):
         }
     )
 
-
+@transaction.atomic
 def pay_negotiation(request, code):
 
     negotiation = get_object_or_404(
@@ -674,6 +675,7 @@ def pay_negotiation(request, code):
         data["data"]["authorization_url"]
     )
 
+@transaction.atomic
 @login_required
 def pay_negotiation_secure(request,token):
 
@@ -1187,7 +1189,7 @@ def admin_negotiation_detail(request, pk):
         context
     )
 
-
+@transaction.atomic
 @login_required
 def checkout_view(request):
     user = request.user

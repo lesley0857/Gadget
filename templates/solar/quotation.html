@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+<style>
+    body {
+        background: #f5f7fa;
+    }
+
+    .quote-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+    }
+
+    .company-header {
+
+        background: linear-gradient(135deg, #0d6efd, #003b8e);
+
+        color: #fff;
+
+        padding: 40px;
+
+    }
+
+    .company-name {
+
+        font-size: 34px;
+
+        font-weight: 700;
+
+    }
+
+    .company-sub {
+
+        opacity: .9;
+
+    }
+
+    .section-title {
+
+        font-size: 22px;
+
+        font-weight: 700;
+
+        color: #0d6efd;
+
+        margin-bottom: 20px;
+
+    }
+
+    .info-box {
+
+        background: #f8f9fa;
+
+        border-radius: 12px;
+
+        padding: 18px;
+
+        height: 100%;
+
+    }
+
+    .total-box {
+
+        background: #198754;
+
+        color: #fff;
+
+        font-size: 32px;
+
+        font-weight: 700;
+
+        text-align: center;
+
+        padding: 20px;
+
+        border-radius: 15px;
+
+    }
+
+    .table thead {
+
+        background: #0d6efd;
+
+        color: #fff;
+
+    }
+
+    tfoot {
+
+        background: #e9ecef;
+
+        font-weight: bold;
+
+    }
+
+    .signature {
+
+        border-top: 2px solid #000;
+
+        margin-top: 80px;
+
+        width: 250px;
+
+        padding-top: 8px;
+
+    }
+
+    @media print {
+
+        .no-print {
+
+            display: none;
+
+        }
+
+    }
+</style>
+
+<div class="container py-4">
+
+    <div class="card quote-card">
+
+        <div class="company-header">
+
+            <div class="row">
+
+                <div class="col-md-8">
+
+                    <div class="company-name">
+
+                        REMAROBE NIGERIA LIMITED
+
+                    </div>
+
+                    <div class="company-sub">
+
+                        Electrical Engineering • Solar Energy • Industrial Automation • Earthing Systems
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 text-end">
+
+                    <h5>QUOTATION</h5>
+
+                    <p>
+
+                        Date : {{ today }}
+
+                    </p>
+
+                    <p>
+
+                        Quote No : QTN-{{ today|date:"Ymd" }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body p-5">
+
+            <h4 class="section-title">
+
+                Customer Information
+
+            </h4>
+
+            <div class="row mb-5">
+
+                <div class="col-md-6">
+
+                    <div class="info-box">
+
+                        <strong>Customer</strong><br>
+
+                        ______________________________
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="info-box">
+
+                        <strong>Project Location</strong><br>
+
+                        ______________________________
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <h4 class="section-title">
+
+                Project Summary
+
+            </h4>
+
+            <div class="row mb-5">
+
+                <div class="col-md-3">
+
+                    <div class="info-box">
+
+                        <strong>Connected Load</strong><br>
+
+                        {{ result.load.load_watts|floatformat:0 }} W
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-box">
+
+                        <strong>Daily Energy</strong><br>
+
+                        {{ result.load.daily_energy_wh|floatformat:0 }} Wh
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-box">
+
+                        <strong>Battery Bank</strong><br>
+
+                        {{ result.battery.selected.quantity }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="info-box">
+
+                        <strong>Solar Panels</strong><br>
+
+                        {{ result.panel.selected.quantity }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <h4 class="section-title">
+
+                Bill of Quantities
+
+            </h4>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Category</th>
+
+                            <th>Description</th>
+
+                            <th class="text-center">Qty</th>
+
+                            <th class="text-end">Unit Price</th>
+
+                            <th class="text-end">Total</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in boq.items %}
+
+                        <tr>
+
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>{{ item.category }}</td>
+
+                            <td>{{ item.description }}</td>
+
+                            <td class="text-center">{{ item.quantity }}</td>
+
+                            <td class="text-end">
+
+                                ₦{{ item.unit_price|floatformat:2|intcomma }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                ₦{{ item.total|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <h4 class="section-title mt-5">
+
+                Pricing Summary
+
+            </h4>
+
+            <div class="row">
+
+                <div class="col-md-6 offset-md-6">
+
+                    <table class="table">
+
+                        <tr>
+
+                            <td>Materials</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.material_cost|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Installation</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.installation|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Transport</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.transport|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Contingency</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.contingency|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>Profit</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.profit|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>VAT</td>
+
+                            <td class="text-end">
+
+                                ₦{{ pricing.vat|floatformat:2|intcomma }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr class="table-success">
+
+                            <td>
+
+                                <strong>GRAND TOTAL</strong>
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <strong>
+
+                                    ₦{{ pricing.grand_total|floatformat:2|intcomma }}
+
+                                </strong>
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="total-box my-5">
+
+                Quotation Total
+
+                <br>
+
+                ₦{{ pricing.grand_total|floatformat:2|intcomma }}
+
+            </div>
+
+            <h4 class="section-title">
+
+                Scope of Work
+
+            </h4>
+
+            <ul>
+
+                <li>Supply of complete solar power system.</li>
+
+                <li>Professional installation and commissioning.</li>
+
+                <li>Testing and performance verification.</li>
+
+                <li>User training after installation.</li>
+
+                <li>System documentation and handover.</li>
+
+            </ul>
+
+            <h4 class="section-title">
+
+                Terms & Conditions
+
+            </h4>
+
+            <ul>
+
+                <li>Quotation validity: 14 Days.</li>
+
+                <li>70% advance payment before procurement.</li>
+
+                <li>Balance payable immediately after commissioning.</li>
+
+                <li>Delivery period depends on product availability.</li>
+
+                <li>Manufacturer warranty applies to all equipment.</li>
+
+                <li>Installation follows IEC and Nigerian electrical standards.</li>
+
+            </ul>
+
+            <div class="row mt-5">
+
+                <div class="col-md-6">
+
+                    <div class="signature">
+
+                        Customer Signature
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 text-end">
+
+                    <div class="signature ms-auto">
+
+                        For REMAROBE NIG. LTD.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="text-center mt-5 no-print">
+
+                <button class="btn btn-lg btn-primary" onclick="window.print()">
+
+                    <i class="fas fa-print me-2"></i>
+
+                    Print Quotation
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

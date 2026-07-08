@@ -42,9 +42,7 @@ class Category(models.Model):
         return self.name
 
     def featured_products(self):
-        return self.product_listings.filter(
-            is_active=True
-        ).distinct()[:4]
+        return self.product_listings.all()[:4]
 
 class PricingRule(models.Model):
 
@@ -158,12 +156,12 @@ class ProductListing(models.Model):
     name = models.CharField(max_length=255,db_index=True)
     vendor = models.ForeignKey("accounts.Vendor",on_delete=models.CASCADE)
     categories = models.ManyToManyField(Category,related_name="product_listings")
-    fixed_shipping_fee = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     manufacturer = models.CharField(max_length=200,db_index=True,blank=True)
     brand = models.CharField(max_length=200,db_index=True,blank=True)
     model_number = models.CharField(max_length=200,blank=True)
     country_of_origin = models.CharField(max_length=100,blank=True)
     supplier_price = models.DecimalField(max_digits=12,decimal_places=2,default=0)
+    cached_price=models.DecimalField(max_digits=12,decimal_places=2,default=0)
     stock = models.PositiveIntegerField(default=0)
     minimum_order_quantity = models.PositiveIntegerField(default=1)
     requires_negotiation = models.BooleanField(default=False)
@@ -177,38 +175,17 @@ class ProductListing(models.Model):
     requires_shipping = models.BooleanField(default=True)
     is_negotiable = models.BooleanField(default=False)
     units_sold = models.PositiveIntegerField(default=0)
-    is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_featured = models.BooleanField(default=False)
+    is_new = models.BooleanField(default=False)
+    is_best_seller = models.BooleanField(default=False)
+    is_limited_stock = models.BooleanField(default=False)
+    is_fast_moving = models.BooleanField(default=False)
+    is_imported = models.BooleanField(default=False)
+    is_verified_supplier = models.BooleanField(default=False)
     
-    is_featured = models.BooleanField(
-        default=False
-    )
-
-    is_new = models.BooleanField(
-        default=False
-    )
-
-    is_best_seller = models.BooleanField(
-        default=False
-    )
-
-    is_limited_stock = models.BooleanField(
-        default=False
-    )
-
-    is_fast_moving = models.BooleanField(
-        default=False
-    )
-
-    is_imported = models.BooleanField(
-        default=False
-    )
-
-    is_verified_supplier = models.BooleanField(
-        default=False
-    )
     class Meta:
 
         indexes = [
@@ -319,8 +296,9 @@ class ProductListing(models.Model):
             Decimal("0.01")
         )
         
+        
     def get_tier_margin(self):
-        cost = self.supplier_cost
+        cost = self.supplier_price
         if cost <= Decimal("50000"):
             return Decimal("25")
         elif cost <= Decimal("500000"):
@@ -339,7 +317,7 @@ class ProductListing(models.Model):
     @property
     def profit_percentage_actual(self):
 
-        if self.supplier_cost == 0:
+        if self.supplier_price == 0:
             return 0
 
         return round(
@@ -347,17 +325,26 @@ class ProductListing(models.Model):
             (
                 self.profit_amount
                 /
-                self.supplier_cost
+                self.supplier_price
             ) * 100,
 
             2
         )
 
-        final_price.short_description = "Final Price"
-        def __str__(self):
-            return f"{self.name}"
-        
-        
+    final_price.short_description = "Final Price"
+    def refresh_price(self):
+        self.cached_price=self.calculate_price()
+        self.save(
+            update_fields=[
+                "cached_price"
+            ]
+    )
+    
+    
+    def __str__(self):
+                return f"{self.name}"
+    
+    
 class ProductMedia(models.Model):
 
     IMAGE = "image"

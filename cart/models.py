@@ -41,7 +41,11 @@ class CartItem(models.Model):
             )
         )
         return price * self.quantity
-    
+    class Meta:
+        unique_together = (
+            "cart",
+            "product_listing",
+        )
 
 class NegotiationRequest(models.Model):
 
@@ -128,6 +132,12 @@ class NegotiationRequest(models.Model):
         null=True,
         blank=True
     )
+
+    indexes = [models.Index(fields=["code"]),
+                models.Index(fields=["status"]),
+                models.Index(fields=["payment_token"]),
+            ]           
+
     def save(self,*args,**kwargs):
 
         if not self.code:
@@ -179,6 +189,11 @@ class NegotiationItem(models.Model):
         qty = self.quantity or 0
 
         return price * qty
+    class Meta:
+        unique_together = (
+        "negotiation",
+        "product_listing",
+    )
     
 
 

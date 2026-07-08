@@ -4,9 +4,8 @@ from cart.models import Cart, CartItem
 from catalog.models import ProductListing
 
 from django.db.models.signals import post_save
-from django.contrib.auth.models import User
 from .models import UserProfile
-
+from accounts.models import User
 
 @receiver(user_logged_in)
 def merge_cart(sender, request, user, **kwargs):
@@ -15,7 +14,12 @@ def merge_cart(sender, request, user, **kwargs):
     cart, _ = Cart.objects.get_or_create(user=user)
 
     for listing_id, data in session_cart.items():
-        listing = ProductListing.objects.get(id=listing_id)
+        try:
+            listing = ProductListing.objects.get(
+                id=listing_id
+            )
+        except ProductListing.DoesNotExist:
+            continue
 
         item, created = CartItem.objects.get_or_create(
             cart=cart,

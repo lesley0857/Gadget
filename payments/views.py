@@ -246,7 +246,7 @@ def initiate_payment(request):
         unit_price = Decimal(
 
             str(
-                listing.final_price()
+                listing.cached_price()
             )
         )
 

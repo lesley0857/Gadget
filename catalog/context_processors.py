@@ -2,13 +2,13 @@ import random
 from random import Random
 from datetime import date
 from catalog.models import Category
+from django.core.cache import cache
 
 def global_categories(request):
-
-    
-    categories = list(
-        Category.objects.filter(parent=None)
-    )
+    categories = cache.get("nav_categories")
+    if not categories:
+        categories = list(Category.objects.filter(parent=None))
+        cache.set("nav_categories",categories,3600)
     second_categories = list(
         Category.objects.filter(parent=None)
     )

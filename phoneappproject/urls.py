@@ -19,7 +19,7 @@ from logistics.views import *
 handler404 = "accounts.views.custom_404"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("remarobe_secure_admin/", admin.site.urls),
     path('accounts/login/', login_view, name='account_login'),
     path('accounts/signup/', register_view, name='account_signup'),
 
@@ -86,6 +86,9 @@ urlpatterns = [
 
     path('solar/calculator/',solar_calculator ,name="solar_calculator"),
 
+    path('result/',solar_result,name='result'),
+    path('quotation/',solar_quotation,name='quotation'),
+    
     path("webhooks/paystack/", paystack_webhook),
 ]
 

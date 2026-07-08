@@ -184,6 +184,7 @@ class NegotiationRequestAdmin(admin.ModelAdmin):
 
         return f"₦{total:,.2f}"
 
+
     total_amount.short_description = "Quote Total"
 
     def order_link(self,obj):

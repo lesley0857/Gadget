@@ -7,9 +7,12 @@ from orders.models import *
 from .models import *
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django.utils import timezone
 from cart.utils import build_vendor_checkout
 from .utils import serialize_decimals,send_shipping_negotiation_email,build_shipping_whatsapp_url
 from logistics.models import Shipment
+
 
 
 @login_required
@@ -80,8 +83,6 @@ def delivery_dashboard(request):
         }
     )
 
-from django.contrib import messages
-from django.utils import timezone
 
 @login_required
 def update_shipment_status(request, shipment_id):

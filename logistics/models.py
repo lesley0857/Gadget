@@ -25,36 +25,17 @@ class Shipment(models.Model):
 
 
 
-    order = models.ForeignKey(
-        "orders.Order",
-        on_delete=models.CASCADE,
-        related_name="shipments",
-    )
-
-    provider = models.CharField(
-        max_length=100
-    )
-
+    order = models.ForeignKey("orders.Order",on_delete=models.CASCADE,related_name="shipments",)
+    provider = models.CharField(max_length=100)
     pickup_address = models.TextField()
-
     delivery_address = models.TextField()
-
-    tracking_id = models.CharField(
-        max_length=100,
-        unique=True,
-    )
-
-    estimated_delivery = models.DateField(
-        null=True,
-        blank=True,
-    )
-
+    tracking_id = models.CharField(max_length=100,unique=True,)
+    estimated_delivery = models.DateField(null=True,blank=True,)
     status = models.CharField(
         max_length=30,
         choices=STATUS,
-        default="created",
+        default="created",db_index=True
     )
-
     current_location = models.CharField(
         max_length=255,
         blank=True,
@@ -90,7 +71,10 @@ class Shipment(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
-
+    class Meta:
+        indexes = [models.Index(fields=["tracking_id"]),
+                models.Index(fields=["status"]),]
+    
     def __str__(self):
 
         return f"{self.tracking_id}"
