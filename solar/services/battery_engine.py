@@ -286,6 +286,8 @@ def calculate_battery_bank(
                     required_capacity,
                     2
                 ),
+                "quantity":
+                quantity,
 
         },
 

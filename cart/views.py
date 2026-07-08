@@ -119,7 +119,7 @@ def add_to_cart(request, listing_id):
 
                 quantity = item["quantity"]
 
-                price = p.cached_price()
+                price = p.final_price()
 
                 subtotal = price * quantity
 
@@ -196,7 +196,7 @@ def cart_view(request):
         for listing_id, data in session_cart.items():
             listing = ProductListing.objects.get(id=listing_id)
             quantity = data['quantity']
-            total_price = listing.cached_price() * quantity
+            total_price = listing.final_price() * quantity
 
             items.append({
                 'listing': listing,
@@ -353,7 +353,7 @@ def cart_summary(request):
 
         for id, item in cart.items():
             listing = ProductListing.objects.get(id=id)
-            price = listing.cached_price()
+            price = listing.final_price()
             subtotal = price * item["quantity"]
 
             cart_items_data.append({
@@ -454,7 +454,7 @@ def negotiate_cart(request,negotiation_type="cart"):
         "product_listing"
     ):
 
-        price = item.product_listing.cached_price()
+        price = item.product_listing.final_price()
 
         NegotiationItem.objects.create(
 

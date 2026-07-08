@@ -290,13 +290,26 @@ def calculate_panels(
             "target_voltage":
 
                 target_voltage,
-
-            "daily_energy":
+            "corrected_voc":
 
                 round(
+                    corrected_voc,
+                    2
+                ),
+            "quantity":quantity,    
+            "daily_energy":round(
                     daily_energy,
                     2
                 ),
+            "array_isc":
+
+                round(
+                    array_isc,
+                    2
+                ),
+            "array_voltage":round(array_voltage,2),
+            "array_current":round(array_current,2),
+            "installed_power": round(installed_power,2)
         },
 
         #######################################################

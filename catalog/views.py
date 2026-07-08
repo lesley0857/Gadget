@@ -98,7 +98,7 @@ def search_suggestions(request):
                 else "/static/images/product-placeholder.png",
 
             "price":
-                str(p.cached_price()),
+                str(p.cached_price),
 
             "url":
                 f"/product/{p.name}/",

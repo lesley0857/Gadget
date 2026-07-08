@@ -799,7 +799,7 @@
 
                             <td class="text-center">
 
-                                {{ load.running_load }}
+                                {{ result.load.running_load }}
 
                                 W
 
@@ -807,10 +807,7 @@
 
                             <td class="text-center">
 
-                                {{ load.daily_energy }}
-
-                                Wh
-
+                                {{ result.load.daily_energy_wh|floatformat:0 }} Wh
                             </td>
 
                             <td class="text-center">

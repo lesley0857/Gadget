@@ -41,7 +41,319 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
 </head>
+<style>
+    .product-detail-wrapper {
+        max-width: 1400px;
+        margin: auto;
+        padding: 40px 20px;
+    }
 
+    .product-grid {
+        display: grid;
+        grid-template-columns: 55% 45%;
+        gap: 50px;
+
+    }
+
+    .main-media {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .main-media img,
+    .main-media video {
+        width: 100%;
+        height: 550px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .thumbnail-row {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        margin-top: 15px;
+    }
+
+    .thumbnail-row img,
+    .thumbnail-row video {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 8px;
+        border: 2px solid transparent;
+    }
+
+    .thumbnail-row img:hover,
+    .thumbnail-row video:hover {
+        border-color: #0d6efd;
+    }
+
+    .category-badge {
+        display: inline-block;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 8px 14px;
+        border-radius: 50px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .product-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .vendor-name {
+        margin-bottom: 20px;
+    }
+
+    .price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+
+    .stock {
+        margin-top: 10px;
+        font-weight: 600;
+    }
+
+    .in-stock {
+        color: green;
+    }
+
+    .out-stock {
+        color: red;
+    }
+
+    .description {
+        margin-top: 20px;
+        line-height: 1.8;
+    }
+
+    .qty-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 25px;
+    }
+
+    .qty-box button {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .qty-box input {
+        width: 80px;
+        height: 40px;
+        text-align: center;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .add-cart-btn {
+        background: #0d6efd;
+        color: white;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .buy-now-btn {
+        background: #111827;
+        color: white;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .trust-row {
+        display: flex;
+        gap: 20px;
+        margin-top: 25px;
+        color: #555;
+    }
+
+    .spec-table {
+        width: 100%;
+        margin-top: 50px;
+        border-collapse: collapse;
+    }
+
+    .spec-table th,
+    .spec-table td {
+        padding: 15px;
+        border: 1px solid #eee;
+    }
+
+    @media(max-width:900px) {
+
+        .product-grid {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .main-media img,
+        .main-media video {
+            height: 350px;
+        }
+
+    }
+
+    .related-products-section {
+
+        margin-top: 80px;
+    }
+
+    .section-header {
+
+        margin-bottom: 25px;
+    }
+
+    .section-header h2 {
+
+        margin: 0;
+        font-size: 1.8rem;
+    }
+
+    .section-header p {
+
+        color: #6b7280;
+        margin-top: 6px;
+    }
+
+    .related-products-grid {
+
+        display: grid;
+        gap: 15px;
+
+        /* 4 cards on small screens */
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .related-product-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e7eb;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        text-decoration: none;
+
+        color: inherit;
+
+        transition: all 0.2s ease;
+    }
+
+    .related-product-card:hover {
+
+        transform: translateY(-4px);
+
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .related-image-wrapper {
+
+        aspect-ratio: 1 / 1;
+
+        background: #f9fafb;
+    }
+
+    .related-image-wrapper img {
+
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: contain;
+
+        padding: 10px;
+    }
+
+    .related-product-body {
+
+        padding: 12px;
+    }
+
+    .related-vendor {
+
+        display: block;
+
+        font-size: 0.75rem;
+
+        color: #6b7280;
+
+        margin-bottom: 8px;
+    }
+
+    .related-product-body h3 {
+
+        font-size: 0.9rem;
+
+        line-height: 1.4;
+
+        margin: 0 0 12px;
+
+        height: 40px;
+
+        overflow: hidden;
+    }
+
+    .related-price {
+
+        color: #0d6efd;
+
+        font-weight: 700;
+
+        margin-bottom: 8px;
+    }
+
+    .related-stock {
+
+        font-size: 0.75rem;
+    }
+
+    .stock-available {
+
+        color: #16a34a;
+    }
+
+    .stock-unavailable {
+
+        color: #dc2626;
+    }
+
+
+    /* Large Screens - 6 Cards */
+
+    @media (min-width: 992px) {
+
+        .related-products-grid {
+
+            grid-template-columns: repeat(6, 1fr);
+        }
+    }
+</style>
+
+<!-- # for cart -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -324,6 +636,698 @@
     });
 </script>
 
+<script>
+    /*
+   ==========================================================
+   REMAROBE INDUSTRIAL PRODUCT CARDS
+   Version: 2.0 (Refactored)
+   
+   Phase 1
+   ----------------------------------------------------------
+   ✓ Initialization
+   ✓ Video Hover
+   ✓ Touch Device Detection
+   ✓ Utility Functions
+   ✓ CSS Class Based Animation
+   ==========================================================
+   */
+
+    "use strict";
+
+
+    /*==========================================================
+    INITIALIZE
+    ==========================================================*/
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        initializeIndustrialProducts();
+
+    });
+
+
+    function initializeIndustrialProducts() {
+
+        detectTouchDevice();
+
+        initializeLazyVideos();
+
+    }
+
+
+    /*==========================================================
+    TOUCH DEVICE
+    ==========================================================*/
+
+    function detectTouchDevice() {
+
+        if (
+
+            "ontouchstart" in window ||
+
+            navigator.maxTouchPoints > 0 ||
+
+            navigator.msMaxTouchPoints > 0
+
+        ) {
+
+            document.documentElement.classList.add(
+
+                "touch-device"
+
+            );
+
+        }
+
+    }
+
+
+    /*==========================================================
+    VIDEO SYSTEM
+    ==========================================================*/
+
+    function initializeProductVideos() {
+
+        const cards = document.querySelectorAll(
+
+            ".industrial-card"
+
+        );
+
+        if (cards.length === 0) return;
+
+        cards.forEach(card => {
+
+            prepareCard(card);
+
+        });
+
+    }
+
+
+    /*==========================================================
+    PREPARE CARD
+    ==========================================================*/
+
+    function prepareCard(card) {
+        if (card.dataset.ready === "true") {
+
+            return;
+
+        }
+
+        card.dataset.ready = "true";
+        const video = card.querySelector(
+
+            ".product-video"
+
+        );
+
+        const playIcon = card.querySelector(
+
+            ".play-icon"
+
+        );
+
+        if (!video) {
+
+            if (playIcon) {
+
+                playIcon.remove();
+
+            }
+
+            return;
+
+        }
+
+        video.pause();
+
+        video.currentTime = 0;
+
+        video.preload = "metadata";
+
+        card.addEventListener(
+
+            "mouseenter",
+
+            () => playVideo(card, video)
+
+        );
+
+        card.addEventListener(
+
+            "mouseleave",
+
+            () => stopVideo(card, video)
+
+        );
+
+    }
+
+
+    /*==========================================================
+    PLAY
+    ==========================================================*/
+
+    function playVideo(card, video) {
+
+        card.classList.add(
+
+            "playing"
+
+        );
+        if (reduceMotion) {
+
+            return;
+
+        }
+
+        if (video.readyState === 0) {
+
+            video.load();
+
+        }
+
+        const playPromise = video.play();
+
+        if (playPromise !== undefined) {
+
+            playPromise.catch(() => {
+
+                /* Ignore autoplay restriction */
+
+            });
+
+        }
+
+    }
+
+
+    /*==========================================================
+    STOP
+    ==========================================================*/
+
+    function stopVideo(card, video) {
+
+        card.classList.remove(
+
+            "playing"
+
+        );
+
+        video.pause();
+
+        video.currentTime = 0;
+
+    }
+
+
+
+    /*==========================================================
+    DEBOUNCE
+    ==========================================================*/
+
+    function debounce(callback, delay) {
+
+        let timer;
+
+        return function () {
+
+            clearTimeout(timer);
+
+            timer = setTimeout(
+
+                () => callback.apply(
+
+                    this,
+
+                    arguments
+
+                ),
+
+                delay
+
+            );
+
+        }
+
+    }
+
+
+    /*==========================================================
+    THROTTLE
+    ==========================================================*/
+
+    function throttle(callback, limit) {
+
+        let waiting = false;
+
+        return function () {
+
+            if (waiting) return;
+
+            callback.apply(
+
+                this,
+
+                arguments
+
+            );
+
+            waiting = true;
+
+            setTimeout(() => {
+
+                waiting = false;
+
+            }, limit);
+
+        }
+
+    }
+
+
+
+    /*=========================================================
+    LAZY VIDEO LOADING
+    =========================================================*/
+
+    function initializeLazyVideos() {
+
+        const cards = document.querySelectorAll(".industrial-card");
+
+        if (cards.length === 0) return;
+
+        if (!("IntersectionObserver" in window)) {
+
+            cards.forEach(card => prepareCard(card));
+
+            return;
+
+        }
+
+        const observer = new IntersectionObserver(
+
+            handleCardIntersection,
+
+            {
+
+                root: null,
+
+                rootMargin: "200px",
+
+                threshold: .15
+
+            }
+
+        );
+
+        cards.forEach(card => {
+
+            observer.observe(card);
+
+        });
+
+    }
+
+
+
+    /*=========================================================
+    INTERSECTION CALLBACK
+    =========================================================*/
+
+    function handleCardIntersection(entries, observer) {
+
+        entries.forEach(entry => {
+
+            if (!entry.isIntersecting) return;
+
+            prepareCard(entry.target);
+
+            observer.unobserve(entry.target);
+
+        });
+
+    }
+
+    /*==========================================================
+    END PHASE 1
+    ==========================================================*/
+
+    /*
+    ==========================================================
+    PHASE 2
+    FLOATING CART
+    AJAX INTEGRATION
+    ==========================================================
+    */
+
+
+    /*==========================================================
+    INITIALIZE CART BUTTONS
+    ==========================================================*/
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        initializeFloatingCartButtons();
+
+    });
+
+
+    function initializeFloatingCartButtons() {
+
+        const buttons = document.querySelectorAll(".floating-cart");
+
+        if (buttons.length === 0) return;
+
+        buttons.forEach(button => {
+
+            button.addEventListener(
+
+                "click",
+
+                floatingCartClick
+
+            );
+
+        });
+
+    }
+
+
+    /*==========================================================
+    CLICK
+    ==========================================================*/
+
+    function floatingCartClick(event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        const button = event.currentTarget;
+
+        if (button.disabled) return;
+
+        const productID = button.dataset.id;
+
+        if (!productID) {
+
+            console.error("Missing product id.");
+
+            return;
+
+        }
+
+        addProductToCart(button, productID);
+
+    }
+
+
+    /*==========================================================
+    ADD PRODUCT
+    ==========================================================*/
+
+    function addProductToCart(button, id) {
+
+        button.disabled = true;
+
+        const originalHTML = button.innerHTML;
+
+        showLoading(button);
+
+        fetch(`/cart/add/${id}/`, {
+
+            method: "POST",
+
+            headers: {
+
+                "X-CSRFToken": getCSRFToken(),
+
+                "X-Requested-With": "XMLHttpRequest"
+
+            }
+
+        })
+
+            .then(response => {
+
+                if (!response.ok) {
+
+                    throw new Error("Request Failed");
+
+                }
+
+                return response.json();
+
+            })
+
+            .then(data => {
+
+                if (typeof updateCartUI === "function") {
+
+                    updateCartUI(data);
+
+                }
+
+                if (typeof openCart === "function") {
+
+                    openCart();
+
+                }
+
+                showSuccess(button);
+
+                setTimeout(() => {
+
+                    restoreButton(
+
+                        button,
+
+                        originalHTML
+
+                    );
+
+                }, 1200);
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                showError(button);
+
+                setTimeout(() => {
+
+                    restoreButton(
+
+                        button,
+
+                        originalHTML
+
+                    );
+
+                }, 1200);
+
+            });
+
+    }
+
+
+    /*==========================================================
+    BUTTON STATES
+    ==========================================================*/
+
+    function showLoading(button) {
+
+        button.innerHTML =
+
+            '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    }
+
+
+    function showSuccess(button) {
+
+        button.innerHTML =
+
+            '<i class="fa-solid fa-check"></i>';
+
+        button.classList.add("cart-success");
+
+    }
+
+
+    function showError(button) {
+
+        button.innerHTML =
+
+            '<i class="fa-solid fa-xmark"></i>';
+
+        button.classList.add("cart-error");
+
+    }
+
+
+    function restoreButton(button, html) {
+
+        button.disabled = false;
+
+        button.innerHTML = html;
+
+        button.classList.remove("cart-success");
+
+        button.classList.remove("cart-error");
+
+    }
+
+
+    /*==========================================================
+    OPTIONAL RIPPLE EFFECT
+    ==========================================================*/
+
+    document.addEventListener("click", function (e) {
+
+        const btn = e.target.closest(".floating-cart");
+
+        if (!btn) return;
+
+        createRipple(btn, e);
+
+    });
+
+
+    function createRipple(button, event) {
+
+        const ripple = document.createElement("span");
+
+        ripple.className = "cart-ripple";
+
+        const rect = button.getBoundingClientRect();
+
+        ripple.style.left =
+
+            (event.clientX - rect.left) + "px";
+
+        ripple.style.top =
+
+            (event.clientY - rect.top) + "px";
+
+        button.appendChild(ripple);
+
+        setTimeout(() => {
+
+            ripple.remove();
+
+        }, 600);
+
+    }
+
+    /*=========================================================
+    PAGE VISIBILITY
+    =========================================================*/
+
+    document.addEventListener(
+
+        "visibilitychange",
+
+        () => {
+
+            if (document.hidden) {
+
+                pauseEveryVideo();
+
+            }
+
+        });
+    /*=========================================================
+    PAUSE ALL
+    =========================================================*/
+
+    function pauseEveryVideo() {
+
+        document
+
+            .querySelectorAll(".product-video")
+
+            .forEach(video => {
+
+                video.pause();
+
+                video.currentTime = 0;
+
+            });
+
+        document
+
+            .querySelectorAll(".industrial-card")
+
+            .forEach(card => {
+
+                card.classList.remove("playing");
+
+            });
+
+    }
+    /*=========================================================
+    TOUCH VIDEO
+    =========================================================*/
+
+    if (
+
+        document.documentElement.classList.contains(
+
+            "touch-device"
+
+        )
+
+    ) {
+
+        document
+
+            .querySelectorAll(".industrial-card")
+
+            .forEach(card => {
+
+                const video =
+
+                    card.querySelector(".product-video");
+
+                if (!video) return;
+
+                card.addEventListener(
+
+                    "click",
+
+                    function (e) {
+
+                        if (
+
+                            e.target.closest(".floating-cart")
+
+                        ) return;
+
+                        playVideo(card, video);
+
+                        setTimeout(() => {
+
+                            stopVideo(card, video);
+
+                        }, 5000);
+
+                    });
+
+            });
+
+    }
+    /*==========================================================
+    END PHASE 2
+    ==========================================================*/
+
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
@@ -779,7 +1783,6 @@ PRODUCT BODY
             display: -webkit-box;
 
             -webkit-line-clamp: 2;
-
             -webkit-box-orient: vertical;
 
             overflow: hidden;
@@ -1099,8 +2102,35 @@ RESPONSIVE
                 font-size: 14px;
             }
         }
+
+        /*====================================================
+PERFORMANCE
+====================================================*/
+
+        .product-image,
+
+        .product-video {
+
+            will-change:
+
+                opacity,
+
+                transform;
+
+            backface-visibility: hidden;
+
+            transform: translateZ(0);
+
+        }
+
+        .industrial-card {
+
+            contain: layout style paint;
+
+        }
     </style>
 
+    <!-- # banner -->
     <style>
         .bottom-banner {
 
@@ -1295,6 +2325,8 @@ RESPONSIVE
             }
         }
     </style>
+
+    <!-- # Whatsapp -->
     <style>
         /* =========================
    WHATSAPP FLOATING
@@ -2102,48 +3134,6 @@ CART SIDEBAR
     <main>
         {% block content %}
         {% include 'partials/products.html' %}
-
-        <div class="catalog-container">
-
-            <section class="featured-section">
-                <div class="section-heading">
-                    <h2>Featured Products</h2>
-                </div>
-
-                <div class="featured-grid">
-                    {% for product in featured_products %}
-                    {% include "partials/product_card.html" %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            <section class="carousel-section">
-
-                <div class="section-heading">
-                    <h2>Trending Products</h2>
-                </div>
-
-                <div class="swiper trendingSwiper">
-
-                    <div class="swiper-wrapper">
-
-                        {% for product in trending_products %}
-                        <div class="swiper-slide">
-                            {% include "partials/product_card.html" %}
-                        </div>
-                        {% endfor %}
-
-                    </div>
-
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-
-                </div>
-
-            </section>
-
-        </div>
-
 
         {% include 'partials/services.html' %}
         {% include 'partials/product_category.html' %}

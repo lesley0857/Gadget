@@ -1,27 +1,127 @@
-{%load static%}
+{% load static %}
 {% load humanize %}
-<!-- =========================================
-FEATURED PRODUCTS SECTION
-========================================= -->
 
 <section class="featured-products-section" id="product_id">
     <style>
-        /* =========================================
-FEATURED PRODUCTS SECTION
-========================================= */
+        /*======================================================
+REMAROBE INDUSTRIAL MARKETPLACE
+Designed for Django
+Author: ChatGPT
+======================================================*/
+
+
+        :root {
+
+            /* Brand */
+
+            --primary: #F37021;
+            --primary-dark: #D95E12;
+
+            /* Industrial */
+
+            --dark: #111111;
+            --dark2: #1b1b1b;
+            --dark3: #2a2a2a;
+
+            /* Light */
+
+            --white: #ffffff;
+
+            --light: #fafafa;
+
+            --grey: #ECECEC;
+
+            --grey2: #d7d7d7;
+
+            --text: #222222;
+
+            --muted: #777;
+
+            /* Radius */
+
+            --radius: 18px;
+
+            --radius-small: 12px;
+
+            /* Shadows */
+
+            --shadow-sm:
+
+                0 5px 12px rgba(0, 0, 0, .05);
+
+            --shadow:
+
+                0 12px 30px rgba(0, 0, 0, .08);
+
+            --shadow-lg:
+
+                0 25px 45px rgba(0, 0, 0, .15);
+
+            /* Animation */
+
+            --speed: .35s;
+
+        }
+
+
+        /****************************************************
+RESET
+****************************************************/
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
 
         .featured-products-section {
 
-            padding: 90px 0;
+            background:
 
-            background: #F9FAFB;
+                linear-gradient(180deg,
+
+                    #101010 0,
+
+                    #1A1A1A 320px,
+
+                    #f5f5f5 320px);
+
+            padding: 70px 0;
+
+            overflow: hidden;
+
         }
 
-        /* =========================================
-SECTION HEADER
-========================================= */
+        .featured-products-section a {
 
-        .products-section-header {
+            text-decoration: none;
+
+        }
+
+        img {
+
+            display: block;
+
+            max-width: 100%;
+
+        }
+
+        video {
+
+            display: block;
+
+        }
+
+
+        /****************************************************
+SECTION HEADER
+****************************************************/
+
+        .products-header {
 
             display: flex;
 
@@ -29,176 +129,376 @@ SECTION HEADER
 
             align-items: flex-end;
 
-            gap: 30px;
+            gap: 40px;
 
-            margin-bottom: 50px;
+            margin-bottom: 40px;
 
-            flex-wrap: wrap;
         }
 
-        .products-badge {
+        .section-small-title {
 
             display: inline-block;
 
-            background: rgba(220, 38, 38, 0.08);
-
-            color: #DC2626;
-
-            padding: 10px 18px;
-
-            border-radius: 40px;
-
             font-size: 13px;
+
+            letter-spacing: 3px;
 
             font-weight: 700;
 
-            margin-bottom: 18px;
+            color: var(--primary);
+
+            margin-bottom: 10px;
+
+            text-transform: uppercase;
+
         }
 
-        .products-title {
+        .section-title {
 
-            font-size: 42px;
+            font-size: 48px;
 
             font-weight: 800;
 
-            color: #111827;
+            line-height: 1.1;
 
-            margin-bottom: 4px;
-            line-height: 1.3;
+            color: white;
+
+            margin-bottom: 15px;
+
         }
 
-        .products-description {
+        .section-description {
 
-            max-width: 650px;
-
-            color: #6B7280;
+            max-width: 700px;
 
             font-size: 16px;
 
-            line-height: 1.8;
+            line-height: 1.7;
+
+            color: #d5d5d5;
+
         }
 
-        /* =========================================
-FILTERS
-========================================= */
+        .view-all-btn {
 
-        .products-filters {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 14px 22px;
+
+            border-radius: 50px;
+
+            background: var(--primary);
+
+            color: white;
+
+            font-weight: 700;
+
+            transition: var(--speed);
+
+        }
+
+        .view-all-btn:hover {
+
+            background: white;
+
+            color: var(--dark);
+
+        }
+
+
+        /****************************************************
+CATEGORY SLIDER
+****************************************************/
+
+        .category-slider {
 
             display: flex;
 
             gap: 12px;
 
-            flex-wrap: nowrap;
-
             overflow-x: auto;
+
+            padding-bottom: 30px;
 
             scrollbar-width: none;
 
-            -ms-overflow-style: none;
         }
 
-        .products-filters::-webkit-scrollbar {
+        .category-slider::-webkit-scrollbar {
 
             display: none;
+
         }
 
-        .products-filters a {
+        .category-pill {
 
-            padding: 12px 20px;
+            flex: none;
 
-            border-radius: 40px;
+            padding: 11px 22px;
 
-            background: white;
+            border-radius: 50px;
 
-            border: 1px solid #E5E7EB;
+            background: #242424;
 
-            color: #374151;
+            color: white;
 
             font-size: 14px;
 
             font-weight: 600;
 
-            transition: 0.3s ease;
+            transition: var(--speed);
+
+            white-space: nowrap;
+
+            border: 1px solid #313131;
+
         }
 
-        .products-filters a:hover,
-        .products-filters a.active {
+        .category-pill:hover,
 
-            background: #2A7DB4;
+        .category-pill.active {
 
-            color: white;
+            background: var(--primary);
 
-            border-color: #2A7DB4;
+            border-color: var(--primary);
+
         }
 
-        /* =========================================
-PRODUCTS GRID
-========================================= */
+
+        /****************************************************
+PRODUCT GRID
+****************************************************/
 
         .products-grid {
+
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 20px;
+
+            grid-template-columns:
+
+                repeat(4, minmax(270px, 1fr));
+
+            gap: 26px;
+
+            align-items: stretch;
+
         }
 
-        /* =========================================
-PRODUCT CARD
-========================================= */
 
-        .product-card {
+        /****************************************************
+RESPONSIVE
+****************************************************/
 
-            background: white;
+        @media(max-width:1400px) {
 
-            border-radius: 16px;
+            .products-grid {
 
-            overflow: hidden;
+                grid-template-columns:
+
+                    repeat(3, 1fr);
+
+            }
+
+        }
+
+        @media(max-width:991px) {
+
+            .products-grid {
+
+                grid-template-columns:
+
+                    repeat(2, 1fr);
+
+                gap: 20px;
+
+            }
+
+            .products-header {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+            }
+
+            .section-title {
+
+                font-size: 38px;
+
+            }
+
+        }
+
+        @media(max-width:600px) {
+
+            .products-grid {
+
+                grid-template-columns:
+
+                    repeat(2, 1fr);
+
+                gap: 14px;
+
+            }
+
+            .section-title {
+
+                font-size: 30px;
+
+            }
+
+            .section-description {
+
+                font-size: 14px;
+
+            }
+
+        }
+
+        /*=====================================================
+INDUSTRIAL PRODUCT CARD
+=====================================================*/
+
+        .industrial-card {
 
             position: relative;
-
-            transition: 0.35s ease;
-
-            border: 1px solid #F1F5F9;
 
             display: flex;
 
             flex-direction: column;
 
-            height: 100%;
-        }
+            background: var(--white);
 
-        .product-card:hover {
-
-            transform: translateY(-8px);
-
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-        }
-
-
-
-        /* =========================================
-PRODUCT IMAGE
-========================================= */
-
-        .product-img {
-
-            position: relative;
-
-            aspect-ratio: 1 / 1;
+            border-radius: var(--radius);
 
             overflow: hidden;
 
-            background: #F8FAFC;
+            border: 1px solid #E6E6E6;
+
+            box-shadow: var(--shadow-sm);
+
+            transition:
+
+                transform .35s ease,
+
+                box-shadow .35s ease,
+
+                border-color .35s ease;
+
+            height: 100%;
+
         }
+
+        .industrial-card:hover {
+
+            transform: translateY(-10px);
+
+            box-shadow: var(--shadow-lg);
+
+            border-color: var(--primary);
+
+        }
+
+
+        /*************************************************
+WHOLE CARD LINK
+*************************************************/
+
+        .product-link {
+
+            display: flex;
+
+            flex-direction: column;
+
+            color: inherit;
+
+            height: 100%;
+
+        }
+
+
+        /*************************************************
+50 / 50 CARD LAYOUT
+*************************************************/
+
+        .product-media {
+
+            position: relative;
+
+            height: 270px;
+
+            overflow: hidden;
+
+            background:
+
+                linear-gradient(180deg,
+
+                    #fafafa,
+
+                    #efefef);
+
+            border-bottom:
+
+                4px solid var(--primary);
+
+        }
+
+        /* Mobile */
+
+        @media(max-width:768px) {
+
+            .product-media {
+
+                height: 210px;
+
+            }
+
+        }
+
+
+        /*************************************************
+IMAGE
+*************************************************/
 
         .product-image {
 
+            position: absolute;
+
+            inset: 0;
+
             width: 100%;
-            height: 180px;
+
+            height: 100%;
 
             object-fit: contain;
 
-            transition: 0.5s ease;
+            transition:
+
+                opacity .45s ease,
+
+                transform .6s ease;
+
+            z-index: 1;
+
+            padding: 18px;
+
         }
+
+        .industrial-card:hover .product-image {
+
+            opacity: 0;
+
+            transform: scale(1.06);
+
+        }
+
+
+        /*************************************************
+VIDEO
+*************************************************/
 
         .product-video {
 
@@ -207,608 +507,797 @@ PRODUCT IMAGE
             inset: 0;
 
             width: 100%;
+
             height: 100%;
 
             object-fit: cover;
 
             opacity: 0;
 
-            transition: 0.5s ease;
+            transition: opacity .45s;
+
+            background: #000;
+
+            z-index: 2;
+
         }
 
-        .product-card:hover .product-image {
-
-            opacity: 0;
-        }
-
-        .product-card:hover .product-video {
-
-            opacity: 1;
-        }
-
-        /* =========================================
-BADGES
-========================================= */
-        .product-image-wrapper {
-            position: relative;
-        }
-
-        .badge {
-            position: absolute;
-            left: 10px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            z-index: 5;
-        }
-
-        .badge-verified {
-            top: 130px;
-            background: #0891b2;
-        }
-
-        .product-badges span {
-
-            font-size: 11px;
-
-            font-weight: 700;
-
-            padding: 4px 10px;
-
-            border-radius: 30px;
-
-            white-space: nowrap;
-        }
-
-        .product-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
-        .product-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-            line-height: 1;
-        }
-
-        .badge-new {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-featured {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .badge-best-seller {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-in-stock {
-            background: #ecfccb;
-            color: #3f6212;
-        }
-
-        .badge-low-stock {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-
-        /* =========================================
-PRODUCT ACTIONS
-========================================= */
-
-        .product-actions {
-
-            position: absolute;
-
-            top: 18px;
-            right: 18px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 10px;
-
-            opacity: 0;
-
-            transform: translateX(10px);
-
-            transition: 0.35s ease;
-
-            z-index: 3;
-        }
-
-        .product-card:hover .product-actions {
+        .industrial-card:hover .product-video {
 
             opacity: 1;
 
-            transform: translateX(0);
         }
 
-        .product-actions button {
 
-            width: 42px;
-            height: 42px;
+        /*************************************************
+PLAY BUTTON
+*************************************************/
+
+        .play-icon {
+
+            position: absolute;
+
+            width: 58px;
+
+            height: 58px;
 
             border-radius: 50%;
 
-            border: none;
+            background:
 
-            background: white;
+                rgba(0, 0, 0, .55);
 
-            color: #111827;
+            display: flex;
 
-            cursor: pointer;
+            align-items: center;
 
-            transition: 0.3s ease;
-
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .product-actions button:hover {
-
-            background: #2A7DB4;
+            justify-content: center;
 
             color: white;
+
+            font-size: 20px;
+
+            left: 50%;
+
+            top: 50%;
+
+            transform:
+
+                translate(-50%, -50%);
+
+            backdrop-filter: blur(8px);
+
+            z-index: 10;
+
+            transition: .35s;
+
         }
 
-        /* =========================================
-PRODUCT BODY
-========================================= */
+        .play-icon i {
 
-        .product-body {
+            pointer-events: none;
 
-            padding: 10px 12px;
+        }
 
-            flex-grow: 1;
+        .industrial-card:hover .play-icon {
+
+            background: var(--primary);
+
+            transform:
+
+                translate(-50%, -50%) scale(1.08);
+
+        }
+
+
+        /*************************************************
+TOP BADGES
+*************************************************/
+
+        .image-badges {
+
+            position: absolute;
+
+            top: 14px;
+
+            left: 14px;
 
             display: flex;
 
             flex-direction: column;
+
+            gap: 8px;
+
+            z-index: 30;
+
         }
+
+        .badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 7px 12px;
+
+            border-radius: 40px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            letter-spacing: .5px;
+
+            color: #fff;
+
+            white-space: nowrap;
+
+        }
+
+        .badge.new {
+
+            background: #ff6b00;
+
+        }
+
+        .badge.featured {
+
+            background: #005eff;
+
+        }
+
+        .badge.stock {
+
+            background: #159947;
+
+        }
+
+        .badge.low {
+
+            background: #d63638;
+
+        }
+
+
+        /*************************************************
+PRODUCT BODY
+*************************************************/
+
+        .product-body {
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: space-between;
+
+            flex-grow: 1;
+
+            padding: 18px;
+
+            background: #fff;
+
+        }
+
+
+        /*************************************************
+CATEGORY
+*************************************************/
 
         .product-category {
 
-            color: #DC2626;
+            color: var(--primary);
 
-            font-size: 13px;
+            font-size: 12px;
 
             font-weight: 700;
 
             text-transform: uppercase;
 
-            margin-bottom: 10px;
+            letter-spacing: 1px;
+
+            margin-bottom: 8px;
+
         }
+
+
+        /*************************************************
+NAME
+*************************************************/
 
         .product-name {
 
-            font-size: 17px;
-
-            font-weight: 700;
-
-            line-height: 1.4;
-
-            margin-bottom: 14px;
-
-            min-height: 48px;
-
-            display: -webkit-box;
-
-            -webkit-line-clamp: 2;
-
-            -webkit-box-orient: vertical;
-
-            overflow: hidden;
-        }
-
-        .product-name a {
-
-            color: #111827;
-
-            transition: 0.3s ease;
-        }
-
-        .product-name a:hover {
-
-            color: #2A7DB4;
-        }
-
-        /* =========================================
-PRICE
-========================================= */
-
-        .product-price-wrap {
-
-            margin-bottom: 16px;
-        }
-
-        .product-price {
-
-            color: #111827;
+            color: var(--dark);
 
             font-size: 22px;
 
             font-weight: 800;
+
+            line-height: 1.35;
+
+            margin-bottom: 14px;
+
+            display: -webkit-box;
+
+
+            -webkit-box-orient: vertical;
+
+            overflow: hidden;
+
+            min-height: 58px;
+
         }
 
-        /* =========================================
-RATING
-========================================= */
+        @media(max-width:768px) {
 
-        .product-rating {
+            .product-name {
 
-            color: #F59E0B;
+                font-size: 18px;
 
-            font-size: 13px;
+                min-height: 48px;
 
-            display: flex;
+            }
 
-            gap: 4px;
         }
 
-        /* =========================================
-FOOTER
-========================================= */
 
-        .product-footer {
+        /*************************************************
+PRICE
+*************************************************/
 
-            padding: 0 20px 20px;
+        .product-price {
+
+            color: var(--primary);
+
+            font-size: 30px;
+
+            font-weight: 900;
+
+            margin-bottom: 16px;
+
         }
 
-        .add-to-cart-btn {
+        @media(max-width:768px) {
+
+            .product-price {
+
+                font-size: 22px;
+
+            }
+
+        }
+
+        /*=====================================================
+BADGE SLIDER
+=====================================================*/
+
+        .badge-scroll {
 
             width: 100%;
 
+            overflow: hidden;
+
+            margin-top: auto;
+
+            position: relative;
+
+        }
+
+        .badge-track {
+
             display: flex;
 
             align-items: center;
-            justify-content: center;
 
             gap: 10px;
 
-            padding: 16px;
+            overflow-x: auto;
 
-            border-radius: 14px;
+            padding-top: 14px;
 
-            background: #111827;
+            padding-bottom: 6px;
 
-            color: white;
+            scrollbar-width: none;
+
+            -webkit-overflow-scrolling: touch;
+
+        }
+
+        .badge-track::-webkit-scrollbar {
+
+            display: none;
+
+        }
+
+        .badge-track span {
+
+            flex: none;
+
+            padding: 8px 14px;
+
+            border-radius: 999px;
+
+            background: #f4f4f4;
+
+            border: 1px solid #e5e5e5;
+
+            color: #444;
+
+            font-size: 12px;
 
             font-weight: 700;
 
-            transition: 0.3s ease;
+            white-space: nowrap;
+
+            transition: .30s;
+
+        }
+
+        .badge-track span:hover {
+
+            background: var(--primary);
+
+            color: #fff;
+
+            border-color: var(--primary);
+
+        }
+
+
+        /*************************************************
+OPTIONAL AUTO SCROLL
+*************************************************/
+
+        .auto-scroll {
+
+            animation: badgeScroll 18s linear infinite;
+
+        }
+
+        .auto-scroll:hover {
+
+            animation-play-state: paused;
+
+        }
+
+        @keyframes badgeScroll {
+
+            from {
+
+                transform: translateX(0);
+
+            }
+
+            to {
+
+                transform: translateX(-25%);
+
+            }
+
+        }
+
+
+        /*************************************************
+FLOATING CART BUTTON
+*************************************************/
+
+        .floating-cart {
+
+            position: absolute;
+
+            right: 18px;
+
+            bottom: 18px;
+
+            width: 62px;
+
+            height: 62px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: var(--primary);
+
+            color: #fff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
 
             cursor: pointer;
+
+            font-size: 20px;
+
+            z-index: 50;
+
+            box-shadow:
+
+                0 10px 22px rgba(243, 112, 33, .35);
+
+            transition:
+
+                transform .30s,
+
+                background .30s,
+
+                box-shadow .30s;
+
         }
 
-        .add-to-cart-btn:hover {
+        .floating-cart:hover {
 
-            background: #DC2626;
+            background: var(--dark);
 
-            color: white;
+            transform: scale(1.08) rotate(-8deg);
+
+            box-shadow:
+
+                0 18px 35px rgba(0, 0, 0, .25);
+
         }
 
-        /* =============PAGINATION=========================
-==============        =============== */
-        .pagination-wrapper {
+        .floating-cart:active {
 
-            display: flex;
+            transform: scale(.95);
 
-            justify-content: center;
-
-            align-items: center;
-
-            gap: 10px;
-
-            margin-top: 60px;
-
-            flex-wrap: wrap;
         }
 
-        .pagination-wrapper a,
-        .pagination-wrapper span {
+        .floating-cart i {
 
-            width: 42px;
+            pointer-events: none;
 
-            height: 42px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            border-radius: 12px;
-
-            text-decoration: none;
-
-            font-weight: 700;
         }
 
-        .pagination-wrapper a {
 
-            background: white;
+        /*************************************************
+LEAVE SPACE FOR FLOATING BUTTON
+*************************************************/
 
-            color: #111827;
+        .product-body {
 
-            border: 1px solid #e5e7eb;
+            padding-bottom: 82px;
+
         }
 
-        .pagination-wrapper span.active {
 
-            background: #2A7DB4;
+        /*************************************************
+INDUSTRIAL SHINE
+*************************************************/
 
-            color: white;
+        .industrial-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+
+            left: -150%;
+
+            width: 70%;
+
+            height: 100%;
+
+            background:
+
+                linear-gradient(120deg,
+
+                    transparent,
+
+                    rgba(255, 255, 255, .18),
+
+                    transparent);
+
+            transition: left .9s ease;
+
+            pointer-events: none;
+
+            z-index: 40;
+
         }
 
-        /* =========================================
-RESPONSIVE
-========================================= */
-        /* Large desktop */
-        @media (min-width: 1400px) {
+        .industrial-card:hover::before {
 
-            .products-grid {
+            left: 170%;
 
-                grid-template-columns: repeat(4, 1fr);
-
-                gap: 24px;
-            }
         }
 
-        /* Laptop */
-        @media (max-width: 1200px) {
 
-            .products-grid {
+        /*************************************************
+TOP ORANGE ACCENT
+*************************************************/
 
-                grid-template-columns: repeat(4, 1fr);
+        .industrial-card::after {
 
-                gap: 18px;
-            }
+            content: "";
 
-            .products-title {
+            position: absolute;
 
-                font-size: 38px;
-            }
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 4px;
+
+            background: var(--primary);
+
+            transform: scaleX(0);
+
+            transform-origin: left;
+
+            transition: transform .35s ease;
+
+            z-index: 60;
+
         }
 
-        /* Tablet */
-        @media (max-width: 992px) {
+        .industrial-card:hover::after {
 
-            .products-grid {
+            transform: scaleX(1);
 
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .products-title {
-
-                font-size: 34px;
-            }
         }
 
-        /* Mobile */
-        @media (max-width: 768px) {
 
-            .featured-products-section {
+        /*************************************************
+SMOOTHER HOVER
+*************************************************/
 
-                padding: 60px 0;
-            }
+        .industrial-card:hover .product-name {
 
-            .products-grid {
+            color: var(--primary);
 
-                grid-template-columns: repeat(2, 1fr);
+        }
 
-                gap: 14px;
-            }
+        .industrial-card:hover .product-price {
 
-            .product-card {
+            transform: translateX(4px);
 
-                border-radius: 16px;
-            }
+        }
 
-            .product-body {
+        .product-price {
 
-                padding: 14px;
-            }
+            transition: .30s;
 
-            .product-footer {
+        }
 
-                padding: 0 14px 14px;
-            }
 
-            .product-name {
+        /*************************************************
+ACCESSIBILITY
+*************************************************/
 
-                font-size: 14px;
+        .floating-cart:focus {
 
-                min-height: 40px;
-            }
+            outline: 3px solid rgba(243, 112, 33, .35);
 
-            .product-price {
+            outline-offset: 3px;
+
+        }
+
+
+        /*************************************************
+MOBILE
+*************************************************/
+
+        @media(max-width:768px) {
+
+            .floating-cart {
+
+                width: 52px;
+
+                height: 52px;
+
+                right: 14px;
+
+                bottom: 14px;
 
                 font-size: 17px;
-            }
 
-            .add-to-cart-btn {
-
-                padding: 12px;
-
-                font-size: 13px;
-            }
-
-            .products-title {
-
-                font-size: 26px;
-            }
-        }
-
-        /* Very small phones */
-        @media (max-width: 420px) {
-
-            .products-grid {
-
-                grid-template-columns: repeat(2, 1fr);
-
-                gap: 10px;
-            }
-
-            .product-name {
-
-                font-size: 13px;
-            }
-
-            .product-price {
-
-                font-size: 16px;
-                margin-top: 4px;
-            }
-        }
-
-
-        @media(max-width: 768px) {
-
-            .featured-products-section {
-
-                padding: 70px 0;
             }
 
             .product-body {
 
-                padding: 18px;
+                padding-bottom: 72px;
+
             }
 
-            .product-footer {
+            .badge-track span {
 
-                padding: 0 18px 18px;
+                font-size: 11px;
+
+                padding: 7px 11px;
+
+            }
+
+        }
+
+
+        /*************************************************
+VERY SMALL DEVICES
+*************************************************/
+
+        @media(max-width:480px) {
+
+            .floating-cart {
+
+                width: 48px;
+
+                height: 48px;
+
+                right: 12px;
+
+                bottom: 12px;
+
+            }
+
+            .product-category {
+
+                font-size: 11px;
+
             }
 
             .product-name {
 
                 font-size: 16px;
+
             }
 
+            .product-price {
+
+                font-size: 20px;
+
+            }
 
         }
 
-        @media(max-width: 540px) {
+        .touch-device .product-video {
 
+            opacity: 0 !important;
 
+        }
 
-            .products-title {
+        .touch-device .product-image {
 
-                font-size: 28px;
-            }
+            opacity: 1 !important;
 
+        }
 
+        .touch-device .play-icon {
 
-            .product-name {
+            display: none;
 
-                font-size: 15px;
-
-                min-height: auto;
-            }
-
-
-
-            .add-to-cart-btn {
-
-                padding: 13px;
-
-                font-size: 14px;
-            }
         }
     </style>
 
 
     <div class="container">
 
-        <!-- SECTION HEADER -->
-        <div class="products-section-header">
+        <!-- ==========================
+         SECTION HEADER
+    =========================== -->
+
+        <div class="products-header">
 
             <div>
 
-                <h2 class="products-title">
-                    Industrial Electrical Products
+                <span class="section-small-title">
+
+                    BUILT TO PERFORM • DESIGNED TO LAST
+
+                </span>
+
+                <h2 class="section-title">
+
+                    INDUSTRIAL ELECTRICAL PRODUCTS
+
                 </h2>
 
-                <p class="products-description">
+                <p class="section-description">
 
-                    High-quality earthing materials,
-                    switchgear, automation devices and
-                    industrial electrical components.
+                    High-quality industrial electrical products,
+                    automation devices, switchgear,
+                    earthing materials,
+                    transformers,
+                    cables,
+                    safety equipment
+                    and engineering components.
 
                 </p>
 
             </div>
 
-            <!-- OPTIONAL FILTERS -->
-            <div class="products-filters">
+            <a href="" class="view-all-btn">
 
-                <a href="#" class="active">
-                    All
-                </a>
+                View All Products
 
-                {% for cat in second_categories %}
+                <i class="fa-solid fa-arrow-right"></i>
 
-
-                <a href="{% url 'category_products' cat.name %}">
-                    {{ cat.name }}
-                </a>
-
-                {% endfor %}
-
-            </div>
+            </a>
 
         </div>
 
-        <!-- PRODUCTS GRID -->
-        <div class="products-grid" id="products-grid">
+        <!-- ==========================
+            CATEGORY FILTER
+            =========================== -->
+
+        <div class="category-slider">
+
+            <a class="category-pill active" href="">
+
+                All
+
+            </a>
+
+            {% for cat in second_categories %}
+
+            <a href="{% url 'category_products' cat.name %}" class="category-pill">
+
+                {{ cat.name }}
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- ==========================
+         PRODUCTS GRID
+            =========================== -->
+
+        <div class="products-grid">
 
             {% for product in productList %}
-            <div class="product-card">
-                <a href="{%url 'product_detail' product.name %}">
-                    <!-- PRODUCT IMAGE -->
-                    <div class="product-img">
 
-                        {% with primary_media=product.media.all %}
+            <div class="industrial-card">
 
-                        {% for media in primary_media %}
+                <!-- ===================================
+                PRODUCT LINK
+                ==================================== -->
+
+                <a href="{% url 'product_detail' product.name %}" class="product-link">
+
+                    <!-- =====================
+                    MEDIA
+                    ====================== -->
+
+                    <div class="product-media">
+
+                        <!-- PRIMARY IMAGE -->
+
+                        {% with primary_image=product.media.all|dictsort:"display_order" %}
+
+                        {% for media in product.media.all %}
 
                         {% if media.is_primary and media.media_type == "image" %}
 
-                        <img class="product-image" src="{{ media.file.url }}" alt="{{ product.product.name }}">
+                        <img src="{{ media.file.url }}" alt="{{ product.name }}" class="product-image" loading="lazy">
 
                         {% endif %}
 
                         {% empty %}
 
-                        <img class="product-image" src="{% static 'img/hotdeal.png' %}" alt="No image">
+                        <img src="{% static 'img/hotdeal.png' %}" class="product-image" loading="lazy">
 
                         {% endfor %}
 
-                        <!-- PRODUCT VIDEO -->
+                        {% endwith %}
+
+                        <!-- VIDEO -->
+
                         {% for media in product.media.all %}
 
                         {% if media.media_type == "video" %}
 
-                        <video class="product-video" muted loop playsinline>
+                        <video class="product-video" muted loop playsinline preload="metadata">
 
-                            <source src="{{ media.file.url }}">
+                            <source src="{{ media.file.url }}" type="video/mp4">
 
                         </video>
 
@@ -816,104 +1305,140 @@ RESPONSIVE
 
                         {% endfor %}
 
-                        {% endwith %}
 
+                        <!-- BADGES -->
 
-                    </div>
-                    <!-- BADGES -->
-                    <div class="product-badges">
+                        <div class="image-badges">
 
-                        <div class="product-image-wrapper">
                             {% if product.auto_new %}
-                            <span class="product-badge badge-new">
+                            <span class="badge new">
                                 NEW
                             </span>
                             {% endif %}
 
                             {% if product.is_featured %}
-                            <span class="product-badge badge-featured"> Featured </span>
+                            <span class="badge featured">
+                                FEATURED
+                            </span>
                             {% endif %}
 
-                            {% if product.units_sold > 20 %} <span class="product-badge badge-best-seller">
-                                Best Seller </span>
-                            {% endif %}
                             {% if product.stock > 0 %}
-                            <span class="product-badge badge-in-stock"> In Stock </span>
-
+                            <span class="badge stock">
+                                IN STOCK
+                            </span>
                             {% endif %}
+
+
 
                         </div>
 
                     </div>
-                    <!-- PRODUCT BODY -->
+
+                    <!-- =====================
+             BODY
+        ====================== -->
+
                     <div class="product-body">
 
                         <!-- CATEGORY -->
-                        <p class="product-category">
+
+                        <div class="product-category">
 
                             {% for cat in product.categories.all %}
+
                             {{ cat.name }}
+
+                            {% if not forloop.last %}
+
+                            •
+
+                            {% endif %}
+
                             {% endfor %}
 
-                        </p>
+                        </div>
 
                         <!-- PRODUCT NAME -->
+
                         <h3 class="product-name">
 
-                            <a href="#">
-
-                                {{ product.name }}
-
-                            </a>
+                            {{ product.name }}
 
                         </h3>
 
                         <!-- PRICE -->
-                        <div class="product-price-wrap">
 
-                            <h4 class="product-price">
-                                ₦{{ product.final_price|floatformat:2|intcomma }}
-                            </h4>
+                        <div class="product-price">
+
+                            ₦{{ product.final_price|floatformat:2|intcomma }}
 
                         </div>
 
-                        <!-- RATING -->
-                        <div class="product-rating">
 
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
+                        <!-- =====================
+                 HORIZONTAL BADGES
+            ====================== -->
+
+                        <div class="badge-scroll">
+
+                            <div class="badge-track">
+
+                                {% if product.brand %}
+                                <span>{{ product.brand }}</span>
+                                {% endif %}
+
+                                {% if product.stock > 0 %}
+                                <span>Available</span>
+                                {% endif %}
+
+                                {% if product.auto_new %}
+                                <span>New Arrival</span>
+                                {% endif %}
+
+                                {% if product.is_featured %}
+                                <span>Top Rated</span>
+                                {% endif %}
+
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                    <!-- BUTTON -->
-                    <div class="product-footer">
-
-                        <button type="button" class="add-to-cart-btn" data-id="{{ product.id }}">
-
-                            <i class="fa fa-shopping-cart"></i>
-
-                            Add To Cart
-
-                        </button>
-
-                    </div>
                 </a>
+
+                <!-- ===================================
+         FLOATING CART BUTTON
+    ==================================== -->
+
+                <button class="floating-cart" data-id="{{ product.id }}" aria-label="Add to cart">
+
+                    <i class="fa-solid fa-cart-shopping"></i>
+
+                </button>
+
             </div>
+
             {% endfor %}
 
         </div>
+
+
+
+
+        <!-- ==========================
+         PAGINATION
+    =========================== -->
 
         <div class="pagination-wrapper">
 
             {% if productList.has_previous %}
 
             <a href="?page={{ productList.previous_page_number }}">
+
                 Previous
+
             </a>
 
             {% endif %}
@@ -923,13 +1448,17 @@ RESPONSIVE
             {% if productList.number == num %}
 
             <span class="active">
+
                 {{ num }}
+
             </span>
 
             {% else %}
 
             <a href="?page={{ num }}">
+
                 {{ num }}
+
             </a>
 
             {% endif %}
@@ -939,7 +1468,9 @@ RESPONSIVE
             {% if productList.has_next %}
 
             <a href="?page={{ productList.next_page_number }}">
+
                 Next
+
             </a>
 
             {% endif %}
@@ -949,3 +1480,127 @@ RESPONSIVE
     </div>
 
 </section>
+
+<script>
+    /*==========================================================
+REMAROBE INDUSTRIAL PRODUCTS
+==========================================================*/
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        initProductVideos();
+
+    });
+
+
+    /*==========================================================
+    VIDEO HOVER
+    ==========================================================*/
+
+    function initProductVideos() {
+
+        const cards = document.querySelectorAll(".industrial-card");
+
+        cards.forEach(card => {
+
+            const video = card.querySelector(".product-video");
+
+            if (!video) return;
+
+            video.pause();
+
+            video.currentTime = 0;
+
+            video.preload = "metadata";
+
+            card.addEventListener("mouseenter", () => {
+
+                playVideo(video);
+
+            });
+
+            card.addEventListener("mouseleave", () => {
+
+                stopVideo(video);
+
+            });
+
+        });
+
+    }
+
+
+    /*==========================================================
+    PLAY
+    ==========================================================*/
+
+    function playVideo(video) {
+
+        if (video.readyState < 2) {
+
+            video.load();
+
+        }
+
+        const promise = video.play();
+
+        if (promise !== undefined) {
+
+            promise.catch(() => {
+
+                /* Ignore autoplay restrictions */
+
+            });
+
+        }
+
+    }
+
+
+    /*==========================================================
+    STOP
+    ==========================================================*/
+
+    function stopVideo(video) {
+
+        video.pause();
+
+        video.currentTime = 0;
+
+    }
+
+
+    /*==========================================================
+    BUTTON ANIMATION
+    ==========================================================*/
+
+    function animateButton(button) {
+
+        button.style.transform = "scale(.90)";
+
+        setTimeout(() => {
+
+            button.style.transform = "";
+
+        }, 150);
+
+    }
+
+    function addProduct(id, button) {
+
+        animateButton(button);
+
+        console.log(id);
+
+    }
+
+    /*==========================================================
+    TOUCH DEVICES
+    ==========================================================*/
+
+    if ("ontouchstart" in window) {
+
+        document.documentElement.classList.add("touch-device");
+
+    }
+</script>
