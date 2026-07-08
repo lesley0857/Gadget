@@ -7,6 +7,7 @@ from .serializers import ProductSerializer
 from django.db.models import Q
 from catalog.models import ProductListing
 from django.http import JsonResponse
+from django.db.models import Prefetch
 
 def search_products(request):
 
