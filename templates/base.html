@@ -353,6 +353,7 @@
     }
 </style>
 
+
 <!-- # for cart -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -2132,6 +2133,487 @@ PERFORMANCE
 
     <!-- # banner -->
     <style>
+        /* =========================================================
+   FULL SCREEN SOLAR CALCULATOR PROMOTION
+========================================================= */
+
+        .solar-fullscreen-banner {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 9999;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            overflow: hidden;
+
+            background: #f6f8f4;
+
+        }
+
+
+        /* =========================================================
+   BACKGROUND
+========================================================= */
+
+        .solar-banner-background {
+
+            position: absolute;
+
+            inset: 0;
+
+            background-image:
+
+                url("/static/images/solar-panels.jpg");
+
+            background-size: cover;
+
+            background-position: center;
+
+            transform: scale(1.03);
+
+        }
+
+
+        /* =========================================================
+   BRIGHT OVERLAY
+========================================================= */
+
+        .solar-banner-overlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            background:
+
+                linear-gradient(90deg,
+
+                    rgba(255, 255, 255, 0.97) 0%,
+
+                    rgba(255, 255, 255, 0.91) 42%,
+
+                    rgba(255, 255, 255, 0.55) 72%,
+
+                    rgba(255, 255, 255, 0.18) 100%);
+
+        }
+
+
+        /* =========================================================
+   CONTENT
+========================================================= */
+
+        .solar-banner-content {
+
+            position: relative;
+
+            z-index: 3;
+
+            width: min(900px,
+                    90%);
+
+            margin-right: auto;
+
+            margin-left: 8%;
+
+        }
+
+
+        /* =========================================================
+   BADGE
+========================================================= */
+
+        .solar-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 9px 15px;
+
+            margin-bottom: 24px;
+
+            color: #c96800;
+
+            background: rgba(255, 255, 255, 0.78);
+
+            border: 1px solid rgba(229, 123, 0, 0.3);
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            letter-spacing: 1.5px;
+
+        }
+
+
+        /* =========================================================
+   HEADING
+========================================================= */
+
+        .solar-banner-content h1 {
+
+            max-width: 700px;
+
+            margin: 0;
+
+            color: #111820;
+
+            font-size: clamp(44px,
+
+                    6vw,
+
+                    86px);
+
+            line-height: 1;
+
+            letter-spacing: -3px;
+
+            font-weight: 900;
+
+        }
+
+
+        .solar-banner-content h1 span {
+
+            display: block;
+
+            color: #e57b00;
+
+        }
+
+
+        /* =========================================================
+   DESCRIPTION
+========================================================= */
+
+        .solar-banner-content p {
+
+            max-width: 650px;
+
+            margin-top: 28px;
+
+            color: #37424a;
+
+            font-size: 18px;
+
+            line-height: 1.7;
+
+        }
+
+
+        /* =========================================================
+   FEATURES
+========================================================= */
+
+        .solar-features {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-top: 30px;
+
+        }
+
+
+        .solar-feature {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 12px 15px;
+
+            color: #27313a;
+
+            background: rgba(255, 255, 255, 0.75);
+
+            border: 1px solid rgba(30, 40, 50, 0.1);
+
+            backdrop-filter: blur(10px);
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+        }
+
+
+        .solar-feature i {
+
+            color: #e57b00;
+
+            font-size: 17px;
+
+        }
+
+
+        /* =========================================================
+   ACTIONS
+========================================================= */
+
+        .solar-banner-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+
+            margin-top: 40px;
+
+        }
+
+
+        .solar-primary-button {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 17px 28px;
+
+            color: white;
+
+            background: #e57b00;
+
+            text-decoration: none;
+
+            font-size: 15px;
+
+            font-weight: 800;
+
+            transition: 0.25s ease;
+
+        }
+
+
+        .solar-primary-button:hover {
+
+            color: white;
+
+            background: #c96800;
+
+            transform: translateY(-3px);
+
+        }
+
+
+        .solar-later-button {
+
+            padding: 14px 20px;
+
+            color: #333;
+
+            background: transparent;
+
+            border: none;
+
+            cursor: pointer;
+
+            font-weight: 700;
+
+        }
+
+
+        .solar-disclaimer {
+
+            display: block;
+
+            margin-top: 24px;
+
+            color: #6d7479;
+
+        }
+
+
+        /* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+        .solar-close-button {
+
+            position: absolute;
+
+            top: 28px;
+
+            right: 35px;
+
+            z-index: 5;
+
+            width: 45px;
+
+            height: 45px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #20272d;
+
+            background: rgba(255, 255, 255, 0.72);
+
+            border: 1px solid rgba(0, 0, 0, 0.12);
+
+            border-radius: 50%;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+        }
+
+
+        /* =========================================================
+   DECORATIVE CIRCLES
+========================================================= */
+
+        .solar-decoration {
+
+            position: absolute;
+
+            border-radius: 50%;
+
+            border: 1px solid rgba(229, 123, 0, 0.25);
+
+            pointer-events: none;
+
+        }
+
+
+        .solar-decoration-one {
+
+            width: 550px;
+
+            height: 550px;
+
+            right: -170px;
+
+            bottom: -200px;
+
+        }
+
+
+        .solar-decoration-two {
+
+            width: 300px;
+
+            height: 300px;
+
+            right: 80px;
+
+            bottom: 50px;
+
+        }
+
+
+        /* =========================================================
+   MOBILE
+========================================================= */
+
+        @media (max-width: 768px) {
+
+            .solar-banner-content {
+
+                width: 90%;
+
+                margin: auto;
+
+            }
+
+
+            .solar-banner-overlay {
+
+                background:
+
+                    linear-gradient(180deg,
+
+                        rgba(255, 255, 255, 0.96),
+
+                        rgba(255, 255, 255, 0.82));
+
+            }
+
+
+            .solar-banner-content h1 {
+
+                font-size: 48px;
+
+                letter-spacing: -1.5px;
+
+            }
+
+
+            .solar-banner-content p {
+
+                font-size: 16px;
+
+            }
+
+
+            .solar-features {
+
+                display: grid;
+
+                grid-template-columns: repeat(2, 1fr);
+
+            }
+
+
+            .solar-feature {
+
+                font-size: 11px;
+
+                padding: 10px;
+
+            }
+
+
+            .solar-banner-actions {
+
+                flex-direction: column;
+
+                align-items: stretch;
+
+            }
+
+
+            .solar-primary-button {
+
+                justify-content: center;
+
+            }
+
+
+            .solar-close-button {
+
+                top: 15px;
+
+                right: 15px;
+
+            }
+
+        }
+
         .bottom-banner {
 
             position: fixed;
@@ -2187,10 +2669,7 @@ PERFORMANCE
         }
 
 
-        .solar-banner {
 
-            background: white;
-        }
 
 
         .promo-icon {
@@ -3660,39 +4139,131 @@ COOKIE BANNER
     <!-- ===========================
 SOLAR PROMO BANNER
 =========================== -->
+    <div id="solarPromo" class="solar-fullscreen-banner">
 
-    <div id="solarPromo" class="bottom-banner solar-banner">
+        <div class="solar-banner-background"></div>
 
-        <div class="promo-icon">
-            ☀️
-        </div>
+        <div class="solar-banner-overlay"></div>
 
-        <div class="banner-content">
-
-            <h5>
-                Try our Solar Calculator
-            </h5>
-
-            <p>
-                Calculate solar panels, batteries,
-                inverter and system sizing instantly.
-            </p>
-
-        </div>
-
-        <a href="{% url 'solar_calculator' %}" class="promo-btn">
-
-            Try Now
-
-        </a>
-
-        <button class="close-banner" id="closePromo">
-
-            ×
-
+        <button class="solar-close-button" id="closePromo" aria-label="Close solar calculator promotion">
+            <i class="fa-solid fa-xmark"></i>
         </button>
 
+
+        <div class="solar-banner-content">
+
+            <div class="solar-badge">
+
+                <i class="fa-solid fa-sun"></i>
+
+                SMART SOLAR DESIGN TOOL
+
+            </div>
+
+
+            <h1>
+
+                Design Your Solar System
+
+                <span>With Confidence.</span>
+
+            </h1>
+
+
+            <p>
+
+                Stop guessing how many panels, batteries and inverters
+                you need. Use our engineering calculator to estimate
+                your system requirements based on your actual appliances
+                and energy consumption.
+
+            </p>
+
+
+            <div class="solar-features">
+
+                <div class="solar-feature">
+
+                    <i class="fa-solid fa-solar-panel"></i>
+
+                    <span>
+                        Solar Panel Sizing
+                    </span>
+
+                </div>
+
+
+                <div class="solar-feature">
+
+                    <i class="fa-solid fa-car-battery"></i>
+
+                    <span>
+                        Battery Capacity
+                    </span>
+
+                </div>
+
+
+                <div class="solar-feature">
+
+                    <i class="fa-solid fa-bolt"></i>
+
+                    <span>
+                        Inverter Selection
+                    </span>
+
+                </div>
+
+
+                <div class="solar-feature">
+
+                    <i class="fa-solid fa-calculator"></i>
+
+                    <span>
+                        System Cost Estimate
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="solar-banner-actions">
+
+                <a href="{% url 'solar_calculator' %}" class="solar-primary-button">
+
+                    Start Designing
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </a>
+
+
+                <button class="solar-later-button" id="solarLater">
+
+                    Maybe Later
+
+                </button>
+
+            </div>
+
+
+            <small class="solar-disclaimer">
+
+                Designed for homes, offices, businesses and industrial
+                applications.
+
+            </small>
+
+        </div>
+
+
+        <div class="solar-decoration solar-decoration-one"></div>
+
+        <div class="solar-decoration solar-decoration-two"></div>
+
     </div>
+
 
 </body>
 <script>
@@ -3740,77 +4311,130 @@ SOLAR PROMO BANNER
                             "none";
                     }
                 );
+        }
+    );
 
+</script>
 
-            /*
-            ===================
-            SOLAR PROMO
-            ===================
-            */
+<script>
 
-            const promo =
+    document.addEventListener(
+        "DOMContentLoaded",
+
+        function () {
+
+            const banner =
                 document.getElementById(
                     "solarPromo"
                 );
 
-            const now =
-                Date.now();
+            const closeButton =
+                document.getElementById(
+                    "closePromo"
+                );
+
+            const laterButton =
+                document.getElementById(
+                    "solarLater"
+                );
+
+
+            if (!banner) return;
+
+
+            const FIVE_HOURS =
+                5 * 60 * 60 * 1000;
+
 
             const lastVisit =
                 localStorage.getItem(
-                    "lastVisit"
+                    "remarobe_last_visit"
                 );
 
-            const fiveHours =
-                5 * 60 * 60 * 1000;
 
-            if (
+            const now =
+                Date.now();
+
+
+            const shouldShow =
+
                 !lastVisit ||
-                now - lastVisit > fiveHours
-            ) {
 
-                setTimeout(
-                    function () {
-
-                        promo.style.display =
-                            "flex";
-
-                    },
-                    3000
+                (
+                    now -
+                    Number(lastVisit)
+                    >=
+                    FIVE_HOURS
                 );
+
+
+            if (shouldShow) {
+
+                banner.style.display =
+                    "flex";
+
             }
 
+            else {
+
+                banner.style.display =
+                    "none";
+
+            }
+
+
             localStorage.setItem(
-                "lastVisit",
+
+                "remarobe_last_visit",
+
                 now
+
             );
 
 
-            /*
-            ===================
-            CLOSE PROMO
-            ===================
-            */
+            function closeBanner() {
 
-            document
-                .getElementById(
-                    "closePromo"
-                )
-                ?.addEventListener(
-                    "click",
-                    function () {
+                banner.style.display =
+                    "none";
 
-                        promo.style.display =
-                            "none";
+                localStorage.setItem(
 
-                        localStorage.setItem(
-                            "lastVisit",
-                            Date.now()
-                        );
-                    }
+                    "solar_banner_closed",
+
+                    Date.now()
+
                 );
 
+            }
+
+
+            if (closeButton) {
+
+                closeButton.addEventListener(
+
+                    "click",
+
+                    closeBanner
+
+                );
+
+            }
+
+
+            if (laterButton) {
+
+                laterButton.addEventListener(
+
+                    "click",
+
+                    closeBanner
+
+                );
+
+            }
+
         }
+
     );
 
 </script>

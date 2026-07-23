@@ -5,27 +5,64 @@ RFQ SECTION WITH FILE UPLOAD
 
 <section class="rfq-section" id="rfq_id">
     <style>
-        /* =========================================
-RFQ SECTION
-========================================= */
+        /* =========================================================
+   REMAROBE HOMEPAGE
+   RFQ + PRODUCT CATEGORIES
+   MODERN ANIMATED ENGINEERING DESIGN
+========================================================= */
+
+
+        /* =========================================================
+   GLOBAL
+========================================================= */
+
+        .rfq-section,
+        .categories-section {
+
+            position: relative;
+            isolation: isolate;
+
+        }
+
+        .rfq-section *,
+        .categories-section * {
+
+            box-sizing: border-box;
+
+        }
+
+
+        /* =========================================================
+   RFQ SECTION
+========================================================= */
 
         .rfq-section {
 
-            padding: 110px 0;
+            padding: 120px 0;
 
-            background:
-                linear-gradient(135deg,
-                    #111827,
-                    #1F2937);
-
-            position: relative;
+            color: #ffffff;
 
             overflow: hidden;
+
+            background:
+
+                radial-gradient(circle at 15% 20%,
+                    rgba(42, 125, 180, .22),
+                    transparent 30%),
+
+                radial-gradient(circle at 85% 80%,
+                    rgba(239, 68, 68, .16),
+                    transparent 30%),
+
+                linear-gradient(135deg,
+                    #07111f,
+                    #111827 50%,
+                    #0f172a);
+
         }
 
-        /* =========================================
-BACKGROUND EFFECTS
-========================================= */
+
+        /* Animated grid */
 
         .rfq-section::before {
 
@@ -33,17 +70,46 @@ BACKGROUND EFFECTS
 
             position: absolute;
 
-            width: 500px;
-            height: 500px;
+            inset: 0;
 
-            background:
-                rgba(220, 38, 38, 0.08);
+            z-index: -2;
 
-            border-radius: 50%;
+            opacity: .25;
 
-            top: -220px;
-            right: -180px;
+            background-image:
+
+                linear-gradient(rgba(255, 255, 255, .04) 1px,
+                    transparent 1px),
+
+                linear-gradient(90deg,
+                    rgba(255, 255, 255, .04) 1px,
+                    transparent 1px);
+
+            background-size: 55px 55px;
+
+            animation: rfqGridMove 20s linear infinite;
+
         }
+
+
+        @keyframes rfqGridMove {
+
+            from {
+
+                background-position: 0 0;
+
+            }
+
+            to {
+
+                background-position: 55px 55px;
+
+            }
+
+        }
+
+
+        /* Floating glow */
 
         .rfq-section::after {
 
@@ -51,91 +117,220 @@ BACKGROUND EFFECTS
 
             position: absolute;
 
-            width: 420px;
-            height: 420px;
+            width: 500px;
 
-            background:
-                rgba(255, 255, 255, 0.03);
+            height: 500px;
+
+            right: -180px;
+
+            top: -180px;
 
             border-radius: 50%;
 
-            bottom: -180px;
-            left: -120px;
+            background:
+
+                radial-gradient(circle,
+                    rgba(59, 130, 246, .18),
+                    transparent 70%);
+
+            filter: blur(10px);
+
+            animation: rfqOrb 8s ease-in-out infinite alternate;
+
+            z-index: -1;
+
         }
 
-        /* =========================================
-WRAPPER
-========================================= */
+
+        @keyframes rfqOrb {
+
+            from {
+
+                transform: translate(0, 0) scale(1);
+
+            }
+
+            to {
+
+                transform: translate(-80px, 80px) scale(1.25);
+
+            }
+
+        }
+
+
+        /* =========================================================
+   RFQ WRAPPER
+========================================================= */
 
         .rfq-wrapper {
 
-            position: relative;
-
-            z-index: 2;
-
             display: grid;
 
-            grid-template-columns: 1.05fr 0.95fr;
+            grid-template-columns:
+                minmax(0, 1.05fr) minmax(420px, .95fr);
 
-            gap: 60px;
+            gap: 80px;
 
             align-items: center;
+
         }
 
-        /* =========================================
-LEFT CONTENT
-========================================= */
+
+        /* =========================================================
+   RFQ LEFT CONTENT
+========================================================= */
 
         .rfq-content {
 
-            color: white;
+            animation: rfqContentReveal .9s ease both;
+
         }
+
+
+        @keyframes rfqContentReveal {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateX(-45px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateX(0);
+
+            }
+
+        }
+
 
         .rfq-badge {
 
-            display: inline-block;
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 10px;
 
             padding: 10px 18px;
 
-            border-radius: 40px;
+            border-radius: 50px;
 
             background:
-                rgba(255, 255, 255, 0.08);
 
-            color: #F9FAFB;
+                linear-gradient(135deg,
+                    rgba(59, 130, 246, .18),
+                    rgba(239, 68, 68, .18));
+
+            border: 1px solid rgba(255, 255, 255, .14);
+
+            color: #e5f2ff;
 
             font-size: 13px;
 
             font-weight: 700;
 
-            margin-bottom: 22px;
+            letter-spacing: .5px;
+
+            margin-bottom: 24px;
+
+            backdrop-filter: blur(10px);
+
         }
+
+
+        .rfq-badge::before {
+
+            content: "";
+
+            width: 8px;
+
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+
+            box-shadow: 0 0 14px #22c55e;
+
+            animation: rfqPulse 1.8s infinite;
+
+        }
+
+
+        @keyframes rfqPulse {
+
+            0%,
+            100% {
+
+                transform: scale(1);
+
+                opacity: 1;
+
+            }
+
+            50% {
+
+                transform: scale(1.5);
+
+                opacity: .5;
+
+            }
+
+        }
+
 
         .rfq-title {
 
-            font-size: 50px;
+            max-width: 720px;
 
-            line-height: 1.2;
+            font-size: clamp(38px, 5vw, 64px);
 
-            font-weight: 800;
+            line-height: 1.08;
 
-            margin-bottom: 24px;
+            font-weight: 900;
+
+            letter-spacing: -2px;
+
+            margin-bottom: 26px;
+
+            background:
+
+                linear-gradient(100deg,
+                    #ffffff 20%,
+                    #93c5fd 55%,
+                    #fca5a5 90%);
+
+            -webkit-background-clip: text;
+
+            -webkit-text-fill-color: transparent;
+
         }
+
 
         .rfq-description {
 
-            color: rgba(255, 255, 255, 0.82);
+            max-width: 650px;
 
-            line-height: 1.9;
+            color: rgba(255, 255, 255, .72);
 
             font-size: 17px;
 
-            margin-bottom: 45px;
+            line-height: 1.9;
+
+            margin-bottom: 48px;
+
         }
 
-        /* =========================================
-FEATURES
-========================================= */
+
+        /* =========================================================
+   RFQ FEATURES
+========================================================= */
 
         .rfq-features {
 
@@ -143,8 +338,10 @@ FEATURES
 
             flex-direction: column;
 
-            gap: 24px;
+            gap: 22px;
+
         }
+
 
         .rfq-feature {
 
@@ -152,87 +349,207 @@ FEATURES
 
             gap: 18px;
 
-            align-items: flex-start;
+            padding: 18px;
+
+            border-radius: 18px;
+
+            border: 1px solid transparent;
+
+            transition: .35s ease;
+
         }
+
+
+        .rfq-feature:hover {
+
+            transform: translateX(8px);
+
+            border-color: rgba(255, 255, 255, .12);
+
+            background:
+
+                rgba(255, 255, 255, .045);
+
+            box-shadow:
+
+                0 12px 35px rgba(0, 0, 0, .18);
+
+        }
+
 
         .rfq-feature-icon {
 
-            min-width: 54px;
-            height: 54px;
+            flex-shrink: 0;
 
-            border-radius: 16px;
+            width: 58px;
 
-            background:
-                linear-gradient(135deg,
-                    #2A7DB4,
-                    #EF4444);
+            height: 58px;
 
             display: flex;
 
             align-items: center;
+
             justify-content: center;
 
-            font-size: 20px;
+            border-radius: 18px;
 
             color: white;
+
+            font-size: 21px;
+
+            background:
+
+                linear-gradient(135deg,
+                    #2563eb,
+                    #dc2626);
+
+            box-shadow:
+
+                0 10px 30px rgba(37, 99, 235, .25);
+
+            transition: .35s ease;
+
         }
+
+
+        .rfq-feature:hover .rfq-feature-icon {
+
+            transform: rotate(8deg) scale(1.08);
+
+        }
+
 
         .rfq-feature h4 {
 
             font-size: 18px;
 
-            margin-bottom: 8px;
+            font-weight: 700;
+
+            margin: 3px 0 7px;
+
         }
+
 
         .rfq-feature p {
 
-            color: rgba(255, 255, 255, 0.75);
+            margin: 0;
 
-            line-height: 1.7;
+            color: rgba(255, 255, 255, .62);
+
+            line-height: 1.65;
+
         }
 
-        /* =========================================
-FORM CARD
-========================================= */
+
+        /* =========================================================
+   RFQ FORM CARD
+========================================================= */
 
         .rfq-form-card {
 
-            background: white;
+            position: relative;
 
-            padding: 45px;
+            padding: 42px;
 
-            border-radius: 28px;
+            border-radius: 30px;
+
+            background:
+
+                linear-gradient(145deg,
+                    rgba(255, 255, 255, .98),
+                    rgba(248, 250, 252, .96));
 
             box-shadow:
-                0 30px 60px rgba(0, 0, 0, 0.18);
+
+                0 35px 90px rgba(0, 0, 0, .35),
+
+                0 0 0 1px rgba(255, 255, 255, .2);
+
+            animation: rfqFormReveal 1s .15s ease both;
+
         }
 
-        .rfq-form-header {
 
-            margin-bottom: 30px;
+        @keyframes rfqFormReveal {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateY(45px) scale(.97);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0) scale(1);
+
+            }
+
         }
+
+
+        .rfq-form-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            inset: 0;
+
+            border-radius: inherit;
+
+            padding: 1px;
+
+            background:
+
+                linear-gradient(135deg,
+                    rgba(37, 99, 235, .5),
+                    transparent 45%,
+                    rgba(220, 38, 38, .4));
+
+            -webkit-mask:
+
+                linear-gradient(#fff 0 0) content-box,
+
+                linear-gradient(#fff 0 0);
+
+            -webkit-mask-composite: xor;
+
+            mask-composite: exclude;
+
+            pointer-events: none;
+
+        }
+
 
         .rfq-form-header h3 {
 
-            font-size: 34px;
-
             color: #111827;
 
-            font-weight: 800;
+            font-size: 32px;
 
-            margin-bottom: 12px;
+            font-weight: 850;
+
+            margin-bottom: 10px;
+
         }
+
 
         .rfq-form-header p {
 
-            color: #6B7280;
+            color: #64748b;
 
             line-height: 1.7;
+
         }
 
-        /* =========================================
-FORM
-========================================= */
+
+        /* =========================================================
+   RFQ FORM
+========================================================= */
 
         .rfq-form {
 
@@ -240,8 +557,10 @@ FORM
 
             flex-direction: column;
 
-            gap: 22px;
+            gap: 20px;
+
         }
+
 
         .rfq-input-group {
 
@@ -249,17 +568,23 @@ FORM
 
             flex-direction: column;
 
-            gap: 10px;
+            gap: 8px;
+
         }
+
 
         .rfq-input-group label {
 
-            font-size: 14px;
+            color: #334155;
 
-            font-weight: 700;
+            font-size: 13px;
 
-            color: #374151;
+            font-weight: 800;
+
+            letter-spacing: .3px;
+
         }
+
 
         .rfq-input-group input,
         .rfq-input-group select,
@@ -267,67 +592,83 @@ FORM
 
             width: 100%;
 
-            border: 1px solid #E5E7EB;
+            border: 1px solid #e2e8f0;
 
             border-radius: 14px;
 
-            padding: 16px 18px;
+            padding: 15px 17px;
 
-            background: #F9FAFB;
+            background: #f8fafc;
+
+            color: #111827;
 
             font-size: 15px;
 
             outline: none;
 
-            transition: 0.3s ease;
+            transition: .3s ease;
+
         }
 
-        .rfq-input-group textarea {
 
-            resize: vertical;
+        .rfq-input-group input:hover,
+        .rfq-input-group select:hover,
+        .rfq-input-group textarea:hover {
+
+            border-color: #94a3b8;
+
         }
+
 
         .rfq-input-group input:focus,
         .rfq-input-group select:focus,
         .rfq-input-group textarea:focus {
 
-            border-color: #2A7DB4;
+            border-color: #2563eb;
 
             background: white;
 
+            transform: translateY(-2px);
+
             box-shadow:
-                0 0 0 4px rgba(220, 38, 38, 0.08);
+
+                0 0 0 4px rgba(37, 99, 235, .10),
+
+                0 8px 20px rgba(37, 99, 235, .08);
+
         }
 
-        /* =========================================
-UPLOAD BOX
-========================================= */
+
+        .rfq-input-group textarea {
+
+            min-height: 130px;
+
+            resize: vertical;
+
+        }
+
+
+        /* =========================================================
+   UPLOAD AREA
+========================================================= */
 
         .rfq-upload-box {
 
             position: relative;
+
         }
+
 
         .rfq-upload-box input[type="file"] {
 
             display: none;
+
         }
+
 
         .rfq-upload-label {
 
-            border: 2px dashed #D1D5DB;
-
-            background: #F9FAFB;
-
-            border-radius: 18px;
-
-            padding: 40px 20px;
-
-            text-align: center;
-
-            cursor: pointer;
-
-            transition: 0.3s ease;
+            position: relative;
 
             display: flex;
 
@@ -335,154 +676,1038 @@ UPLOAD BOX
 
             align-items: center;
 
-            gap: 12px;
-        }
-
-        .rfq-upload-label:hover {
-
-            border-color: #2A7DB4;
-
-            background: rgba(220, 38, 38, 0.03);
-        }
-
-        .rfq-upload-label i {
-
-            font-size: 42px;
-
-            color: #2A7DB4;
-        }
-
-        .rfq-upload-label span {
-
-            font-size: 16px;
-
-            font-weight: 700;
-
-            color: #111827;
-        }
-
-        .rfq-upload-label small {
-
-            color: #6B7280;
-        }
-
-        /* =========================================
-BUTTON
-========================================= */
-
-        .rfq-submit-btn {
-
-            border: none;
-
-            background:
-                linear-gradient(135deg,
-                    #2A7DB4,
-                    #EF4444);
-
-            color: white;
-
-            padding: 18px;
-
-            border-radius: 16px;
-
-            font-size: 16px;
-
-            font-weight: 700;
-
-            display: flex;
-
-            align-items: center;
             justify-content: center;
 
             gap: 12px;
 
+            min-height: 180px;
+
+            padding: 30px 20px;
+
+            border: 2px dashed #cbd5e1;
+
+            border-radius: 20px;
+
+            background:
+
+                linear-gradient(135deg,
+                    #f8fafc,
+                    #f1f5f9);
+
             cursor: pointer;
 
-            transition: 0.35s ease;
+            overflow: hidden;
 
-            margin-top: 10px;
+            transition: .35s ease;
+
         }
 
-        .rfq-submit-btn:hover {
+
+        .rfq-upload-label::before {
+
+            content: "";
+
+            position: absolute;
+
+            inset: -100%;
+
+            background:
+
+                linear-gradient(120deg,
+                    transparent 40%,
+                    rgba(255, 255, 255, .7),
+                    transparent 60%);
+
+            transform: translateX(-100%);
+
+            transition: .7s ease;
+
+        }
+
+
+        .rfq-upload-label:hover::before {
+
+            transform: translateX(100%);
+
+        }
+
+
+        .rfq-upload-label:hover {
+
+            border-color: #2563eb;
+
+            background: #eff6ff;
 
             transform: translateY(-3px);
 
             box-shadow:
-                0 18px 35px rgba(220, 38, 38, 0.28);
+
+                0 15px 30px rgba(37, 99, 235, .12);
+
         }
 
-        /* =========================================
-RESPONSIVE
-========================================= */
 
-        @media(max-width: 1200px) {
+        .rfq-upload-label i {
+
+            color: #2563eb;
+
+            font-size: 42px;
+
+            transition: .35s ease;
+
+        }
+
+
+        .rfq-upload-label:hover i {
+
+            transform: translateY(-7px) scale(1.1);
+
+        }
+
+
+        .rfq-upload-label span {
+
+            color: #1e293b;
+
+            font-weight: 800;
+
+        }
+
+
+        .rfq-upload-label small {
+
+            color: #64748b;
+
+        }
+
+
+        .upload-status {
+
+            margin: 8px 0;
+
+            color: #64748b;
+
+            font-size: 13px;
+
+        }
+
+
+        .upload-status.success {
+
+            color: #16a34a;
+
+        }
+
+
+        .upload-status.error {
+
+            color: #dc2626;
+
+        }
+
+
+        /* =========================================================
+   RFQ BUTTON
+========================================================= */
+
+        .rfq-submit-btn {
+
+            position: relative;
+
+            overflow: hidden;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 12px;
+
+            width: 100%;
+
+            padding: 17px;
+
+            border: none;
+
+            border-radius: 16px;
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            background:
+
+                linear-gradient(100deg,
+                    #2563eb,
+                    #7c3aed,
+                    #dc2626);
+
+            background-size: 200% 100%;
+
+            transition: .35s ease;
+
+            animation: rfqButtonGradient 5s ease infinite;
+
+        }
+
+
+        @keyframes rfqButtonGradient {
+
+            0% {
+
+                background-position: 0% 50%;
+
+            }
+
+            50% {
+
+                background-position: 100% 50%;
+
+            }
+
+            100% {
+
+                background-position: 0% 50%;
+
+            }
+
+        }
+
+
+        .rfq-submit-btn:hover {
+
+            transform: translateY(-4px);
+
+            box-shadow:
+
+                0 18px 35px rgba(37, 99, 235, .28);
+
+        }
+
+
+        .rfq-submit-btn:active {
+
+            transform: translateY(-1px);
+
+        }
+
+
+        /* =========================================================
+   PRODUCT CATEGORIES
+========================================================= */
+
+        .categories-section {
+
+            position: relative;
+
+            padding: 110px 0;
+
+            overflow: hidden;
+
+            background:
+
+                linear-gradient(180deg,
+                    #ffffff,
+                    #f8fafc);
+
+        }
+
+
+        /* Decorative background */
+
+        .categories-section::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 650px;
+
+            height: 650px;
+
+            top: -350px;
+
+            left: -300px;
+
+            border-radius: 50%;
+
+            background:
+
+                radial-gradient(circle,
+                    rgba(37, 99, 235, .08),
+                    transparent 68%);
+
+            animation: categoryGlow 9s ease-in-out infinite alternate;
+
+        }
+
+
+        @keyframes categoryGlow {
+
+            from {
+
+                transform: scale(1);
+
+            }
+
+            to {
+
+                transform: scale(1.3) translate(60px, 40px);
+
+            }
+
+        }
+
+
+        /* =========================================================
+   CATEGORY HEADER
+========================================================= */
+
+        .categories-section .section-header {
+
+            position: relative;
+
+            z-index: 2;
+
+            max-width: 780px;
+
+            margin: 0 auto 65px;
+
+            text-align: center;
+
+            animation: categoryHeaderReveal .8s ease both;
+
+        }
+
+
+        @keyframes categoryHeaderReveal {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateY(30px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+        .categories-section .section-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            padding: 10px 18px;
+
+            border-radius: 50px;
+
+            color: #1d4ed8;
+
+            background: #eff6ff;
+
+            border: 1px solid #dbeafe;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .categories-section .section-title {
+
+            color: #0f172a;
+
+            font-size: clamp(32px, 4vw, 50px);
+
+            line-height: 1.15;
+
+            font-weight: 900;
+
+            letter-spacing: -1.5px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .categories-section .section-description {
+
+            color: #64748b;
+
+            font-size: 17px;
+
+            line-height: 1.8;
+
+        }
+
+
+        /* =========================================================
+   CATEGORY GRID
+========================================================= */
+
+        .categories-grid {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: grid;
+
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+
+            gap: 28px;
+
+        }
+
+
+        /* =========================================================
+   CATEGORY CARD
+========================================================= */
+
+        .category-card {
+
+            position: relative;
+
+            height: 390px;
+
+            overflow: hidden;
+
+            display: block;
+
+            border-radius: 26px;
+
+            text-decoration: none;
+
+            background: #0f172a;
+
+            box-shadow:
+
+                0 15px 35px rgba(15, 23, 42, .12);
+
+            transform: translateY(0);
+
+            transition:
+
+                transform .45s cubic-bezier(.2, .8, .2, 1),
+
+                box-shadow .45s ease;
+
+        }
+
+
+        .category-card:hover {
+
+            transform: translateY(-12px);
+
+            box-shadow:
+
+                0 28px 55px rgba(15, 23, 42, .24);
+
+        }
+
+
+        /* Animated border */
+
+        .category-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            inset: 0;
+
+            z-index: 5;
+
+            border-radius: inherit;
+
+            border: 1px solid rgba(255, 255, 255, .16);
+
+            pointer-events: none;
+
+        }
+
+
+        /* =========================================================
+   CATEGORY IMAGE
+========================================================= */
+
+        .category-image {
+
+            position: absolute;
+
+            inset: 0;
+
+            overflow: hidden;
+
+        }
+
+
+        .category-image img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            transition:
+
+                transform .8s cubic-bezier(.2, .8, .2, 1),
+
+                filter .5s ease;
+
+        }
+
+
+        .category-card:hover .category-image img {
+
+            transform: scale(1.14);
+
+            filter: saturate(1.2);
+
+        }
+
+
+        /* =========================================================
+   CATEGORY OVERLAY
+========================================================= */
+
+        .category-overlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            z-index: 1;
+
+            background:
+
+                linear-gradient(180deg,
+                    rgba(15, 23, 42, .05) 15%,
+                    rgba(15, 23, 42, .35) 45%,
+                    rgba(2, 6, 23, .94) 100%);
+
+            transition: .5s ease;
+
+        }
+
+
+        .category-card:hover .category-overlay {
+
+            background:
+
+                linear-gradient(180deg,
+                    rgba(37, 99, 235, .10),
+                    rgba(2, 6, 23, .92));
+
+        }
+
+
+        /* =========================================================
+   CATEGORY CONTENT
+========================================================= */
+
+        .category-content {
+
+            position: absolute;
+
+            z-index: 3;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            padding: 30px;
+
+            color: white;
+
+            transform: translateY(8px);
+
+            transition: .45s ease;
+
+        }
+
+
+        .category-card:hover .category-content {
+
+            transform: translateY(0);
+
+        }
+
+
+        .category-content h3 {
+
+            margin-bottom: 12px;
+
+            font-size: 27px;
+
+            line-height: 1.2;
+
+            font-weight: 850;
+
+        }
+
+
+        .category-content p {
+
+            max-width: 470px;
+
+            margin-bottom: 16px;
+
+            color: rgba(255, 255, 255, .78);
+
+            font-size: 15px;
+
+            line-height: 1.65;
+
+        }
+
+
+        /* Product preview */
+
+        .category-content .preview-product {
+
+            display: block;
+
+            color: rgba(255, 255, 255, .68);
+
+            font-size: 13px;
+
+            line-height: 1.8;
+
+            transition: .3s ease;
+
+        }
+
+
+        .category-card:hover .preview-product {
+
+            color: #bfdbfe;
+
+            transform: translateX(4px);
+
+        }
+
+
+        /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+        @media (max-width: 1200px) {
 
             .rfq-wrapper {
 
                 grid-template-columns: 1fr;
 
-                gap: 50px;
+                max-width: 850px;
+
+                margin: auto;
+
             }
+
         }
 
-        @media(max-width: 768px) {
 
-            .rfq-section {
+        @media (max-width: 1000px) {
+
+            .categories-grid {
+
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            }
+
+        }
+
+
+        @media (max-width: 768px) {
+
+            .rfq-section,
+            .categories-section {
 
                 padding: 80px 0;
+
             }
 
             .rfq-title {
 
-                font-size: 36px;
+                font-size: 40px;
+
+                letter-spacing: -1px;
+
+            }
+
+            .rfq-description {
+
+                font-size: 15px;
+
             }
 
             .rfq-form-card {
 
-                padding: 30px;
+                padding: 28px;
+
+                border-radius: 24px;
+
             }
+
+            .categories-grid {
+
+                grid-template-columns: 1fr;
+
+                gap: 22px;
+
+            }
+
+            .category-card {
+
+                height: 350px;
+
+            }
+
+            .categories-section .section-title {
+
+                font-size: 34px;
+
+            }
+
         }
 
-        @media(max-width: 480px) {
+
+        @media (max-width: 480px) {
+
+            .rfq-section,
+            .categories-section {
+
+                padding: 65px 0;
+
+            }
 
             .rfq-title {
 
-                font-size: 30px;
+                font-size: 32px;
+
             }
 
             .rfq-form-card {
 
                 padding: 22px;
 
+            }
+
+            .rfq-feature {
+
+                padding: 12px 0;
+
+            }
+
+            .rfq-feature-icon {
+
+                width: 48px;
+
+                height: 48px;
+
+            }
+
+            .category-card {
+
+                height: 330px;
+
                 border-radius: 20px;
+
             }
 
-            .rfq-upload-label {
+            .category-content {
 
-                padding: 30px 15px;
+                padding: 24px;
+
             }
 
-            .rfq-upload-label i {
+            .category-content h3 {
 
-                font-size: 34px;
+                font-size: 23px;
+
             }
 
         }
+
+
+        /* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+
+                animation-duration: .01ms !important;
+
+                animation-iteration-count: 1 !important;
+
+                scroll-behavior: auto !important;
+
+                transition-duration: .01ms !important;
+
+            }
+
+        }
+
+
+
+        /* =========================================
+UPLOAD BOX DRAG STATE
+========================================= */
+
+        .rfq-upload-label {
+
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease,
+                background 0.3s ease,
+                box-shadow 0.3s ease;
+
+        }
+
+
+        .rfq-upload-label.dragging {
+
+            border-color: #2A7DB4;
+
+            background:
+                rgba(42, 125, 180, 0.08);
+
+            transform: scale(1.02);
+
+            box-shadow:
+                0 0 0 5px rgba(42, 125, 180, 0.12);
+
+        }
+
+
+        .rfq-upload-label.dragging i {
+
+            animation:
+                uploadBounce 0.8s infinite alternate;
+
+        }
+
+
+        @keyframes uploadBounce {
+
+            from {
+
+                transform: translateY(0);
+
+            }
+
+            to {
+
+                transform: translateY(-8px);
+
+            }
+
+        }
+
+
+        /* =========================================
+SELECTED FILES
+========================================= */
+
+        .selected-files {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+
+            margin-top: 10px;
+
+        }
+
+
+        .selected-file {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 12px 14px;
+
+            background: #F0FDF4;
+
+            border: 1px solid #BBF7D0;
+
+            border-radius: 10px;
+
+            animation:
+                fileSlideIn 0.35s ease forwards;
+
+        }
+
+
+        @keyframes fileSlideIn {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateY(8px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+        .selected-file-info {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            min-width: 0;
+
+        }
+
+
+        .selected-file-info>i {
+
+            color: #16A34A;
+
+            font-size: 18px;
+
+        }
+
+
+        .selected-file-info span {
+
+            display: flex;
+
+            flex-direction: column;
+
+            overflow: hidden;
+
+            color: #166534;
+
+            font-weight: 600;
+
+        }
+
+
+        .selected-file-info span {
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .selected-file-info small {
+
+            color: #6B7280;
+
+            font-size: 11px;
+
+            font-weight: 400;
+
+        }
+
+
+        .remove-file {
+
+            width: 30px;
+
+            height: 30px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: #FEE2E2;
+
+            color: #DC2626;
+
+            cursor: pointer;
+
+            transition: 0.25s ease;
+
+            flex-shrink: 0;
+
+        }
+
+
+        .remove-file:hover {
+
+            background: #DC2626;
+
+            color: white;
+
+            transform: rotate(90deg);
+
+        }
+
 
         .upload-status {
-            margin-top: 8px;
+
+            margin-top: 12px;
+
             font-size: 14px;
-            color: #666;
+
         }
+
 
         .upload-status.success {
-            color: green;
+
+            color: #166534;
+
         }
 
+
         .upload-status.error {
-            color: red;
+
+            color: #6B7280;
+
         }
     </style>
+
     <div class="container">
 
         <div class="rfq-wrapper">
@@ -741,29 +1966,240 @@ RESPONSIVE
         document.addEventListener("DOMContentLoaded", function () {
 
             const fileInput = document.getElementById("rfq-file");
+            const uploadBox = document.querySelector(".rfq-upload-label");
             const status = document.getElementById("upload-status");
+
+            let selectedFiles = [];
+
+            /*
+            =========================================
+            FILE INPUT CHANGE
+            =========================================
+            */
 
             fileInput.addEventListener("change", function () {
 
-                if (this.files.length > 0) {
-
-                    status.textContent =
-                        "✓ Document uploaded: " +
-                        this.files[0].name;
-
-                    status.classList.remove("error");
-                    status.classList.add("success");
-
-                } else {
-
-                    status.textContent =
-                        "No document selected";
-
-                    status.classList.remove("success");
-                    status.classList.add("error");
-                }
+                addFiles(Array.from(this.files));
 
             });
+
+
+            /*
+            =========================================
+            DRAG OVER
+            =========================================
+            */
+
+            uploadBox.addEventListener("dragover", function (event) {
+
+                event.preventDefault();
+
+                uploadBox.classList.add("dragging");
+
+            });
+
+
+            /*
+            =========================================
+            DRAG LEAVE
+            =========================================
+            */
+
+            uploadBox.addEventListener("dragleave", function () {
+
+                uploadBox.classList.remove("dragging");
+
+            });
+
+
+            /*
+            =========================================
+            DROP FILES
+            =========================================
+            */
+
+            uploadBox.addEventListener("drop", function (event) {
+
+                event.preventDefault();
+
+                uploadBox.classList.remove("dragging");
+
+                const files = Array.from(event.dataTransfer.files);
+
+                addFiles(files);
+
+            });
+
+
+            /*
+            =========================================
+            ADD FILES
+            =========================================
+            */
+
+            function addFiles(files) {
+
+                if (!files.length) return;
+
+
+                files.forEach(function (file) {
+
+                    /*
+                    Prevent duplicate files
+                    */
+
+                    const alreadyExists = selectedFiles.some(function (existingFile) {
+
+                        return (
+                            existingFile.name === file.name &&
+                            existingFile.size === file.size
+                        );
+
+                    });
+
+
+                    if (!alreadyExists) {
+
+                        selectedFiles.push(file);
+
+                    }
+
+                });
+
+
+                updateFileInput();
+
+                displayFiles();
+
+            }
+
+
+            /*
+            =========================================
+            UPDATE REAL FILE INPUT
+            =========================================
+            */
+
+            function updateFileInput() {
+
+                const dataTransfer = new DataTransfer();
+
+                selectedFiles.forEach(function (file) {
+
+                    dataTransfer.items.add(file);
+
+                });
+
+                fileInput.files = dataTransfer.files;
+
+            }
+
+
+            /*
+            =========================================
+            DISPLAY FILES
+            =========================================
+            */
+
+            function displayFiles() {
+
+                if (!selectedFiles.length) {
+
+                    status.innerHTML =
+                        "No document selected";
+
+                    status.className =
+                        "upload-status error";
+
+                    return;
+
+                }
+
+
+                let fileList = `
+            <div class="selected-files">
+        `;
+
+
+                selectedFiles.forEach(function (file, index) {
+
+                    const fileSize =
+                        (file.size / 1024 / 1024).toFixed(2);
+
+
+                    fileList += `
+
+                <div class="selected-file">
+
+                    <div class="selected-file-info">
+
+                        <i class="fa fa-file-text-o"></i>
+
+                        <span>
+
+                            ${file.name}
+
+                            <small>
+                                ${fileSize} MB
+                            </small>
+
+                        </span>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="remove-file"
+                        data-index="${index}"
+                    >
+
+                        <i class="fa fa-times"></i>
+
+                    </button>
+
+                </div>
+
+            `;
+
+                });
+
+
+                fileList += `</div>`;
+
+
+                status.innerHTML = fileList;
+
+                status.className =
+                    "upload-status success";
+
+
+                /*
+                REMOVE FILE
+                */
+
+                document
+                    .querySelectorAll(".remove-file")
+                    .forEach(function (button) {
+
+                        button.addEventListener("click", function () {
+
+                            const index =
+                                parseInt(
+                                    this.dataset.index
+                                );
+
+
+                            selectedFiles.splice(index, 1);
+
+                            updateFileInput();
+
+                            displayFiles();
+
+                        });
+
+                    });
+
+            }
 
         });
     </script>

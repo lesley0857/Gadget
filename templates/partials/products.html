@@ -2,1236 +2,834 @@
 {% load humanize %}
 
 <section class="featured-products-section" id="product_id">
-    <style>
-        /*======================================================
-REMAROBE INDUSTRIAL MARKETPLACE
-Designed for Django
-Author: ChatGPT
-======================================================*/
 
+    ```
+    <style>
+        /* =====================================================
+       REMAROBE FEATURED PRODUCTS
+    ===================================================== */
 
         :root {
-
-            /* Brand */
-
-            --primary: #F37021;
-            --primary-dark: #D95E12;
-
-            /* Industrial */
-
-            --dark: #111111;
-            --dark2: #1b1b1b;
-            --dark3: #2a2a2a;
-
-            /* Light */
-
-            --white: #ffffff;
-
-            --light: #fafafa;
-
-            --grey: #ECECEC;
-
-            --grey2: #d7d7d7;
-
-            --text: #222222;
-
+            --orange: #F37021;
+            --orange-dark: #D95E12;
+            --black: #111;
+            --dark: #1a1a1a;
+            --text: #222;
             --muted: #777;
-
-            /* Radius */
-
+            --light: #f6f6f6;
+            --white: #fff;
+            --border: #e8e8e8;
             --radius: 18px;
-
-            --radius-small: 12px;
-
-            /* Shadows */
-
-            --shadow-sm:
-
-                0 5px 12px rgba(0, 0, 0, .05);
-
-            --shadow:
-
-                0 12px 30px rgba(0, 0, 0, .08);
-
-            --shadow-lg:
-
-                0 25px 45px rgba(0, 0, 0, .15);
-
-            /* Animation */
-
-            --speed: .35s;
-
+            --ease: .35s cubic-bezier(.22, .61, .36, 1);
         }
 
-
-        /****************************************************
-RESET
-****************************************************/
-
-        * {
-
-            margin: 0;
-
-            padding: 0;
-
-            box-sizing: border-box;
-
-        }
+        /* =====================================================
+       SECTION
+    ===================================================== */
 
         .featured-products-section {
-
+            padding: 0 0 70px;
             background:
-
-                linear-gradient(180deg,
-
-                    #101010 0,
-
-                    #1A1A1A 320px,
-
-                    #f5f5f5 320px);
-
-            padding: 70px 0;
-
+                linear-gradient(to bottom,
+                    #111 0,
+                    #1d1d1d 390px,
+                    #f5f5f5 390px);
             overflow: hidden;
-
         }
 
         .featured-products-section a {
-
             text-decoration: none;
-
         }
 
-        img {
+        /* =====================================================
+       HERO
+    ===================================================== */
 
-            display: block;
-
-            max-width: 100%;
-
+        .remarobe-industrial-hero {
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: url("{% static 'images/industrial-electrical-engineering.jpg' %}") center / cover no-repeat;
         }
 
-        video {
-
-            display: block;
-
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg,
+                    rgba(255, 255, 255, .96) 0%,
+                    rgba(255, 255, 255, .86) 38%,
+                    rgba(255, 255, 255, .40) 72%,
+                    rgba(255, 255, 255, .08));
         }
 
+        .industrial-hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1350px;
+            margin: auto;
+            padding: 65px 6%;
+        }
 
-        /****************************************************
-SECTION HEADER
-****************************************************/
+        .hero-eyebrow,
+        .hero-title,
+        .industrial-hero-content p,
+        .hero-actions,
+        .hero-industries {
+            animation: heroReveal .8s both;
+        }
+
+        .hero-title {
+            animation-delay: .1s;
+        }
+
+        .industrial-hero-content p {
+            animation-delay: .2s;
+        }
+
+        .hero-actions {
+            animation-delay: .3s;
+        }
+
+        .hero-industries {
+            animation-delay: .4s;
+        }
+
+        @keyframes heroReveal {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-eyebrow {
+            display: inline-block;
+            margin-bottom: 14px;
+            color: var(--orange);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .hero-title {
+            max-width: 720px;
+            margin: 0;
+            color: #101820;
+            font-size: clamp(42px, 6vw, 78px);
+            line-height: .98;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .hero-title span {
+            color: var(--orange);
+        }
+
+        .industrial-hero-content p {
+            max-width: 610px;
+            margin: 24px 0 0;
+            color: #34404a;
+            font-size: 17px;
+            line-height: 1.65;
+        }
+
+        /* =====================================================
+       HERO BUTTONS
+    ===================================================== */
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .hero-primary-btn,
+        .hero-secondary-btn {
+            min-height: 48px;
+            padding: 0 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 700;
+            transition: var(--ease);
+        }
+
+        .hero-primary-btn {
+            color: white;
+            background: var(--orange);
+        }
+
+        .hero-primary-btn:hover {
+            background: var(--orange-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(243, 112, 33, .3);
+        }
+
+        .hero-secondary-btn {
+            color: #101820;
+            border: 1px solid #101820;
+            background: rgba(255, 255, 255, .55);
+        }
+
+        .hero-secondary-btn:hover {
+            color: white;
+            background: #101820;
+            transform: translateY(-3px);
+        }
+
+        /* =====================================================
+       INDUSTRIES
+    ===================================================== */
+
+        .hero-industries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 32px;
+        }
+
+        .industry-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            color: #27313a;
+            background: rgba(255, 255, 255, .72);
+            border: 1px solid rgba(20, 30, 40, .12);
+            backdrop-filter: blur(8px);
+            font-size: 12px;
+            font-weight: 700;
+            transition: var(--ease);
+        }
+
+        .industry-item:hover {
+            background: var(--orange);
+            color: white;
+            transform: translateY(-4px);
+        }
+
+        .industry-item i {
+            color: var(--orange);
+        }
+
+        .industry-item:hover i {
+            color: white;
+        }
+
+        /* =====================================================
+       HEADER
+    ===================================================== */
+
+        .products-container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 0 25px;
+        }
 
         .products-header {
-
             display: flex;
-
-            justify-content: space-between;
-
             align-items: flex-end;
-
-            gap: 40px;
-
-            margin-bottom: 40px;
-
+            justify-content: space-between;
+            gap: 30px;
+            padding: 50px 0 25px;
         }
 
         .section-small-title {
-
-            display: inline-block;
-
-            font-size: 13px;
-
-            letter-spacing: 3px;
-
-            font-weight: 700;
-
-            color: var(--primary);
-
-            margin-bottom: 10px;
-
+            display: block;
+            margin-bottom: 8px;
+            color: var(--orange);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
             text-transform: uppercase;
-
         }
 
         .section-title {
-
-            font-size: 48px;
-
-            font-weight: 800;
-
-            line-height: 1.1;
-
+            margin: 0;
             color: white;
-
-            margin-bottom: 15px;
-
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 900;
+            line-height: 1.05;
         }
 
         .section-description {
-
-            max-width: 700px;
-
-            font-size: 16px;
-
-            line-height: 1.7;
-
-            color: #d5d5d5;
-
+            max-width: 600px;
+            margin-top: 12px;
+            color: #cfcfcf;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
         .view-all-btn {
-
             display: inline-flex;
-
             align-items: center;
-
-            gap: 10px;
-
-            padding: 14px 22px;
-
+            gap: 9px;
+            padding: 12px 18px;
             border-radius: 50px;
-
-            background: var(--primary);
-
+            background: var(--orange);
             color: white;
-
+            font-size: 14px;
             font-weight: 700;
-
-            transition: var(--speed);
-
+            white-space: nowrap;
+            transition: var(--ease);
         }
 
         .view-all-btn:hover {
-
             background: white;
-
-            color: var(--dark);
-
+            color: var(--black);
+            transform: translateX(5px);
         }
 
-
-        /****************************************************
-CATEGORY SLIDER
-****************************************************/
+        /* =====================================================
+       CATEGORY FILTER
+    ===================================================== */
 
         .category-slider {
-
             display: flex;
-
-            gap: 12px;
-
+            gap: 9px;
             overflow-x: auto;
-
-            padding-bottom: 30px;
-
+            padding-bottom: 25px;
             scrollbar-width: none;
-
         }
 
         .category-slider::-webkit-scrollbar {
-
             display: none;
-
         }
 
         .category-pill {
-
             flex: none;
-
-            padding: 11px 22px;
-
+            padding: 9px 17px;
+            border: 1px solid #333;
             border-radius: 50px;
-
             background: #242424;
-
             color: white;
-
-            font-size: 14px;
-
+            font-size: 13px;
             font-weight: 600;
-
-            transition: var(--speed);
-
-            white-space: nowrap;
-
-            border: 1px solid #313131;
-
+            transition: var(--ease);
         }
 
         .category-pill:hover,
-
         .category-pill.active {
-
-            background: var(--primary);
-
-            border-color: var(--primary);
-
+            border-color: var(--orange);
+            background: var(--orange);
+            transform: translateY(-3px);
         }
 
-
-        /****************************************************
-PRODUCT GRID
-****************************************************/
+        /* =====================================================
+       PRODUCT GRID
+    ===================================================== */
 
         .products-grid {
-
             display: grid;
-
-            grid-template-columns:
-
-                repeat(4, minmax(270px, 1fr));
-
-            gap: 26px;
-
-            align-items: stretch;
-
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
         }
 
+        /* =====================================================
+       PRODUCT CARD
+    ===================================================== */
 
-        /****************************************************
-RESPONSIVE
-****************************************************/
+        .industrial-card {
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .05);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: cardReveal .7s forwards;
+            transition: var(--ease);
+        }
 
-        @media(max-width:1400px) {
+        .industrial-card:nth-child(2) {
+            animation-delay: .08s;
+        }
 
-            .products-grid {
+        .industrial-card:nth-child(3) {
+            animation-delay: .16s;
+        }
 
-                grid-template-columns:
+        .industrial-card:nth-child(4) {
+            animation-delay: .24s;
+        }
 
-                    repeat(3, 1fr);
-
+        @keyframes cardReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-
         }
 
-        @media(max-width:991px) {
+        .industrial-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--orange);
+            box-shadow: 0 20px 38px rgba(0, 0, 0, .14);
+        }
 
+        /* =====================================================
+       PRODUCT MEDIA
+    ===================================================== */
+
+        .product-media {
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #fafafa, #eeeeee);
+            border-bottom: 3px solid var(--orange);
+        }
+
+        .product-image,
+        .product-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: var(--ease);
+        }
+
+        .product-image {
+            z-index: 1;
+            padding: 15px;
+        }
+
+        .product-video {
+            z-index: 2;
+            opacity: 0;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .industrial-card:hover .product-image {
+            opacity: 0;
+            transform: scale(1.08);
+        }
+
+        .industrial-card:hover .product-video {
+            opacity: 1;
+        }
+
+        /* =====================================================
+       BADGES
+    ===================================================== */
+
+        .image-badges {
+            position: absolute;
+            z-index: 10;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 50px;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .badge.new {
+            background: #ff6b00;
+        }
+
+        .badge.featured {
+            background: #005eff;
+        }
+
+        .badge.stock {
+            background: #159947;
+        }
+
+        /* =====================================================
+       PRODUCT BODY
+    ===================================================== */
+
+        .product-body {
+            padding: 16px;
+        }
+
+        .product-category {
+            margin-bottom: 7px;
+            color: var(--orange);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .product-name {
+            min-height: 48px;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: var(--ease);
+        }
+
+        .industrial-card:hover .product-name {
+            color: var(--orange);
+        }
+
+        .product-price {
+            margin-bottom: 12px;
+            color: var(--orange);
+            font-size: 24px;
+            font-weight: 900;
+            transition: var(--ease);
+        }
+
+        .industrial-card:hover .product-price {
+            transform: translateX(4px);
+        }
+
+        /* =====================================================
+       BADGE TRACK
+    ===================================================== */
+
+        .badge-track {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .badge-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .badge-track span {
+            flex: none;
+            padding: 6px 10px;
+            border: 1px solid #e5e5e5;
+            border-radius: 50px;
+            background: #f6f6f6;
+            color: #555;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+       CART BUTTON
+    ===================================================== */
+
+        .floating-cart {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            z-index: 20;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 50%;
+            background: var(--orange);
+            color: white;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(243, 112, 33, .3);
+            transition: var(--ease);
+        }
+
+        .floating-cart:hover {
+            background: var(--black);
+            transform: scale(1.12) rotate(-8deg);
+        }
+
+        .floating-cart.added {
+            animation: cartPop .45s ease;
+        }
+
+        @keyframes cartPop {
+            50% {
+                transform: scale(1.25);
+            }
+        }
+
+        /* =====================================================
+       PAGINATION
+    ===================================================== */
+
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 40px;
+        }
+
+        .pagination-wrapper a,
+        .pagination-wrapper span {
+            min-width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-size: 13px;
+            font-weight: 700;
+            transition: var(--ease);
+        }
+
+        .pagination-wrapper a:hover,
+        .pagination-wrapper .active {
+            background: var(--orange);
+            color: white;
+        }
+
+        /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+        @media(max-width:1200px) {
             .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
 
-                grid-template-columns:
-
-                    repeat(2, 1fr);
-
-                gap: 20px;
-
+        @media(max-width:900px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .products-header {
-
-                flex-direction: column;
-
                 align-items: flex-start;
-
+                flex-direction: column;
             }
-
-            .section-title {
-
-                font-size: 38px;
-
-            }
-
         }
 
         @media(max-width:600px) {
 
+            .featured-products-section {
+                background:
+                    linear-gradient(to bottom,
+                        #111 0,
+                        #1d1d1d 340px,
+                        #f5f5f5 340px);
+            }
+
+            .products-container {
+                padding: 0 14px;
+            }
+
+            .remarobe-industrial-hero {
+                min-height: 620px;
+                background-position: 65% center;
+            }
+
+            .hero-overlay {
+                background:
+                    linear-gradient(180deg,
+                        rgba(255, 255, 255, .94),
+                        rgba(255, 255, 255, .75));
+            }
+
+            .industrial-hero-content {
+                padding: 55px 20px;
+            }
+
+            .hero-title {
+                font-size: 45px;
+            }
+
+            .industrial-hero-content p {
+                font-size: 15px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+            }
+
+            .hero-primary-btn,
+            .hero-secondary-btn {
+                width: 100%;
+            }
+
+            .hero-industries {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 7px;
+                margin-top: 25px;
+            }
+
+            .industry-item {
+                min-height: 44px;
+                padding: 7px;
+                font-size: 10px;
+            }
+
+            .products-header {
+                padding-top: 38px;
+            }
+
             .products-grid {
-
-                grid-template-columns:
-
-                    repeat(2, 1fr);
-
-                gap: 14px;
-
+                gap: 12px;
             }
-
-            .section-title {
-
-                font-size: 30px;
-
-            }
-
-            .section-description {
-
-                font-size: 14px;
-
-            }
-
-        }
-
-        /*=====================================================
-INDUSTRIAL PRODUCT CARD
-=====================================================*/
-
-        .industrial-card {
-
-            position: relative;
-
-            display: flex;
-
-            flex-direction: column;
-
-            background: var(--white);
-
-            border-radius: var(--radius);
-
-            overflow: hidden;
-
-            border: 1px solid #E6E6E6;
-
-            box-shadow: var(--shadow-sm);
-
-            transition:
-
-                transform .35s ease,
-
-                box-shadow .35s ease,
-
-                border-color .35s ease;
-
-            height: 100%;
-
-        }
-
-        .industrial-card:hover {
-
-            transform: translateY(-10px);
-
-            box-shadow: var(--shadow-lg);
-
-            border-color: var(--primary);
-
-        }
-
-
-        /*************************************************
-WHOLE CARD LINK
-*************************************************/
-
-        .product-link {
-
-            display: flex;
-
-            flex-direction: column;
-
-            color: inherit;
-
-            height: 100%;
-
-        }
-
-
-        /*************************************************
-50 / 50 CARD LAYOUT
-*************************************************/
-
-        .product-media {
-
-            position: relative;
-
-            height: 270px;
-
-            overflow: hidden;
-
-            background:
-
-                linear-gradient(180deg,
-
-                    #fafafa,
-
-                    #efefef);
-
-            border-bottom:
-
-                4px solid var(--primary);
-
-        }
-
-        /* Mobile */
-
-        @media(max-width:768px) {
 
             .product-media {
-
-                height: 210px;
-
-            }
-
-        }
-
-
-        /*************************************************
-IMAGE
-*************************************************/
-
-        .product-image {
-
-            position: absolute;
-
-            inset: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            object-fit: contain;
-
-            transition:
-
-                opacity .45s ease,
-
-                transform .6s ease;
-
-            z-index: 1;
-
-            padding: 18px;
-
-        }
-
-        .industrial-card:hover .product-image {
-
-            opacity: 0;
-
-            transform: scale(1.06);
-
-        }
-
-
-        /*************************************************
-VIDEO
-*************************************************/
-
-        .product-video {
-
-            position: absolute;
-
-            inset: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            object-fit: cover;
-
-            opacity: 0;
-
-            transition: opacity .45s;
-
-            background: #000;
-
-            z-index: 2;
-
-        }
-
-        .industrial-card:hover .product-video {
-
-            opacity: 1;
-
-        }
-
-
-        /*************************************************
-PLAY BUTTON
-*************************************************/
-
-        .play-icon {
-
-            position: absolute;
-
-            width: 58px;
-
-            height: 58px;
-
-            border-radius: 50%;
-
-            background:
-
-                rgba(0, 0, 0, .55);
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            color: white;
-
-            font-size: 20px;
-
-            left: 50%;
-
-            top: 50%;
-
-            transform:
-
-                translate(-50%, -50%);
-
-            backdrop-filter: blur(8px);
-
-            z-index: 10;
-
-            transition: .35s;
-
-        }
-
-        .play-icon i {
-
-            pointer-events: none;
-
-        }
-
-        .industrial-card:hover .play-icon {
-
-            background: var(--primary);
-
-            transform:
-
-                translate(-50%, -50%) scale(1.08);
-
-        }
-
-
-        /*************************************************
-TOP BADGES
-*************************************************/
-
-        .image-badges {
-
-            position: absolute;
-
-            top: 14px;
-
-            left: 14px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 8px;
-
-            z-index: 30;
-
-        }
-
-        .badge {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 7px 12px;
-
-            border-radius: 40px;
-
-            font-size: 11px;
-
-            font-weight: 700;
-
-            letter-spacing: .5px;
-
-            color: #fff;
-
-            white-space: nowrap;
-
-        }
-
-        .badge.new {
-
-            background: #ff6b00;
-
-        }
-
-        .badge.featured {
-
-            background: #005eff;
-
-        }
-
-        .badge.stock {
-
-            background: #159947;
-
-        }
-
-        .badge.low {
-
-            background: #d63638;
-
-        }
-
-
-        /*************************************************
-PRODUCT BODY
-*************************************************/
-
-        .product-body {
-
-            display: flex;
-
-            flex-direction: column;
-
-            justify-content: space-between;
-
-            flex-grow: 1;
-
-            padding: 18px;
-
-            background: #fff;
-
-        }
-
-
-        /*************************************************
-CATEGORY
-*************************************************/
-
-        .product-category {
-
-            color: var(--primary);
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-
-            margin-bottom: 8px;
-
-        }
-
-
-        /*************************************************
-NAME
-*************************************************/
-
-        .product-name {
-
-            color: var(--dark);
-
-            font-size: 22px;
-
-            font-weight: 800;
-
-            line-height: 1.35;
-
-            margin-bottom: 14px;
-
-            display: -webkit-box;
-
-
-            -webkit-box-orient: vertical;
-
-            overflow: hidden;
-
-            min-height: 58px;
-
-        }
-
-        @media(max-width:768px) {
-
-            .product-name {
-
-                font-size: 18px;
-
-                min-height: 48px;
-
-            }
-
-        }
-
-
-        /*************************************************
-PRICE
-*************************************************/
-
-        .product-price {
-
-            color: var(--primary);
-
-            font-size: 30px;
-
-            font-weight: 900;
-
-            margin-bottom: 16px;
-
-        }
-
-        @media(max-width:768px) {
-
-            .product-price {
-
-                font-size: 22px;
-
-            }
-
-        }
-
-        /*=====================================================
-BADGE SLIDER
-=====================================================*/
-
-        .badge-scroll {
-
-            width: 100%;
-
-            overflow: hidden;
-
-            margin-top: auto;
-
-            position: relative;
-
-        }
-
-        .badge-track {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-
-            overflow-x: auto;
-
-            padding-top: 14px;
-
-            padding-bottom: 6px;
-
-            scrollbar-width: none;
-
-            -webkit-overflow-scrolling: touch;
-
-        }
-
-        .badge-track::-webkit-scrollbar {
-
-            display: none;
-
-        }
-
-        .badge-track span {
-
-            flex: none;
-
-            padding: 8px 14px;
-
-            border-radius: 999px;
-
-            background: #f4f4f4;
-
-            border: 1px solid #e5e5e5;
-
-            color: #444;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            white-space: nowrap;
-
-            transition: .30s;
-
-        }
-
-        .badge-track span:hover {
-
-            background: var(--primary);
-
-            color: #fff;
-
-            border-color: var(--primary);
-
-        }
-
-
-        /*************************************************
-OPTIONAL AUTO SCROLL
-*************************************************/
-
-        .auto-scroll {
-
-            animation: badgeScroll 18s linear infinite;
-
-        }
-
-        .auto-scroll:hover {
-
-            animation-play-state: paused;
-
-        }
-
-        @keyframes badgeScroll {
-
-            from {
-
-                transform: translateX(0);
-
-            }
-
-            to {
-
-                transform: translateX(-25%);
-
-            }
-
-        }
-
-
-        /*************************************************
-FLOATING CART BUTTON
-*************************************************/
-
-        .floating-cart {
-
-            position: absolute;
-
-            right: 18px;
-
-            bottom: 18px;
-
-            width: 62px;
-
-            height: 62px;
-
-            border: none;
-
-            border-radius: 50%;
-
-            background: var(--primary);
-
-            color: #fff;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            cursor: pointer;
-
-            font-size: 20px;
-
-            z-index: 50;
-
-            box-shadow:
-
-                0 10px 22px rgba(243, 112, 33, .35);
-
-            transition:
-
-                transform .30s,
-
-                background .30s,
-
-                box-shadow .30s;
-
-        }
-
-        .floating-cart:hover {
-
-            background: var(--dark);
-
-            transform: scale(1.08) rotate(-8deg);
-
-            box-shadow:
-
-                0 18px 35px rgba(0, 0, 0, .25);
-
-        }
-
-        .floating-cart:active {
-
-            transform: scale(.95);
-
-        }
-
-        .floating-cart i {
-
-            pointer-events: none;
-
-        }
-
-
-        /*************************************************
-LEAVE SPACE FOR FLOATING BUTTON
-*************************************************/
-
-        .product-body {
-
-            padding-bottom: 82px;
-
-        }
-
-
-        /*************************************************
-INDUSTRIAL SHINE
-*************************************************/
-
-        .industrial-card::before {
-
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-
-            left: -150%;
-
-            width: 70%;
-
-            height: 100%;
-
-            background:
-
-                linear-gradient(120deg,
-
-                    transparent,
-
-                    rgba(255, 255, 255, .18),
-
-                    transparent);
-
-            transition: left .9s ease;
-
-            pointer-events: none;
-
-            z-index: 40;
-
-        }
-
-        .industrial-card:hover::before {
-
-            left: 170%;
-
-        }
-
-
-        /*************************************************
-TOP ORANGE ACCENT
-*************************************************/
-
-        .industrial-card::after {
-
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 4px;
-
-            background: var(--primary);
-
-            transform: scaleX(0);
-
-            transform-origin: left;
-
-            transition: transform .35s ease;
-
-            z-index: 60;
-
-        }
-
-        .industrial-card:hover::after {
-
-            transform: scaleX(1);
-
-        }
-
-
-        /*************************************************
-SMOOTHER HOVER
-*************************************************/
-
-        .industrial-card:hover .product-name {
-
-            color: var(--primary);
-
-        }
-
-        .industrial-card:hover .product-price {
-
-            transform: translateX(4px);
-
-        }
-
-        .product-price {
-
-            transition: .30s;
-
-        }
-
-
-        /*************************************************
-ACCESSIBILITY
-*************************************************/
-
-        .floating-cart:focus {
-
-            outline: 3px solid rgba(243, 112, 33, .35);
-
-            outline-offset: 3px;
-
-        }
-
-
-        /*************************************************
-MOBILE
-*************************************************/
-
-        @media(max-width:768px) {
-
-            .floating-cart {
-
-                width: 52px;
-
-                height: 52px;
-
-                right: 14px;
-
-                bottom: 14px;
-
-                font-size: 17px;
-
+                height: 175px;
             }
 
             .product-body {
-
-                padding-bottom: 72px;
-
-            }
-
-            .badge-track span {
-
-                font-size: 11px;
-
-                padding: 7px 11px;
-
-            }
-
-        }
-
-
-        /*************************************************
-VERY SMALL DEVICES
-*************************************************/
-
-        @media(max-width:480px) {
-
-            .floating-cart {
-
-                width: 48px;
-
-                height: 48px;
-
-                right: 12px;
-
-                bottom: 12px;
-
-            }
-
-            .product-category {
-
-                font-size: 11px;
-
+                padding: 12px;
             }
 
             .product-name {
-
-                font-size: 16px;
-
+                min-height: 40px;
+                font-size: 15px;
             }
 
             .product-price {
-
-                font-size: 20px;
-
+                font-size: 19px;
             }
 
-        }
-
-        .touch-device .product-video {
-
-            opacity: 0 !important;
-
-        }
-
-        .touch-device .product-image {
-
-            opacity: 1 !important;
-
-        }
-
-        .touch-device .play-icon {
-
-            display: none;
-
+            .floating-cart {
+                width: 40px;
+                height: 40px;
+                right: 10px;
+                bottom: 10px;
+                font-size: 14px;
+            }
         }
     </style>
 
 
-    <div class="container">
+    <!-- =====================================================
+     HERO
+===================================================== -->
 
-        <!-- ==========================
-         SECTION HEADER
-    =========================== -->
+    <section class="remarobe-industrial-hero">
+
+        <div class="hero-overlay"></div>
+
+        <div class="industrial-hero-content">
+
+            <span class="hero-eyebrow">
+                REMAROBE INDUSTRIAL SOLUTIONS
+            </span>
+
+            <h1 class="hero-title">
+                POWERING INDUSTRY.
+                <br>
+                <span>ENGINEERING THE FUTURE.</span>
+            </h1>
+
+            <p>
+                Industrial electrical products, automation systems,
+                power solutions and engineering components built for
+                demanding industrial environments.
+            </p>
+
+            <div class="hero-actions">
+
+                <a href="{% url 'search_products' %}" class="hero-primary-btn">
+                    Explore Products
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+                <a href="{% url 'services' %}" class="hero-secondary-btn">
+                    Engineering Services
+                </a>
+
+            </div>
+
+            <div class="hero-industries">
+
+                <div class="industry-item">
+                    <i class="fa-solid fa-bolt"></i>
+                    Power Systems
+                </div>
+
+                <div class="industry-item">
+                    <i class="fa-solid fa-gears"></i>
+                    Automation
+                </div>
+
+                <div class="industry-item">
+                    <i class="fa-solid fa-solar-panel"></i>
+                    Solar Technology
+                </div>
+
+                <div class="industry-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Protection & Earthing
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="products-container">
+
+        <!-- =====================================================
+         HEADER
+    ===================================================== -->
 
         <div class="products-header">
 
             <div>
 
                 <span class="section-small-title">
-
-                    BUILT TO PERFORM • DESIGNED TO LAST
-
+                    Featured Products
                 </span>
 
                 <h2 class="section-title">
-
-                    INDUSTRIAL ELECTRICAL PRODUCTS
-
+                    Built for Industrial Performance
                 </h2>
 
                 <p class="section-description">
-
-                    High-quality industrial electrical products,
-                    automation devices, switchgear,
-                    earthing materials,
-                    transformers,
-                    cables,
-                    safety equipment
-                    and engineering components.
-
+                    Professional electrical, automation, solar,
+                    earthing and industrial engineering products.
                 </p>
 
             </div>
 
-            <a href="" class="view-all-btn">
-
+            <a href="{% url 'search_products' %}" class="view-all-btn">
                 View All Products
-
                 <i class="fa-solid fa-arrow-right"></i>
-
             </a>
 
         </div>
 
-        <!-- ==========================
-            CATEGORY FILTER
-            =========================== -->
+
+        <!-- =====================================================
+         CATEGORY FILTER
+    ===================================================== -->
 
         <div class="category-slider">
 
-            <a class="category-pill active" href="">
+            <a class="category-pill active" href="{% url 'solar_calculator' %}">
+                <i class="fa fa-solar-panel"></i>
+                Solar Calculator
+            </a>
 
+            <a class="category-pill active" href="#">
                 All
-
             </a>
 
             {% for cat in second_categories %}
@@ -1247,9 +845,9 @@ VERY SMALL DEVICES
         </div>
 
 
-        <!-- ==========================
-         PRODUCTS GRID
-            =========================== -->
+        <!-- =====================================================
+         PRODUCTS
+    ===================================================== -->
 
         <div class="products-grid">
 
@@ -1257,21 +855,9 @@ VERY SMALL DEVICES
 
             <div class="industrial-card">
 
-                <!-- ===================================
-                PRODUCT LINK
-                ==================================== -->
-
                 <a href="{% url 'product_detail' product.name %}" class="product-link">
 
-                    <!-- =====================
-                    MEDIA
-                    ====================== -->
-
                     <div class="product-media">
-
-                        <!-- PRIMARY IMAGE -->
-
-                        {% with primary_image=product.media.all|dictsort:"display_order" %}
 
                         {% for media in product.media.all %}
 
@@ -1287,9 +873,6 @@ VERY SMALL DEVICES
 
                         {% endfor %}
 
-                        {% endwith %}
-
-                        <!-- VIDEO -->
 
                         {% for media in product.media.all %}
 
@@ -1306,41 +889,26 @@ VERY SMALL DEVICES
                         {% endfor %}
 
 
-                        <!-- BADGES -->
-
                         <div class="image-badges">
 
                             {% if product.auto_new %}
-                            <span class="badge new">
-                                NEW
-                            </span>
+                            <span class="badge new">NEW</span>
                             {% endif %}
 
                             {% if product.is_featured %}
-                            <span class="badge featured">
-                                FEATURED
-                            </span>
+                            <span class="badge featured">FEATURED</span>
                             {% endif %}
 
                             {% if product.stock > 0 %}
-                            <span class="badge stock">
-                                IN STOCK
-                            </span>
+                            <span class="badge stock">IN STOCK</span>
                             {% endif %}
-
-
 
                         </div>
 
                     </div>
 
-                    <!-- =====================
-             BODY
-        ====================== -->
 
                     <div class="product-body">
-
-                        <!-- CATEGORY -->
 
                         <div class="product-category">
 
@@ -1349,58 +917,41 @@ VERY SMALL DEVICES
                             {{ cat.name }}
 
                             {% if not forloop.last %}
-
                             •
-
                             {% endif %}
 
                             {% endfor %}
 
                         </div>
 
-                        <!-- PRODUCT NAME -->
 
                         <h3 class="product-name">
-
                             {{ product.name }}
-
                         </h3>
 
-                        <!-- PRICE -->
 
                         <div class="product-price">
-
                             ₦{{ product.final_price|floatformat:2|intcomma }}
-
                         </div>
 
 
-                        <!-- =====================
-                 HORIZONTAL BADGES
-            ====================== -->
+                        <div class="badge-track">
 
-                        <div class="badge-scroll">
+                            {% if product.brand %}
+                            <span>{{ product.brand }}</span>
+                            {% endif %}
 
-                            <div class="badge-track">
+                            {% if product.stock > 0 %}
+                            <span>Available</span>
+                            {% endif %}
 
-                                {% if product.brand %}
-                                <span>{{ product.brand }}</span>
-                                {% endif %}
+                            {% if product.auto_new %}
+                            <span>New Arrival</span>
+                            {% endif %}
 
-                                {% if product.stock > 0 %}
-                                <span>Available</span>
-                                {% endif %}
-
-                                {% if product.auto_new %}
-                                <span>New Arrival</span>
-                                {% endif %}
-
-                                {% if product.is_featured %}
-                                <span>Top Rated</span>
-                                {% endif %}
-
-
-                            </div>
+                            {% if product.is_featured %}
+                            <span>Top Rated</span>
+                            {% endif %}
 
                         </div>
 
@@ -1408,9 +959,6 @@ VERY SMALL DEVICES
 
                 </a>
 
-                <!-- ===================================
-         FLOATING CART BUTTON
-    ==================================== -->
 
                 <button class="floating-cart" data-id="{{ product.id }}" aria-label="Add to cart">
 
@@ -1425,52 +973,44 @@ VERY SMALL DEVICES
         </div>
 
 
-
-
-        <!-- ==========================
+        <!-- =====================================================
          PAGINATION
-    =========================== -->
+    ===================================================== -->
 
         <div class="pagination-wrapper">
 
             {% if productList.has_previous %}
 
             <a href="?page={{ productList.previous_page_number }}">
-
-                Previous
-
+                ‹
             </a>
 
             {% endif %}
+
 
             {% for num in productList.paginator.page_range %}
 
             {% if productList.number == num %}
 
             <span class="active">
-
                 {{ num }}
-
             </span>
 
             {% else %}
 
             <a href="?page={{ num }}">
-
                 {{ num }}
-
             </a>
 
             {% endif %}
 
             {% endfor %}
 
+
             {% if productList.has_next %}
 
             <a href="?page={{ productList.next_page_number }}">
-
-                Next
-
+                ›
             </a>
 
             {% endif %}
@@ -1478,28 +1018,19 @@ VERY SMALL DEVICES
         </div>
 
     </div>
+    ```
 
 </section>
 
 <script>
-    /*==========================================================
-REMAROBE INDUSTRIAL PRODUCTS
-==========================================================*/
 
-    document.addEventListener("DOMContentLoaded", () => {
-
-        initProductVideos();
-
-    });
-
-
-    /*==========================================================
-    VIDEO HOVER
-    ==========================================================*/
-
-    function initProductVideos() {
+    document.addEventListener("DOMContentLoaded", function () {
 
         const cards = document.querySelectorAll(".industrial-card");
+
+        /* =====================================
+           PRODUCT VIDEO HOVER
+        ===================================== */
 
         cards.forEach(card => {
 
@@ -1507,100 +1038,60 @@ REMAROBE INDUSTRIAL PRODUCTS
 
             if (!video) return;
 
-            video.pause();
-
-            video.currentTime = 0;
-
-            video.preload = "metadata";
-
             card.addEventListener("mouseenter", () => {
 
-                playVideo(video);
+                video.play().catch(() => { });
 
             });
 
             card.addEventListener("mouseleave", () => {
 
-                stopVideo(video);
+                video.pause();
+
+                video.currentTime = 0;
 
             });
 
         });
 
-    }
 
+        /* =====================================
+           CART BUTTON ANIMATION
+        ===================================== */
 
-    /*==========================================================
-    PLAY
-    ==========================================================*/
+        document.querySelectorAll(".floating-cart")
+            .forEach(button => {
 
-    function playVideo(video) {
+                button.addEventListener("click", function (event) {
 
-        if (video.readyState < 2) {
+                    event.preventDefault();
 
-            video.load();
+                    event.stopPropagation();
 
-        }
+                    this.classList.add("added");
 
-        const promise = video.play();
+                    setTimeout(() => {
 
-        if (promise !== undefined) {
+                        this.classList.remove("added");
 
-            promise.catch(() => {
+                    }, 450);
 
-                /* Ignore autoplay restrictions */
+                });
 
             });
 
+
+        /* =====================================
+           TOUCH DEVICES
+        ===================================== */
+
+        if ("ontouchstart" in window) {
+
+            document.documentElement
+                .classList.add("touch-device");
+
         }
 
-    }
+    });
 
-
-    /*==========================================================
-    STOP
-    ==========================================================*/
-
-    function stopVideo(video) {
-
-        video.pause();
-
-        video.currentTime = 0;
-
-    }
-
-
-    /*==========================================================
-    BUTTON ANIMATION
-    ==========================================================*/
-
-    function animateButton(button) {
-
-        button.style.transform = "scale(.90)";
-
-        setTimeout(() => {
-
-            button.style.transform = "";
-
-        }, 150);
-
-    }
-
-    function addProduct(id, button) {
-
-        animateButton(button);
-
-        console.log(id);
-
-    }
-
-    /*==========================================================
-    TOUCH DEVICES
-    ==========================================================*/
-
-    if ("ontouchstart" in window) {
-
-        document.documentElement.classList.add("touch-device");
-
-    }
 </script>

@@ -26,7 +26,9 @@ class ApplianceAdmin(ImportExportModelAdmin):
         'name',
         'wattage',
         'category',
-        'popular'
+        'popular',
+        'load_type',
+        'starting_type',
     )
     search_fields = ('name',)
 

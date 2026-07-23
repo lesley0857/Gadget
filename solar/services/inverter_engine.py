@@ -1,20 +1,30 @@
+# solar/services/inverter_engine.py
+
 from solar.models import Inverter
 
-
 ###############################################################
+
 # INVERTER SELECTION ENGINE
+
 ###############################################################
 
 def select_inverter(
-    running_load,
-    surge_load,
-    battery_voltage,
-    safety_factor=1.25,
+running_load,
+surge_load,
+battery_voltage,
+safety_factor=1.20,
 ):
     """
-    Standardized Inverter Engine
+    Select an inverter compatible with the calculated system voltage.
 
-    Returns
+    ```
+    The inverter must satisfy:
+
+        1. Battery/DC system voltage
+        2. Continuous running-load requirement
+        3. Surge-load requirement
+
+    Returns:
 
     {
         success,
@@ -29,17 +39,192 @@ def select_inverter(
     warnings = []
 
     ###########################################################
-    # REQUIRED POWER
+    # VALIDATE RUNNING LOAD
     ###########################################################
 
-    required_continuous = (
+    try:
+
+        running_load = float(
+            running_load or 0
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        running_load = 0
+
+        warnings.append(
+            "Invalid running load supplied. "
+            "Zero was used."
+        )
+
+    if running_load < 0:
+
+        running_load = 0
+
+        warnings.append(
+            "Running load cannot be negative. "
+            "Zero was used."
+        )
+
+    ###########################################################
+    # VALIDATE SURGE LOAD
+    ###########################################################
+
+    try:
+
+        surge_load = float(
+            surge_load or 0
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        surge_load = running_load
+
+        warnings.append(
+            "Invalid surge load supplied. "
+            "Running load was used."
+        )
+
+    if surge_load < 0:
+
+        surge_load = running_load
+
+        warnings.append(
+            "Surge load cannot be negative. "
+            "Running load was used."
+        )
+
+    ###########################################################
+    # SURGE CANNOT BE BELOW RUNNING LOAD
+    ###########################################################
+
+    if surge_load < running_load:
+
+        surge_load = running_load
+
+        warnings.append(
+            "Surge load was below running load. "
+            "Running load was used as the surge load."
+        )
+
+    ###########################################################
+    # VALIDATE SYSTEM VOLTAGE
+    ###########################################################
+
+    try:
+
+        battery_voltage = float(
+            battery_voltage
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        return {
+
+            "success": False,
+
+            "required": {},
+
+            "selected": None,
+
+            "closest": None,
+
+            "message":
+                "Invalid battery-system voltage.",
+
+            "warnings": [
+
+                "Battery voltage must be greater than zero."
+
+            ],
+
+        }
+
+    if battery_voltage <= 0:
+
+        return {
+
+            "success": False,
+
+            "required": {},
+
+            "selected": None,
+
+            "closest": None,
+
+            "message":
+                "Invalid battery-system voltage.",
+
+            "warnings": [
+
+                "Battery voltage must be greater than zero."
+
+            ],
+
+        }
+
+    ###########################################################
+    # VALIDATE SAFETY FACTOR
+    ###########################################################
+
+    try:
+
+        safety_factor = float(
+            safety_factor
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        safety_factor = 1.20
+
+        warnings.append(
+            "Invalid inverter safety factor. "
+            "20% margin was used."
+        )
+
+    if safety_factor < 1:
+
+        safety_factor = 1.20
+
+        warnings.append(
+            "Inverter safety factor cannot be below 1.0. "
+            "20% margin was used."
+        )
+
+    ###########################################################
+    # ENGINEERING REQUIREMENTS
+    ###########################################################
+
+    required_continuous_power = (
+
         running_load
-        * safety_factor
+
+        *
+
+        safety_factor
+
     )
 
-    required_surge = (
+    required_surge_power = (
+
         surge_load
-        * 1.10
+
+        *
+
+        1.10
+
     )
 
     required = {
@@ -49,22 +234,23 @@ def select_inverter(
 
         "continuous_power":
             round(
-                required_continuous,
+                required_continuous_power,
                 2
             ),
 
         "surge_power":
             round(
-                required_surge,
+                required_surge_power,
                 2
             ),
+
     }
 
     ###########################################################
-    # SEARCH DATABASE
+    # SEARCH FOR COMPATIBLE INVERTERS
     ###########################################################
 
-    inverter = (
+    compatible_inverters = (
 
         Inverter.objects
 
@@ -74,35 +260,53 @@ def select_inverter(
 
             dc_voltage=battery_voltage,
 
-            rated_power__gte=required_continuous,
+            rated_power__gte=(
+                required_continuous_power
+            ),
 
-            surge_power__gte=required_surge
+            surge_power__gte=(
+                required_surge_power
+            ),
 
         )
 
         .order_by(
 
-            "rated_power"
+            "rated_power",
+
+            "surge_power",
 
         )
+
+    )
+
+    ###########################################################
+    # SELECT SMALLEST SUITABLE INVERTER
+    ###########################################################
+
+    inverter = (
+
+        compatible_inverters
 
         .first()
 
     )
 
     ###########################################################
-    # FOUND
+    # SUITABLE INVERTER FOUND
     ###########################################################
 
     if inverter:
 
-        utilization = (
+        running_utilization = (
 
             running_load
 
             /
 
-            inverter.rated_power
+            float(
+                inverter.rated_power
+            )
 
         ) * 100
 
@@ -112,39 +316,40 @@ def select_inverter(
 
             /
 
-            inverter.surge_power
+            float(
+                inverter.surge_power
+            )
 
         ) * 100
 
-        if utilization > 90:
+        #######################################################
+        # UTILIZATION WARNINGS
+        #######################################################
+
+        if running_utilization > 80:
 
             warnings.append(
-                "Running load exceeds 90% of inverter rating."
+                "Running load is using more than "
+                "80% of the inverter continuous rating."
             )
 
-        if surge_utilization > 90:
+        if surge_utilization > 80:
 
             warnings.append(
-                "Surge load exceeds 90% of inverter surge capacity."
+                "Surge load is using more than "
+                "80% of the inverter surge capacity."
             )
+
+        #######################################################
+        # RETURN SELECTED INVERTER
+        #######################################################
 
         return {
 
-            ####################################################
-            # STATUS
-            ####################################################
-
             "success": True,
 
-            ####################################################
-            # REQUIRED
-            ####################################################
-
-            "required": required,
-
-            ####################################################
-            # SELECTED
-            ####################################################
+            "required":
+                required,
 
             "selected": {
 
@@ -171,7 +376,7 @@ def select_inverter(
 
                 "utilization":
                     round(
-                        utilization,
+                        running_utilization,
                         2
                     ),
 
@@ -183,32 +388,25 @@ def select_inverter(
 
                 "price":
                     inverter.price,
+
             },
 
-            ####################################################
-            # CLOSEST
-            ####################################################
+            "closest":
+                None,
 
-            "closest": None,
+            "message":
+                None,
 
-            ####################################################
-            # MESSAGE
-            ####################################################
+            "warnings":
+                warnings,
 
-            "message": None,
-
-            ####################################################
-            # WARNINGS
-            ####################################################
-
-            "warnings": warnings,
         }
 
     ###########################################################
-    # CLOSEST AVAILABLE
+    # FIND CLOSEST COMPATIBLE INVERTER
     ###########################################################
 
-    closest = (
+    available_inverters = (
 
         Inverter.objects
 
@@ -216,19 +414,85 @@ def select_inverter(
 
             active=True,
 
-            dc_voltage=battery_voltage
+            dc_voltage=battery_voltage,
 
         )
 
         .order_by(
 
-            "-rated_power"
+            "rated_power",
+
+            "surge_power",
 
         )
 
-        .first()
-
     )
+
+    ###########################################################
+    # FIND BEST ALTERNATIVE
+    ###########################################################
+
+    closest = None
+
+    closest_score = None
+
+    for candidate in available_inverters:
+
+        continuous_gap = max(
+
+            0,
+
+            required_continuous_power
+
+            -
+
+            float(
+                candidate.rated_power
+            )
+
+        )
+
+        surge_gap = max(
+
+            0,
+
+            required_surge_power
+
+            -
+
+            float(
+                candidate.surge_power
+            )
+
+        )
+
+        total_gap = (
+
+            continuous_gap
+
+            +
+
+            surge_gap
+
+        )
+
+        if (
+
+            closest_score is None
+
+            or
+
+            total_gap < closest_score
+
+        ):
+
+            closest = candidate
+
+            closest_score = total_gap
+
+    ###########################################################
+    # CLOSEST INVERTER DATA
+    ###########################################################
 
     closest_data = None
 
@@ -259,6 +523,7 @@ def select_inverter(
 
             "price":
                 closest.price,
+
         }
 
     ###########################################################
@@ -266,45 +531,32 @@ def select_inverter(
     ###########################################################
 
     warnings.append(
-        "No inverter satisfies the engineering requirements."
+        "No inverter satisfies the complete "
+        "engineering requirements."
     )
+
+    ###########################################################
+    # RETURN FAILURE
+    ###########################################################
 
     return {
 
-        ####################################################
-        # STATUS
-        ####################################################
-
         "success": False,
 
-        ####################################################
-        # REQUIRED
-        ####################################################
+        "required":
+            required,
 
-        "required": required,
+        "selected":
+            None,
 
-        ####################################################
-        # SELECTED
-        ####################################################
-
-        "selected": None,
-
-        ####################################################
-        # CLOSEST
-        ####################################################
-
-        "closest": closest_data,
-
-        ####################################################
-        # MESSAGE
-        ####################################################
+        "closest":
+            closest_data,
 
         "message":
             "No suitable inverter found.",
 
-        ####################################################
-        # WARNINGS
-        ####################################################
+        "warnings":
+            warnings,
 
-        "warnings": warnings,
     }
+

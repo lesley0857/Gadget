@@ -7,13 +7,30 @@ from django.db import models
 
 class Appliance(models.Model):
 
-    CATEGORY_CHOICES = (
-        ('lighting', 'Lighting'),
-        ('cooling', 'Cooling'),
-        ('electronics', 'Electronics'),
-        ('kitchen', 'Kitchen'),
-        ('industrial', 'Industrial'),
-        ('other', 'Other'),
+    LOAD_TYPES = (
+    ("resistive", "Resistive"),
+    ("motor", "Motor"),
+    ("compressor", "Compressor"),
+    ("electronics", "Electronics"),
+    ("lighting", "Lighting"),
+)
+
+    STARTING_TYPES = (
+        ("single", "Starts alone"),
+        ("possible", "May start together"),
+        ("simultaneous", "Can start simultaneously"),
+    )
+
+    load_type = models.CharField(
+        max_length=20,
+        choices=LOAD_TYPES,
+        default="resistive",
+    )
+
+    starting_type = models.CharField(
+        max_length=20,
+        choices=STARTING_TYPES,
+        default="single",
     )
 
     name = models.CharField(max_length=100)
@@ -24,7 +41,7 @@ class Appliance(models.Model):
 
     category = models.CharField(
         max_length=30,
-        choices=CATEGORY_CHOICES,
+        choices=LOAD_TYPES,
         default='other'
     )
 

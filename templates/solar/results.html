@@ -3,114 +3,342 @@
 
 {% block content %}
 <style>
+    /* =========================================================
+REMAROBE SOLAR ENGINEERING REPORT
+PREMIUM ENGINEERING DASHBOARD CSS
+========================================================= */
+
     :root {
+
         --primary: #0d6efd;
-        --success: #198754;
-        --warning: #ffc107;
+        --primary-dark: #084298;
+
+        --solar: #ffc107;
+        --solar-dark: #e0a800;
+
+        --energy: #20c997;
+        --energy-dark: #087f5b;
+
         --danger: #dc3545;
         --info: #0dcaf0;
-        --dark: #212529;
 
-        --card-radius: 18px;
+        --dark: #0f172a;
+        --dark-2: #1e293b;
+
+        --light-bg: #f1f5f9;
+        --card-bg: rgba(255, 255, 255, 0.92);
+
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+
+        --border: rgba(148, 163, 184, 0.25);
 
         --shadow:
-            0 10px 30px rgba(0, 0, 0, .08);
+            0 15px 40px rgba(15, 23, 42, 0.08);
 
         --shadow-hover:
-            0 15px 40px rgba(0, 0, 0, .15);
+            0 25px 60px rgba(15, 23, 42, 0.16);
+
+        --radius: 22px;
+
     }
+
+    /* =========================================================
+GLOBAL REPORT BACKGROUND
+========================================================= */
 
     body {
-        background: #f5f7fb;
+
+        background:
+
+            radial-gradient(circle at 10% 10%,
+                rgba(13, 110, 253, 0.08),
+                transparent 30%),
+
+            radial-gradient(circle at 90% 20%,
+                rgba(32, 201, 151, 0.08),
+                transparent 30%),
+
+            linear-gradient(135deg,
+                #f8fafc,
+                #eef2f7);
+
+        color: var(--text-dark);
+
+        font-family:
+            "Inter",
+            "Segoe UI",
+            system-ui,
+            sans-serif;
+
+        min-height: 100vh;
+
     }
 
+    /* =========================================================
+REPORT CONTAINER
+========================================================= */
+
     .report-container {
-        max-width: 1400px;
+
+        max-width: 1800px;
+
         margin: auto;
+
+        padding-left: 30px !important;
+        padding-right: 30px !important;
+
     }
+
+    /* =========================================================
+REPORT HEADER
+========================================================= */
 
     .report-banner {
 
-        background:
-            linear-gradient(135deg,
-                #0d6efd,
-                #003b8e);
+        position: relative;
+
+        overflow: hidden;
+
+        padding: 42px;
+
+        margin-bottom: 35px;
+
+        border-radius: 30px;
 
         color: white;
 
-        border-radius: 20px;
+        background:
 
-        padding: 35px;
+            linear-gradient(135deg,
+                #0f172a,
+                #1e3a8a 55%,
+                #087f5b);
 
-        margin-bottom: 25px;
+        box-shadow:
 
-        box-shadow: var(--shadow);
+            0 25px 60px rgba(15, 23, 42, 0.25);
+
+        animation:
+
+            reportEntrance 0.8s ease both;
+
+    }
+
+    /* HEADER GLOW */
+
+    .report-banner::before {
+
+        content: "";
+
+        position: absolute;
+
+        width: 400px;
+
+        height: 400px;
+
+        top: -220px;
+
+        right: -100px;
+
+        border-radius: 50%;
+
+        background:
+
+            radial-gradient(circle,
+                rgba(255, 193, 7, 0.28),
+                transparent 70%);
+
+        animation:
+
+            rotateGlow 12s linear infinite;
+
+    }
+
+    /* DECORATIVE GRID */
+
+    .report-banner::after {
+
+        content: "";
+
+        position: absolute;
+
+        inset: 0;
+
+        opacity: 0.08;
+
+        background-image:
+
+            linear-gradient(rgba(255, 255, 255, 0.5) 1px,
+                transparent 1px),
+
+            linear-gradient(90deg,
+                rgba(255, 255, 255, 0.5) 1px,
+                transparent 1px);
+
+        background-size: 35px 35px;
+
+        pointer-events: none;
+
+    }
+
+    .report-banner>* {
+
+        position: relative;
+
+        z-index: 2;
+
     }
 
     .report-title {
 
         font-size: 2rem;
 
-        font-weight: 700;
+        font-weight: 800;
+
+        letter-spacing: 1px;
 
         margin-bottom: 10px;
+
+    }
+
+    .report-title i {
+
+        color: var(--solar);
+
+        animation:
+
+            solarPulse 2s infinite;
+
     }
 
     .report-subtitle {
 
-        opacity: .9;
+        color: #cbd5e1;
 
-        font-size: 15px;
+        font-size: 1.05rem;
+
     }
 
     .report-meta {
 
-        margin-top: 20px;
-
         display: flex;
 
-        gap: 20px;
-
         flex-wrap: wrap;
+
+        gap: 15px;
+
+        margin-top: 30px;
+
     }
 
     .report-meta-item {
 
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        padding: 10px 16px;
+
+        border-radius: 50px;
+
         background:
+
             rgba(255,
                 255,
                 255,
-                .15);
+                0.1);
 
-        padding: 10px 15px;
+        border: 1px solid rgba(255,
+                255,
+                255,
+                0.12);
 
-        border-radius: 12px;
+        color: #e2e8f0;
+
+        backdrop-filter: blur(10px);
+
+        transition: 0.3s ease;
+
     }
+
+    .report-meta-item:hover {
+
+        transform: translateY(-4px);
+
+        background:
+
+            rgba(255,
+                255,
+                255,
+                0.18);
+
+    }
+
+    /* =========================================================
+SUMMARY CARDS
+========================================================= */
 
     .summary-card {
 
-        background: white;
+        position: relative;
 
-        border: none;
-
-        border-radius: 18px;
-
-        box-shadow: var(--shadow);
-
-        transition: .3s;
+        height: 100%;
 
         overflow: hidden;
 
-        height: 100%;
+        border: 1px solid var(--border);
+
+        border-radius: var(--radius);
+
+        background: var(--card-bg);
+
+        box-shadow: var(--shadow);
+
+        transition:
+
+            transform 0.35s ease,
+            box-shadow 0.35s ease;
+
+        animation:
+
+            cardEntrance 0.7s ease both;
+
     }
 
     .summary-card:hover {
 
         transform:
-            translateY(-5px);
 
-        box-shadow:
-            var(--shadow-hover);
+            translateY(-10px) scale(1.02);
+
+        box-shadow: var(--shadow-hover);
+
+    }
+
+    .summary-card::before {
+
+        content: "";
+
+        position: absolute;
+
+        top: 0;
+
+        left: 0;
+
+        width: 100%;
+
+        height: 4px;
+
+        background:
+
+            linear-gradient(90deg,
+                var(--primary),
+                var(--energy),
+                var(--solar));
+
     }
 
     .summary-body {
@@ -119,16 +347,19 @@
 
         align-items: center;
 
-        gap: 15px;
+        gap: 18px;
 
         padding: 25px;
+
     }
 
     .summary-icon {
 
-        width: 65px;
+        width: 62px;
 
-        height: 65px;
+        height: 62px;
+
+        flex-shrink: 0;
 
         display: flex;
 
@@ -136,156 +367,328 @@
 
         justify-content: center;
 
-        border-radius: 15px;
+        border-radius: 18px;
 
-        font-size: 28px;
+        font-size: 25px;
 
         color: white;
 
-        flex-shrink: 0;
+        box-shadow:
+
+            0 10px 25px rgba(0, 0, 0, 0.15);
+
+        transition: 0.35s ease;
+
+    }
+
+    .summary-card:hover .summary-icon {
+
+        transform:
+
+            rotate(-8deg) scale(1.12);
+
     }
 
     .icon-load {
-        background: var(--primary);
+
+        background:
+
+            linear-gradient(135deg,
+                #0d6efd,
+                #084298);
+
     }
 
     .icon-energy {
-        background: var(--success);
+
+        background:
+
+            linear-gradient(135deg,
+                #20c997,
+                #087f5b);
+
+
     }
 
     .icon-voltage {
-        background: var(--warning);
+
+
+        background:
+
+            linear-gradient(135deg,
+                #ffc107,
+                #e0a800);
+
+
     }
 
     .icon-price {
-        background: var(--danger);
+
+
+        background:
+
+            linear-gradient(135deg,
+                #dc3545,
+                #842029);
+
+
     }
 
     .summary-label {
 
-        color: #6c757d;
 
-        font-size: 13px;
+        color: var(--text-muted);
+
+        font-size: 0.85rem;
+
+        font-weight: 600;
 
         text-transform: uppercase;
 
-        letter-spacing: 1px;
+        letter-spacing: 0.6px;
 
-        margin-bottom: 5px;
+
     }
 
     .summary-value {
 
-        font-size: 28px;
+        margin-top: 5px;
 
-        font-weight: 700;
+        font-size: 1.55rem;
 
-        color: #212529;
+        font-weight: 800;
+
+        color: var(--dark);
+
     }
+
+    /* =========================================================
+SECTION CARDS
+========================================================= */
 
     .section-card {
 
-        background: white;
+        overflow: hidden;
 
-        border: none;
+        margin-bottom: 32px;
 
-        border-radius: 18px;
+        border: 1px solid var(--border);
+
+        border-radius: var(--radius);
+
+        background: var(--card-bg);
 
         box-shadow: var(--shadow);
 
-        margin-bottom: 25px;
+        animation:
 
-        overflow: hidden;
+            sectionEntrance 0.8s ease both;
+
+        transition:
+
+            transform 0.35s ease,
+            box-shadow 0.35s ease;
+
+    }
+
+    .section-card:hover {
+
+        box-shadow: var(--shadow-hover);
+
     }
 
     .section-header {
 
-        padding: 18px 25px;
-
-        color: white;
-
-        font-weight: 700;
-
-        font-size: 18px;
+        position: relative;
 
         display: flex;
 
         align-items: center;
 
-        gap: 10px;
+        gap: 12px;
+
+        padding: 20px 26px;
+
+        color: white;
+
+        font-size: 1.15rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.4px;
+
+        overflow: hidden;
+
     }
 
-    .section-body {
-        padding: 25px;
-    }
+    .section-header::after {
 
-    .bg-load {
-        background: #0d6efd;
-    }
+        content: "";
 
-    .bg-battery {
-        background: #ffc107;
-        color: #212529 !important;
-    }
+        position: absolute;
 
-    .bg-panel {
-        background: #198754;
-    }
+        top: 0;
 
-    .bg-inverter {
-        background: #dc3545;
-    }
+        left: -100%;
 
-    .bg-controller {
-        background: #0dcaf0;
-    }
-
-    .bg-cable {
-        background: #212529;
-    }
-
-    .bg-protection {
-        background: #6c757d;
-    }
-
-    .info-card {
-
-        background: #f8f9fa;
-
-        border-radius: 15px;
-
-        padding: 20px;
+        width: 100%;
 
         height: 100%;
 
-        border-left: 5px solid #0d6efd;
+        background:
+
+            linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.18),
+                transparent);
+
+        animation:
+
+            headerSweep 5s ease-in-out infinite;
+
+    }
+
+    .section-header i {
+
+        font-size: 1.3rem;
+
+    }
+
+    .bg-load {
+
+        background:
+
+            linear-gradient(135deg,
+                #0d6efd,
+                #084298);
+
+    }
+
+    .bg-battery {
+
+        background:
+
+            linear-gradient(135deg,
+                #198754,
+                #087f5b);
+
+    }
+
+    .section-body {
+
+        padding: 30px;
+
+    }
+
+    /* =========================================================
+INFO CARDS
+========================================================= */
+
+    .info-card {
+
+        position: relative;
+
+        height: 100%;
+
+        padding: 22px;
+
+        border-radius: 18px;
+
+        background:
+
+            linear-gradient(135deg,
+                #ffffff,
+                #f8fafc);
+
+        border: 1px solid var(--border);
+
+        transition: 0.3s ease;
+
+    }
+
+    .info-card:hover {
+
+        transform: translateY(-6px);
+
+        border-color:
+
+            rgba(13,
+                110,
+                253,
+                0.35);
+
+        box-shadow:
+
+            0 12px 30px rgba(13,
+                110,
+                253,
+                0.1);
+
     }
 
     .info-title {
 
-        font-size: 12px;
+        color: var(--text-muted);
 
-        color: #6c757d;
+        font-size: 0.8rem;
+
+        font-weight: 700;
 
         text-transform: uppercase;
 
-        margin-bottom: 8px;
+        letter-spacing: 0.8px;
 
-        letter-spacing: 1px;
     }
 
     .info-value {
 
-        font-size: 18px;
+        margin-top: 8px;
 
-        font-weight: 600;
+        color: var(--dark);
 
-        color: #212529;
+        font-size: 1.35rem;
 
-        word-wrap: break-word;
+        font-weight: 800;
+
     }
 
-    .status-ok {
+    /* =========================================================
+EQUIPMENT CARDS
+========================================================= */
+
+    .equipment-card {
+
+        height: 100%;
+
+        padding: 28px;
+
+        text-align: center;
+
+        border-radius: 20px;
+
+        border: 1px solid var(--border);
+
+        background:
+
+            linear-gradient(145deg,
+                #ffffff,
+                #f8fafc);
+
+        transition: 0.35s ease;
+
+    }
+
+    .equipment-card:hover {
+
+        transform:
+
+            translateY(-8px);
+
+        box-shadow: var(--shadow-hover);
+
+    }
+
+    .equipment-icon {
 
         display: inline-flex;
 
@@ -293,99 +696,693 @@
 
         justify-content: center;
 
-        min-width: 110px;
+        width: 75px;
 
-        padding: 8px 14px;
+        height: 75px;
 
-        border-radius: 30px;
+        border-radius: 22px;
 
-        background: #198754;
+        color: var(--primary);
 
-        color: #fff;
+        background:
 
-        font-size: 13px;
+            rgba(13,
+                110,
+                253,
+                0.1);
 
-        font-weight: 600;
+        font-size: 2rem;
+
+        animation:
+
+            equipmentFloat 4s ease-in-out infinite;
 
     }
 
+    /* =========================================================
+TABLES
+========================================================= */
+
+    .table-modern {
+
+        overflow: hidden;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+        border-radius: 15px;
+
+    }
+
+    .table-modern thead th {
+
+        padding: 16px;
+
+        color: white;
+
+        background:
+
+            linear-gradient(135deg,
+                #1e293b,
+                #334155);
+
+        border: none;
+
+        font-size: 0.82rem;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.5px;
+
+    }
+
+    .table-modern tbody td {
+
+        padding: 16px;
+
+        border-bottom: 1px solid rgba(148,
+                163,
+                184,
+                0.18);
+
+    }
+
+    .table-modern tbody tr {
+
+        transition: 0.25s ease;
+
+    }
+
+    .table-modern tbody tr:hover {
+
+        background:
+
+            rgba(13,
+                110,
+                253,
+                0.045);
+
+        transform:
+
+            translateX(4px);
+
+    }
+
+    .table tbody tr:last-child td {
+
+        border-bottom: none;
+
+    }
+
+    /* =========================================================
+PROGRESS BARS
+========================================================= */
+
+    .progress {
+
+        overflow: hidden;
+
+        border-radius: 50px;
+
+        background: #e2e8f0 !important;
+
+        box-shadow:
+
+            inset 0 2px 5px rgba(0, 0, 0, 0.08);
+
+    }
+
+    .progress-bar {
+
+        position: relative;
+
+        border-radius: 50px;
+
+        background:
+
+            linear-gradient(90deg,
+                #198754,
+                #20c997);
+
+        background-size: 200% 100%;
+
+        animation:
+
+            progressGlow 3s ease infinite;
+
+    }
+
+    .progress-bar::after {
+
+        content: "";
+
+        position: absolute;
+
+        top: 0;
+
+        left: -100%;
+
+        width: 70%;
+
+        height: 100%;
+
+        background:
+
+            linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.35),
+                transparent);
+
+        animation:
+
+            progressSweep 3s infinite;
+
+    }
+
+    /* =========================================================
+STATUS BADGES
+========================================================= */
+
+    .status-ok,
     .status-missing {
 
         display: inline-flex;
 
         align-items: center;
 
-        justify-content: center;
+        gap: 5px;
 
-        min-width: 110px;
+        padding: 7px 12px;
 
-        padding: 8px 14px;
+        border-radius: 50px;
 
-        border-radius: 30px;
+        font-size: 0.78rem;
 
-        background: #dc3545;
-
-        color: #fff;
-
-        font-size: 13px;
-
-        font-weight: 600;
+        font-weight: 700;
 
     }
 
-    .status-column {
+    .status-ok {
 
-        width: 160px;
+        color: #087f5b;
 
-        text-align: center;
+        background:
 
-        vertical-align: middle;
+            rgba(32,
+                201,
+                151,
+                0.13);
 
     }
 
-    .table-modern {
+    .status-missing {
 
-        width: 100%;
+        color: #b02a37;
+
+        background:
+
+            rgba(220,
+                53,
+                69,
+                0.12);
+
     }
 
-    .table-modern th {
+    /* =========================================================
+BUTTONS
+========================================================= */
 
-        background: #f8f9fa;
-
-        font-weight: 600;
-
-        border: none;
-
-        padding: 14px;
-    }
-
-    .table-modern td {
-
-        padding: 14px;
-
-        vertical-align: middle;
-    }
-
-    .alert-engineering {
-
-        border: none;
-
-        border-left: 6px solid #dc3545;
+    .btn {
 
         border-radius: 12px;
+
+        transition:
+
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
+
     }
 
-    @media(max-width:768px) {
+    .btn:hover {
 
-        .summary-value {
+        transform: translateY(-3px);
 
-            font-size: 22px;
+    }
+
+    .btn-light {
+
+        box-shadow:
+
+            0 10px 25px rgba(0, 0, 0, 0.15);
+
+    }
+
+    .btn-light:hover {
+
+        box-shadow:
+
+            0 15px 35px rgba(0, 0, 0, 0.25);
+
+    }
+
+    /* =========================================================
+CARD TABLES
+========================================================= */
+
+    .card {
+
+        border: 1px solid var(--border);
+
+        border-radius: var(--radius);
+
+        overflow: hidden;
+
+        transition: 0.35s ease;
+
+    }
+
+    .card:hover {
+
+        transform: translateY(-5px);
+
+        box-shadow: var(--shadow-hover) !important;
+
+    }
+
+    .card-header {
+
+        border: none;
+
+        padding: 20px 25px;
+
+    }
+
+    /* =========================================================
+HORIZONTAL RULE
+========================================================= */
+
+    hr {
+
+        border: none;
+
+        height: 1px;
+
+        margin: 25px 0;
+
+        background:
+
+            linear-gradient(90deg,
+                transparent,
+                rgba(148, 163, 184, 0.4),
+                transparent);
+
+    }
+
+    /* =========================================================
+ACCESSORIES TABLE
+========================================================= */
+
+    .result-card {
+
+        overflow: hidden;
+
+        border-radius: var(--radius);
+
+    }
+
+    .result-card .card-header {
+
+        background:
+
+            linear-gradient(135deg,
+                #ffc107,
+                #e0a800);
+
+    }
+
+    .result-card table tfoot tr {
+
+        font-size: 1.05rem;
+
+    }
+
+    /* =========================================================
+SCROLLBAR
+========================================================= */
+
+    ::-webkit-scrollbar {
+
+        width: 9px;
+
+    }
+
+    ::-webkit-scrollbar-track {
+
+        background: #e2e8f0;
+
+    }
+
+    ::-webkit-scrollbar-thumb {
+
+        border-radius: 20px;
+
+        background:
+
+            linear-gradient(#0d6efd,
+                #20c997);
+
+    }
+
+    /* =========================================================
+ANIMATIONS
+========================================================= */
+
+    @keyframes reportEntrance {
+
+        from {
+
+            opacity: 0;
+
+            transform:
+
+                translateY(-25px);
+
+        }
+
+        to {
+
+            opacity: 1;
+
+            transform:
+
+                translateY(0);
+
+        }
+
+
+    }
+
+    @keyframes cardEntrance {
+
+        from {
+
+            opacity: 0;
+
+            transform:
+
+                translateY(30px);
+
+        }
+
+        to {
+
+            opacity: 1;
+
+            transform:
+
+                translateY(0);
+
+        }
+
+
+    }
+
+    @keyframes sectionEntrance {
+
+        from {
+
+            opacity: 0;
+
+            transform:
+
+                translateY(40px);
+
+        }
+
+        to {
+
+            opacity: 1;
+
+            transform:
+
+                translateY(0);
+
+        }
+
+
+    }
+
+    @keyframes solarPulse {
+
+        0%,
+        100% {
+
+            transform: scale(1);
+
+            filter:
+
+                drop-shadow(0 0 0 rgba(255, 193, 7, 0));
+
+        }
+
+        50% {
+
+            transform: scale(1.12);
+
+            filter:
+
+                drop-shadow(0 0 12px rgba(255, 193, 7, 0.8));
+
+        }
+
+
+    }
+
+    @keyframes rotateGlow {
+
+        from {
+
+            transform:
+
+                rotate(0deg);
+
+        }
+
+        to {
+
+            transform:
+
+                rotate(360deg);
+
+        }
+
+
+    }
+
+    @keyframes headerSweep {
+
+        0% {
+
+            left: -100%;
+
+        }
+
+        40%,
+        100% {
+
+            left: 100%;
+
+        }
+
+
+    }
+
+    @keyframes progressSweep {
+
+        0% {
+
+            left: -100%;
+
+        }
+
+        60%,
+        100% {
+
+            left: 120%;
+
+        }
+
+
+    }
+
+    @keyframes progressGlow {
+
+        0%,
+        100% {
+
+            background-position: 0% 50%;
+
+        }
+
+        50% {
+
+            background-position: 100% 50%;
+
+        }
+
+
+    }
+
+    @keyframes equipmentFloat {
+
+        0%,
+        100% {
+
+            transform:
+
+                translateY(0);
+
+        }
+
+        50% {
+
+            transform:
+
+                translateY(-7px);
+
+        }
+
+
+    }
+
+    /* =========================================================
+RESPONSIVE DESIGN
+========================================================= */
+
+    @media (max-width: 992px) {
+
+        .report-container {
+
+            padding-left: 18px !important;
+
+            padding-right: 18px !important;
+
+        }
+
+        .report-banner {
+
+            padding: 30px;
+
         }
 
         .report-title {
 
             font-size: 1.5rem;
+
         }
+
+        .section-body {
+
+            padding: 22px;
+
+        }
+
+
+    }
+
+    @media (max-width: 576px) {
+
+        .report-banner {
+
+            padding: 25px 20px;
+
+            border-radius: 20px;
+
+        }
+
+        .report-title {
+
+            font-size: 1.25rem;
+
+        }
+
+        .report-subtitle {
+
+            font-size: 0.9rem;
+
+        }
+
+        .report-meta {
+
+            flex-direction: column;
+
+            align-items: flex-start;
+
+        }
+
+        .report-meta-item {
+
+            width: 100%;
+
+        }
+
+        .summary-body {
+
+            padding: 20px;
+
+        }
+
+        .summary-value {
+
+            font-size: 1.25rem;
+
+        }
+
+        .section-header {
+
+            padding: 17px 20px;
+
+            font-size: 1rem;
+
+        }
+
+        .section-body {
+
+            padding: 16px;
+
+        }
+
+        .table {
+
+            font-size: 0.85rem;
+
+        }
+
+
+    }
+
+    /* =========================================================
+REDUCED MOTION ACCESSIBILITY
+========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+
+            animation-duration: 0.01ms !important;
+
+            animation-iteration-count: 1 !important;
+
+            transition-duration: 0.01ms !important;
+
+            scroll-behavior: auto !important;
+
+        }
+
+
     }
 </style>
 
@@ -799,7 +1796,7 @@
 
                             <td class="text-center">
 
-                                {{ result.load.running_load }}
+                                {{ result.load.load_watts }}
 
                                 W
 
@@ -844,6 +1841,8 @@
 
             <div class="row mt-4">
 
+                <!-- TOTAL APPLIANCES -->
+
                 <div class="col-md-3">
 
                     <div class="info-card">
@@ -864,13 +1863,41 @@
 
                 </div>
 
+
+                <!-- TOTAL RUNNING LOAD -->
+
                 <div class="col-md-3">
 
                     <div class="info-card">
 
                         <div class="info-title">
 
-                            Motor Load
+                            Total Running Load
+
+                        </div>
+
+                        <div class="info-value">
+
+                            {{ result.load.load_watts|floatformat:0 }}
+
+                            W
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MOTOR LOAD -->
+
+                <div class="col-md-3">
+
+                    <div class="info-card">
+
+                        <div class="info-title">
+
+                            Motor / Compressor Load
 
                         </div>
 
@@ -885,6 +1912,9 @@
                     </div>
 
                 </div>
+
+
+                <!-- RESISTIVE LOAD -->
 
                 <div class="col-md-3">
 
@@ -901,26 +1931,6 @@
                             {{ result.load.resistive_load|floatformat:0 }}
 
                             W
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <div class="info-card">
-
-                        <div class="info-title">
-
-                            Diversity Factor
-
-                        </div>
-
-                        <div class="info-value">
-
-                            {{ result.load.diversity_factor }}
 
                         </div>
 

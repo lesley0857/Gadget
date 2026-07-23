@@ -1,63 +1,79 @@
+# solar/views.py
+
 import traceback
 
 from django.shortcuts import render, redirect
 
 from .forms import SolarCalculatorForm
 
-from .models import (
-
-    Appliance,
-    DesignSetting,
-
+from .models import (Appliance,
+DesignSetting,
 )
 
-from .services.load_engine import calculate_load
+from .services.load_engine import (
+calculate_load,
+)
 
-from .services.battery_engine import calculate_battery_bank
+from .services.system_voltage_engine import (
+determine_system_voltage,
+)
 
-from .services.panel_engine import calculate_panels
+from .services.battery_engine import (
+calculate_battery_bank,
+)
 
-from .services.inverter_engine import select_inverter
+from .services.panel_engine import (
+calculate_panels,
+)
 
-from .services.controller_engine import select_controller
+from .services.inverter_engine import (
+select_inverter,
+)
+
+from .services.controller_engine import (
+select_controller,
+)
 
 from .services.cable_engine import (
-
-    calculate_dc_cable,
-    calculate_ac_cable,
-    battery_cable,
-    earth_cable,
-
+calculate_dc_cable,
+calculate_ac_cable,
+battery_cable,
+earth_cable,
 )
 
 from .services.protection_engine import (
-    pv_fuse, ac_breaker, battery_breaker, select_ac_spd,
-    select_dc_spd, pv_isolator,ac_isolator 
+pv_fuse,
+ac_breaker,
+battery_breaker,
+select_ac_spd,
+select_dc_spd,
+pv_isolator,
+ac_isolator,
 )
 
 from .services.accessories_engine import (
-    build_accessories
+build_accessories,
 )
 
 from .services.boq_engine import (
-    generate_boq
+generate_boq,
 )
 
 from .services.pricing_engine import (
-    calculate_pricing
+calculate_pricing,
 )
 
 from .services.warning_engine import (
-    build_warnings
+build_warnings,
 )
 
-
 ###############################################################
+
 # JSON SAFE CONVERTER
+
 ###############################################################
 
 def make_json_safe(data):
-
     if isinstance(data, dict):
 
         return {
@@ -67,6 +83,7 @@ def make_json_safe(data):
             for key, value in data.items()
 
         }
+
 
     if isinstance(data, list):
 
@@ -78,25 +95,36 @@ def make_json_safe(data):
 
         ]
 
+
     if hasattr(data, "_meta"):
 
         return str(data)
+
 
     try:
 
         return float(data)
 
-    except Exception:
+    except (
+
+        TypeError,
+
+        ValueError,
+
+    ):
 
         return data
-    
+
 ###############################################################
-# ADMIN LOADS
+
+# BUILD ADMIN LOADS
+
 ###############################################################
 
 def build_admin_loads(request):
 
     loads = []
+
 
     appliance_ids = request.POST.getlist(
         "appliance_id"
@@ -110,7 +138,11 @@ def build_admin_loads(request):
         "hours"
     )
 
-    for i, appliance_id in enumerate(appliance_ids):
+
+    for index, appliance_id in enumerate(
+        appliance_ids
+    ):
+
 
         try:
 
@@ -122,6 +154,45 @@ def build_admin_loads(request):
 
             continue
 
+
+        try:
+
+            quantity = float(
+                quantities[index]
+            )
+
+        except (
+
+            IndexError,
+
+            TypeError,
+
+            ValueError,
+
+        ):
+
+            quantity = 1
+
+
+        try:
+
+            operating_hours = float(
+                hours[index]
+            )
+
+        except (
+
+            IndexError,
+
+            TypeError,
+
+            ValueError,
+
+        ):
+
+            operating_hours = 0
+
+
         loads.append({
 
             "name":
@@ -131,29 +202,32 @@ def build_admin_loads(request):
                 appliance.wattage,
 
             "qty":
-                float(
-                    quantities[i]
-                ),
+                quantity,
 
             "hours":
-                float(
-                    hours[i]
-                ),
+                operating_hours,
 
             "surge":
                 appliance.surge_factor,
+            "load_type": appliance.load_type,
 
+            "starting_type": appliance.starting_type,
         })
+
 
     return loads
 
-###############################################################
-# CUSTOM LOADS
+
+
 ###############################################################
 
+# BUILD CUSTOM LOADS
+
+###############################################################
 def build_custom_loads(request):
 
     loads = []
+
 
     names = request.POST.getlist(
         "custom_name"
@@ -163,54 +237,187 @@ def build_custom_loads(request):
         "custom_watts"
     )
 
-    qty = request.POST.getlist(
+    quantities = request.POST.getlist(
         "custom_qty"
     )
 
-    hrs = request.POST.getlist(
+    hours = request.POST.getlist(
         "custom_hours"
     )
 
-    for i, name in enumerate(names):
+    surge_factors = request.POST.getlist(
+        "custom_surge"
+    )
 
-        if not name:
+    load_types = request.POST.getlist(
+        "custom_load_type"
+    )
+
+    starting_types = request.POST.getlist(
+        "custom_starting_type"
+    )
+
+
+    for index, name in enumerate(names):
+
+
+        if not name.strip():
 
             continue
+
+
+        #######################################################
+        # BASIC VALUES
+        #######################################################
+
+        try:
+
+            wattage = float(
+
+                watts[index]
+
+            )
+
+            quantity = float(
+
+                quantities[index]
+
+            )
+
+            operating_hours = float(
+
+                hours[index]
+
+            )
+
+        except (
+
+            IndexError,
+
+            TypeError,
+
+            ValueError,
+
+        ):
+
+            continue
+
+
+        #######################################################
+        # SURGE FACTOR
+        #######################################################
+
+        try:
+
+            surge_factor = float(
+
+                surge_factors[index]
+
+            )
+
+        except (
+
+            IndexError,
+
+            TypeError,
+
+            ValueError,
+
+        ):
+
+            surge_factor = 1
+
+
+        #######################################################
+        # LOAD TYPE
+        #######################################################
+
+        try:
+
+            load_type = (
+
+                load_types[index]
+
+                or
+
+                "resistive"
+
+            ).lower()
+
+        except IndexError:
+
+            load_type = "resistive"
+
+
+        #######################################################
+        # STARTING TYPE
+        #######################################################
+
+        try:
+
+            starting_type = (
+
+                starting_types[index]
+
+                or
+
+                "single"
+
+            ).lower()
+
+        except IndexError:
+
+            starting_type = "single"
+
+
+        #######################################################
+        # STORE LOAD
+        #######################################################
 
         loads.append({
 
             "name":
-                name,
+
+                name.strip(),
 
             "watts":
-                float(
-                    watts[i]
-                ),
+
+                wattage,
 
             "qty":
-                float(
-                    qty[i]
-                ),
+
+                quantity,
 
             "hours":
-                float(
-                    hrs[i]
-                ),
+
+                operating_hours,
 
             "surge":
-                1,
+
+                surge_factor,
+
+            "load_type":
+
+                load_type,
+
+            "starting_type":
+
+                starting_type,
 
         })
+
 
     return loads
 
 ###############################################################
-# BUILD LOAD LIST
+
+# BUILD COMPLETE LOAD LIST
+
 ###############################################################
 
 def build_loads(request):
-
     loads = []
+
 
     loads.extend(
 
@@ -220,6 +427,7 @@ def build_loads(request):
 
     )
 
+
     loads.extend(
 
         build_custom_loads(
@@ -228,22 +436,26 @@ def build_loads(request):
 
     )
 
+
     return loads
 
-###############################################################
-# SOLAR CALCULATOR
-###############################################################
 
+    ###############################################################
+
+    # SOLAR CALCULATOR
+
+    ###############################################################
 
 def solar_calculator(request):
 
-    ###############################################################
-    # INITIAL PAGE
-    ###############################################################
 
-    appliances = Appliance.objects.filter(popular=True)
+    appliances = Appliance.objects.filter(
+        popular=True
+    )
+
 
     form = SolarCalculatorForm()
+
 
     if request.method != "POST":
 
@@ -255,19 +467,21 @@ def solar_calculator(request):
 
             {
 
-                "form": form,
+                "form":
+                    form,
 
-                "appliances": appliances,
+                "appliances":
+                    appliances,
 
             }
 
         )
 
-    ###############################################################
-    # VALIDATE FORM
-    ###############################################################
 
-    form = SolarCalculatorForm(request.POST)
+    form = SolarCalculatorForm(
+        request.POST
+    )
+
 
     if not form.is_valid():
 
@@ -279,348 +493,586 @@ def solar_calculator(request):
 
             {
 
-                "form": form,
+                "form":
+                    form,
 
-                "appliances": appliances,
+                "appliances":
+                    appliances,
 
             }
 
         )
 
+
     try:
 
-        ###########################################################
+
+        #######################################################
         # LOAD ENGINE
-        ###########################################################
+        #######################################################
 
-        loads = build_loads(request)
 
-        load = calculate_load(loads)
+        loads = build_loads(
+            request
+        )
 
-        ###########################################################
+        print("\n========== INPUT LOADS ==========")
+        print(loads)
+        print("=================================\n")
+
+
+        if not loads:
+
+            raise ValueError(
+
+                "At least one appliance or custom load "
+                "is required."
+
+            )
+
+
+        load_result = calculate_load(
+            loads
+        )
+
+        print("\n========== LOAD ENGINE RESULT ==========")
+        print(load_result)
+        print("========================================\n")
+
+
+        #######################################################
         # DESIGN SETTINGS
-        ###########################################################
+        #######################################################
+
 
         settings = DesignSetting.objects.first()
 
+
         if settings is None:
 
-            raise Exception(
+            raise ValueError(
 
                 "Design settings have not been configured."
 
             )
 
-        ###########################################################
-        # USER COMPONENTS
-        ###########################################################
 
-        battery = form.cleaned_data["battery"]
+        #######################################################
+        # USER INPUTS
+        #######################################################
 
-        panel = form.cleaned_data["panel"]
 
-        autonomy = form.cleaned_data["autonomy"]
+        battery = form.cleaned_data.get(
+            "battery"
+        )
 
-        peak_sun_hours = form.cleaned_data["peak_sun_hours"]
 
-        ###########################################################
+        panel = form.cleaned_data.get(
+            "panel"
+        )
+
+
+        peak_sun_hours = form.cleaned_data.get(
+            "peak_sun_hours"
+        )
+
+
+        operating_mode = form.cleaned_data.get(
+
+            "operating_mode",
+
+            "off_grid"
+
+        )
+
+
+        #######################################################
+        # SYSTEM VOLTAGE ENGINE
+        #######################################################
+
+
+        system_voltage_result = determine_system_voltage(
+            load_result
+        )
+
+
+        if not system_voltage_result.get(
+            "success"
+        ):
+
+            raise ValueError(
+
+                system_voltage_result.get(
+
+                    "message",
+
+                    "System voltage selection failed."
+
+                )
+
+            )
+
+
+        system_voltage = (
+
+            system_voltage_result.get(
+
+                "system_voltage"
+
+        )
+
+    )
+        
+        if not system_voltage:
+
+            raise ValueError(
+
+                "System voltage could not be determined."
+
+            )
+
+
+        #######################################################
         # BATTERY ENGINE
-        ###########################################################
+        #######################################################
+
 
         battery_result = calculate_battery_bank(
 
-            load_watts=load["load_watts"],
+            load_watts=load_result.get(
 
-            daily_energy=load["daily_energy_wh"],
+                "load_watts",
 
-            autonomy_days=autonomy,
+                0
+
+            ),
+
+            daily_energy=load_result.get(
+
+                "daily_energy_wh",
+
+                0
+
+            ),
 
             battery=battery,
 
-            inverter_efficiency=battery.efficiency,
+            system_voltage=system_voltage,
+
+            inverter_efficiency=(
+
+                battery.efficiency
+
+                if battery
+
+                else 0.95
+
+            ),
+
+            operating_mode=operating_mode,
 
         )
 
-                ###########################################################
+
+        if not battery_result.get(
+            "success"
+        ):
+
+            raise ValueError(
+
+                battery_result.get(
+
+                    "message",
+
+                    "Battery design failed."
+
+                )
+
+            )
+
+
+        #######################################################
         # PANEL ENGINE
-        ###########################################################
+        #######################################################
+
 
         panel_result = calculate_panels(
 
-            daily_energy=load["daily_energy_wh"],
+            daily_energy=load_result.get(
+
+                "daily_energy_wh",
+
+                0
+
+            ),
 
             peak_sun_hours=peak_sun_hours,
 
-            performance_ratio=settings.performance_ratio,
+            performance_ratio=(
+
+                settings.performance_ratio
+
+            ),
 
             panel=panel,
 
-            battery_voltage=battery_result["required"]["system_voltage"],
+            battery_voltage=system_voltage,
 
-            oversize_factor=settings.future_expansion,
+            oversize_factor=(
+
+                settings.future_expansion
+
+            ),
 
         )
 
-        print("\n===== PANEL RESULT =====")
-        print(panel_result)
-        print("========================\n")
+
+        if not panel_result.get(
+            "success"
+        ):
+
+            raise ValueError(
+
+                panel_result.get(
+
+                    "message",
+
+                    "Solar panel design failed."
+
+                )
+
+            )
 
 
-        ###########################################################
+        #######################################################
+        # PANEL VALUES
+        #######################################################
+
+
+        panel_data = panel_result.get(
+            "selected"
+        )
+
+
+        panel_required = panel_result.get(
+
+            "required",
+
+            {}
+
+        )
+
+
+        panel_source = (
+
+            panel_data
+
+            if panel_data
+
+            else panel_required
+
+        )
+
+
+        panel_quantity = panel_source.get(
+
+            "quantity",
+
+            0
+
+        )
+
+
+        array_voltage = panel_source.get(
+
+            "array_voltage",
+
+            0
+
+        )
+
+
+        array_current = panel_source.get(
+
+            "array_current",
+
+            0
+
+        )
+
+
+        array_power = panel_source.get(
+
+            "installed_power",
+
+            0
+
+        )
+
+
+        array_isc = panel_source.get(
+
+            "array_isc",
+
+            0
+
+        )
+
+
+        corrected_voc = panel_source.get(
+
+            "corrected_voc",
+
+            0
+
+        )
+
+
+        #######################################################
         # INVERTER ENGINE
-        ###########################################################
+        #######################################################
+
 
         inverter_result = select_inverter(
 
-            running_load=load["load_watts"],
+            running_load=load_result.get(
 
-            surge_load=load["surge_watts"],
+                "load_watts",
 
-            battery_voltage=battery_result["required"]["system_voltage"]
+                0
+
+            ),
+
+            surge_load=load_result.get(
+
+                "surge_watts",
+
+                0
+
+            ),
+
+            battery_voltage=system_voltage,
 
         )
 
-        if not inverter_result["success"]:
+
+        if not inverter_result.get(
+            "success"
+        ):
 
             inverter_result["message"] = (
-                "No inverter currently exists in stock that satisfies "
-                "the calculated engineering requirement. "
-                "The required inverter specification is shown below and "
-                "can be supplied on demand."
+
+                "No inverter currently exists in stock "
+                "that satisfies the calculated engineering "
+                "requirements. The required specification "
+                "is shown below."
+
             )
 
 
-        ###########################################################
+        #######################################################
+        # INVERTER POWER
+        #######################################################
+
+
+        inverter_required = inverter_result.get(
+
+            "required",
+
+            {}
+
+        )
+
+
+        inverter_selected = inverter_result.get(
+
+            "selected"
+
+        )
+
+
+        inverter_power = inverter_required.get(
+
+            "continuous_power",
+
+            0
+
+        )
+
+
+        if inverter_selected:
+
+            inverter_power = inverter_selected.get(
+
+                "rated_power",
+
+                inverter_power
+
+            )
+
+
+        #######################################################
         # CONTROLLER ENGINE
-        ###########################################################
+        #######################################################
+
 
         controller_result = select_controller(
 
-            battery_voltage=battery_result["required"]["system_voltage"],
+            battery_voltage=system_voltage,
 
-            array_voltage=panel_result["selected"]["array_voltage"],
+            array_voltage=array_voltage,
 
-            array_current=panel_result["selected"]["array_current"],
+            array_current=array_current,
 
-            array_power=panel_result["selected"]["installed_power"],
+            array_power=array_power,
 
         )
 
-        if not controller_result["success"]:
+
+        if not controller_result.get(
+            "success"
+        ):
 
             controller_result["message"] = (
-                "No compatible charge controller is currently available. "
-                "The required controller specification has been calculated "
-                "and can be supplied on demand."
+
+                "No compatible charge controller is "
+                "currently available. The required "
+                "specification is shown below."
+
             )
 
 
-        ###########################################################
-        # SAFE VALUES
-        ###########################################################
-
-        selected_inverter = inverter_result.get("selected")
-        required_inverter = inverter_result.get("required")
-
-        selected_controller = controller_result.get("selected")
-        required_controller = controller_result.get("required")
-
-
-        ###########################################################
+        #######################################################
         # CABLE DESIGN
-        ###########################################################
+        #######################################################
+
 
         pv_cable = calculate_dc_cable(
 
-            current=panel_result["selected"]["array_current"],
+            current=array_current,
 
-            voltage=panel_result["selected"]["array_voltage"],
+            voltage=array_voltage,
 
-            distance=form.cleaned_data["pv_distance"],
+            distance=form.cleaned_data[
+                "pv_distance"
+            ],
 
         )
 
-
-        ###########################################################
-        # BATTERY CABLE
-        ###########################################################
 
         battery_cable_result = battery_cable(
 
-            inverter_power=(
-                selected_inverter["rated_power"]
-                if selected_inverter
-                else required_inverter["continuous_power"]
-            ),
+            inverter_power=inverter_power,
 
-            battery_voltage=battery_result["required"]["system_voltage"],
+            battery_voltage=system_voltage,
 
-            distance=form.cleaned_data["battery_distance"],
+            distance=form.cleaned_data[
+                "battery_distance"
+            ],
 
         )
 
-
-        ###########################################################
-        # AC CABLE
-        ###########################################################
 
         ac_cable = calculate_ac_cable(
 
-            power=(
-                selected_inverter["rated_power"]
-                if selected_inverter
-                else required_inverter["continuous_power"]
-            ),
+            power=inverter_power,
 
             voltage=230,
 
-            distance=form.cleaned_data["ac_distance"],
+            distance=form.cleaned_data[
+                "ac_distance"
+            ],
 
         )
 
-
-        ###########################################################
-        # EARTH CABLE
-        ###########################################################
 
         earth = earth_cable(
 
-            phase_size=ac_cable["required"]["size"],
+            phase_size=ac_cable[
 
-            distance=form.cleaned_data["ac_distance"],
+                "required"
 
-        )
+            ][
 
-        print("\n========== CABLE DEBUG ==========")
+                "size"
 
-        print(panel_result)
+            ],
 
-        print(inverter_result)
+            distance=form.cleaned_data[
 
-        print(controller_result)
+                "ac_distance"
 
-        print(battery_result)
-
-        print("================================\n")
-        ###########################################################
-        # SYSTEM VOLTAGE
-        ###########################################################
-
-        system_voltage = battery_result["required"]["system_voltage"]
-
-        ###########################################################
-        # PANEL ENGINE
-        ###########################################################
-
-        panel_result = calculate_panels(
-
-            daily_energy=load["daily_energy_wh"],
-
-            peak_sun_hours=peak_sun_hours,
-
-            performance_ratio=settings.performance_ratio,
-
-            panel=panel,
-
-            battery_voltage=system_voltage,
-
-            oversize_factor=settings.future_expansion,
+            ],
 
         )
 
-        ###########################################################
-        # INVERTER ENGINE
-        ###########################################################
 
-        inverter_result = select_inverter(
+        #######################################################
+        # PROTECTION DEVICES
+        #######################################################
 
-            running_load=load["load_watts"],
 
-            surge_load=load["surge_watts"],
+        protection = {
 
-            battery_voltage=system_voltage,
 
-        )
+            "pv_fuse": pv_fuse(
 
-        ###########################################################
-        # CONTROLLER ENGINE
-        ###########################################################
+                array_isc
 
-        controller_result = select_controller(
+            ),
 
-            battery_voltage=system_voltage,
 
-            array_voltage=panel_result["required"]["array_voltage"],
+            "battery_breaker": battery_breaker(
 
-            array_current=panel_result["required"]["array_current"],
+                inverter_power,
 
-            array_power=panel_result["required"]["installed_power"],
+                system_voltage,
 
-        )
+            ),
 
-        ###########################################################
-        # ENGINEERING VALUES
-        # (Used when products are unavailable)
-        ###########################################################
 
-        battery_quantity = battery_result["required"]["quantity"]
+            "ac_breaker": ac_breaker(
 
-        panel_quantity = panel_result["required"]["quantity"]
+                inverter_power
 
-        inverter_power = inverter_result["required"]["continuous_power"]
+            ),
 
-        array_voltage = panel_result["required"]["array_voltage"]
 
-        array_current = panel_result["required"]["array_current"]
+            "dc_spd": select_dc_spd(
 
-        array_power = panel_result["required"]["installed_power"]
+                corrected_voc
 
-        array_isc = panel_result["required"]["array_isc"]
+            ),
 
-        corrected_voc = panel_result["required"]["corrected_voc"]
 
-        ###########################################################
-        # DATABASE PRODUCTS (IF AVAILABLE)
-        ###########################################################
+            "ac_spd": select_ac_spd(),
 
-        selected_battery = battery_result.get("selected")
 
-        selected_panel = panel_result.get("selected")
+            "pv_isolator": pv_isolator(
 
-        selected_inverter = inverter_result.get("selected")
+                array_current,
 
-        selected_controller = controller_result.get("selected")
+                corrected_voc,
 
-        ###########################################################
-        # OVERRIDE REQUIRED VALUES
-        # WITH ACTUAL SELECTED PRODUCTS
-        ###########################################################
+            ),
 
-        if selected_battery:
 
-            battery_quantity = selected_battery["quantity"]
+            "ac_isolator": ac_isolator(
 
-        if selected_panel:
+                inverter_power
 
-            panel_quantity = selected_panel["quantity"]
+            ),
 
-            array_voltage = selected_panel["array_voltage"]
+        }
 
-            array_current = selected_panel["array_current"]
 
-            array_power = selected_panel["installed_power"]
-
-            array_isc = selected_panel["array_isc"]
-
-            corrected_voc = selected_panel["corrected_voc"]
-
-        if selected_inverter:
-
-            inverter_power = selected_inverter["rated_power"]
-
-        ###########################################################
+        #######################################################
         # ENGINEERING VALIDATION
-        ###########################################################
+        #######################################################
+
+
+        engineering_messages = []
+
 
         engines = [
 
@@ -640,155 +1092,138 @@ def solar_calculator(request):
 
             earth,
 
-        ]
-
-        ###########################################################
-        # PROTECTION DEVICES
-        ###########################################################
-
-        protection = {
-
-            "pv_fuse":
-
-                pv_fuse(
-                    panel_result["selected"]["array_isc"]
-                ),
-
-            "battery_breaker":
-
-                battery_breaker(
-
-                    selected_inverter["rated_power"]
-                    if selected_inverter
-                    else required_inverter["continuous_power"],
-
-                    battery_result["required"]["system_voltage"],
-
-                ),
-
-            "ac_breaker":
-
-                ac_breaker(
-
-                    selected_inverter["rated_power"]
-                    if selected_inverter
-                    else required_inverter["continuous_power"]
-
-                ),
-
-            "dc_spd":
-
-                select_dc_spd(
-
-                    panel_result["selected"]["corrected_voc"]
-
-                ),
-
-            "ac_spd":
-
-                select_ac_spd(),
-
-            "pv_isolator":
-
-                pv_isolator(
-
-                    panel_result["selected"]["array_current"],
-
-                    panel_result["selected"]["corrected_voc"],
-
-                ),
-
-            "ac_isolator":
-
-                ac_isolator(
-
-                    selected_inverter["rated_power"]
-                    if selected_inverter
-                    else required_inverter["continuous_power"]
-
-                ),
-
-        }
-
-        ###########################################################
-        # EQUIPMENT VALIDATION
-        ###########################################################
-
-        equipment = [
-
-            pv_cable,
-
-            battery_cable_result,
-
-            ac_cable,
-
-            earth,
-
             *protection.values(),
 
         ]
 
-        engineering_messages = []
 
-        for item in equipment:
+        for engine in engines:
 
-            if not item["success"]:
 
-                engineering_messages.append(item["message"])
+            if not engine:
 
-        ###########################################################
+                continue
+
+
+            if not engine.get(
+
+                "success",
+
+                True
+
+            ):
+
+                engineering_messages.append(
+
+                    engine.get(
+
+                        "message",
+
+                        "Engineering calculation failed."
+
+                    )
+
+                )
+
+
+        #######################################################
         # ACCESSORIES
-        ###########################################################
+        #######################################################
+
+
+        selected_battery = battery_result.get(
+
+            "selected"
+
+        )
+
+
+        battery_quantity = (
+
+            selected_battery.get(
+
+                "quantity",
+
+                0
+
+            )
+
+            if selected_battery
+
+            else battery_result.get(
+
+                "required",
+
+                {}
+
+            ).get(
+
+                "quantity",
+
+                0
+
+            )
+
+        )
+
 
         accessories = build_accessories(
 
-            panel_quantity=panel_result["selected"]["quantity"],
+            panel_quantity=panel_quantity,
 
-            battery_quantity=battery_result["selected"]["quantity"],
+            battery_quantity=battery_quantity,
 
-            pv_distance=form.cleaned_data["pv_distance"],
+            pv_distance=form.cleaned_data[
 
-            battery_distance=form.cleaned_data["battery_distance"],
+                "pv_distance"
 
-            ac_distance=form.cleaned_data["ac_distance"],
+            ],
+
+            battery_distance=form.cleaned_data[
+
+                "battery_distance"
+
+            ],
+
+            ac_distance=form.cleaned_data[
+
+                "ac_distance"
+
+            ],
 
         )
 
-        ###########################################################
+
+        #######################################################
         # BILL OF QUANTITIES
-        ###########################################################
+        #######################################################
+
 
         boq = generate_boq(
 
-            panel_count=panel_result["selected"]["quantity"],
+            panel_count=panel_quantity,
 
-            battery_count=battery_result["selected"]["quantity"],
+            battery_count=battery_quantity,
 
-            inverter_power=(
-
-                selected_inverter["rated_power"]
-
-                if selected_inverter
-
-                else required_inverter["continuous_power"]
-
-            ),
+            inverter_power=inverter_power,
 
         )
 
-        ###########################################################
+
+        #######################################################
         # PRICING
-        ###########################################################
+        #######################################################
+
 
         pricing = calculate_pricing(
 
             battery=battery,
 
-            battery_qty=battery_result["selected"]["quantity"],
+            battery_qty=battery_quantity,
 
             panel=panel,
 
-            panel_qty=panel_result["selected"]["quantity"],
+            panel_qty=panel_quantity,
 
             inverter=inverter_result,
 
@@ -798,95 +1233,210 @@ def solar_calculator(request):
 
             cables=[
 
-                pv_cable.get("selected"),
+                pv_cable.get(
 
-                battery_cable_result.get("selected"),
+                    "selected"
 
-                ac_cable.get("selected"),
+                ),
 
-                earth.get("selected"),
+                battery_cable_result.get(
+
+                    "selected"
+
+                ),
+
+                ac_cable.get(
+
+                    "selected"
+
+                ),
+
+                earth.get(
+
+                    "selected"
+
+                ),
 
             ],
 
-            protections=list(protection.values()),
+            protections=list(
 
-            accessories=accessories["items"],
+                protection.values()
 
-            boq=boq["items"],
+            ),
+
+            accessories=accessories.get(
+
+                "items",
+
+                []
+
+            ),
+
+            boq=boq.get(
+
+                "items",
+
+                []
+
+            ),
 
         )
 
-        ###########################################################
-        # RESULT
-        ###########################################################
+
+        #######################################################
+        # FINAL RESULT
+        #######################################################
+
 
         result = {
 
-            "load": load,
 
-            "battery": battery_result,
+            "load":
 
-            "panel": panel_result,
+                load_result,
 
-            "inverter": inverter_result,
 
-            "controller": controller_result,
+            "system_voltage":
 
-            "pv_cable": pv_cable,
+                system_voltage_result,
 
-            "battery_cable": battery_cable_result,
 
-            "ac_cable": ac_cable,
+            "battery":
 
-            "earth_cable": earth,
+                battery_result,
 
-            "protection": protection,
 
-            "accessories": accessories,
+            "panel":
 
-            "boq": boq,
+                panel_result,
 
-            "pricing": pricing,
 
-            "loads": loads,
+            "inverter":
 
-            "battery_name": str(battery),
+                inverter_result,
 
-            "panel_name": str(panel),
 
-            "engineering_messages": engineering_messages,
+            "controller":
+
+                controller_result,
+
+
+            "pv_cable":
+
+                pv_cable,
+
+
+            "battery_cable":
+
+                battery_cable_result,
+
+
+            "ac_cable":
+
+                ac_cable,
+
+
+            "earth_cable":
+
+                earth,
+
+
+            "protection":
+
+                protection,
+
+
+            "accessories":
+
+                accessories,
+
+
+            "boq":
+
+                boq,
+
+
+            "pricing":
+
+                pricing,
+
+
+            "loads":
+
+                loads,
+
+
+            "battery_name":
+
+                str(battery)
+
+                if battery
+
+                else "",
+
+
+            "panel_name":
+
+                str(panel)
+
+                if panel
+
+                else "",
+
+
+            "system_voltage_value":
+
+                system_voltage,
+
+
+            "engineering_messages":
+
+                engineering_messages,
 
         }
 
-        ###########################################################
+
+        #######################################################
         # GLOBAL WARNINGS
-        ###########################################################
+        #######################################################
 
-        result["warnings"] = build_warnings(result)
 
-        ###############################################################
-        # RESULTS
-        ###############################################################
+        result["warnings"] = build_warnings(
 
-        ###########################################################
-        # SAVE RESULT
-        ###########################################################
+            result
 
-        request.session["solar_result"] = make_json_safe(result)
+        )
 
-        ###########################################################
-        # REDIRECT TO RESULT PAGE
-        ###########################################################
 
-        return redirect("result")
+        #######################################################
+        # SAVE SESSION
+        #######################################################
 
-        ###############################################################
-        # EXCEPTION
-        ###############################################################
 
-    except Exception as e:
+        request.session[
+
+            "solar_result"
+
+        ] = make_json_safe(
+
+            result
+
+        )
+
+
+        return redirect(
+
+            "result"
+
+        )
+
+
+    except Exception as error:
+
 
         traceback.print_exc()
+
 
         return render(
 
@@ -896,34 +1446,57 @@ def solar_calculator(request):
 
             {
 
-                    "form": form,
+                "form":
 
-                    "appliances": appliances,
+                    form,
 
-                    "error": (
-                        "An unexpected error occurred while generating the "
-                        "solar design. Please try again or contact support."
+                "appliances":
+
+                    appliances,
+
+                "error":
+
+                    (
+
+                        "An unexpected error occurred while "
+                        "generating the solar design. "
+                        "Please try again."
+
                     ),
 
-                    # Optional: useful during development
-                    "debug_error": str(e),
+                "debug_error":
 
-                },
+                    str(error),
 
-            )
+            }
 
+        )
+
+
+
+###############################################################
+
+# SOLAR RESULT
+
+###############################################################
 
 def solar_result(request):
 
     result = request.session.get(
+
         "solar_result"
+
     )
+
 
     if not result:
 
         return redirect(
+
             "solar_calculator"
+
         )
+
 
     return render(
 
@@ -933,29 +1506,38 @@ def solar_result(request):
 
         {
 
-            "result": result,
+            "result":
 
-        },
+                result,
+
+        }
 
     )
 
 
-
 ###############################################################
-# QUOTATION
+
+# SOLAR QUOTATION
+
 ###############################################################
 
 def solar_quotation(request):
 
     result = request.session.get(
+
         "solar_result"
+
     )
+
 
     if not result:
 
         return redirect(
+
             "solar_calculator"
+
         )
+
 
     return render(
 
@@ -965,8 +1547,11 @@ def solar_quotation(request):
 
         {
 
-            "result": result,
+            "result":
 
-        },
+                result,
+
+        }
 
     )
+

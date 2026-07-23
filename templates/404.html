@@ -1,364 +1,619 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    /* =========================================================
+   REMAROBE 404 — INDUSTRIAL POWER FAILURE
+    ========================================================= */
+
+    :root {
+        --power-blue: #38bdf8;
+        --electric-blue: #2563eb;
+        --energy-yellow: #facc15;
+        --danger-red: #ef4444;
+        --dark-bg: #020617;
+        --panel-bg: rgba(15, 23, 42, 0.72);
+        --border: rgba(148, 163, 184, 0.16);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        overflow: hidden;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: white;
+
+        background:
+            radial-gradient(circle at 20% 20%,
+                rgba(37, 99, 235, 0.22),
+                transparent 30%),
+            radial-gradient(circle at 80% 80%,
+                rgba(239, 68, 68, 0.15),
+                transparent 30%),
+            linear-gradient(135deg,
+                #020617,
+                #0f172a 50%,
+                #111827);
+
+        position: relative;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    /* =========================================================
+   ANIMATED GRID
+========================================================= */
+
+    .grid-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+
+        background-image:
+            linear-gradient(rgba(56, 189, 248, 0.045) 1px,
+                transparent 1px),
+            linear-gradient(90deg,
+                rgba(56, 189, 248, 0.045) 1px,
+                transparent 1px);
+
+        background-size: 55px 55px;
+
+        animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 55px 55px;
+        }
+    }
+
+    /* =========================================================
+   ELECTRIC VERTICAL LINES
+========================================================= */
+
+    .electric-line {
+        position: fixed;
+        top: -20%;
+        width: 2px;
+        height: 140vh;
+
+        background:
+            linear-gradient(to bottom,
+                transparent,
+                var(--power-blue),
+                transparent);
+
+        opacity: 0.18;
+
+        filter: blur(1px);
+
+        animation: energyFlow 4s ease-in-out infinite;
+    }
+
+    .line1 {
+        left: 18%;
+    }
+
+    .line2 {
+        left: 50%;
+        animation-delay: 1.3s;
+    }
+
+    .line3 {
+        left: 82%;
+        animation-delay: 2.5s;
+    }
+
+    @keyframes energyFlow {
+
+        0%,
+        100% {
+            opacity: 0.08;
+            transform: translateY(-40px) scaleY(0.8);
+        }
+
+        50% {
+            opacity: 0.8;
+            transform: translateY(40px) scaleY(1);
+        }
+    }
+
+    /* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+    .error-container {
+        position: relative;
+        z-index: 10;
+
+        min-height: 100vh;
+        width: 100%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        padding: 25px;
+
+        animation: pageEnter 1s ease-out;
+    }
+
+    @keyframes pageEnter {
+
+        from {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* =========================================================
+   GLASS ERROR PANEL
+========================================================= */
+
+    .error-box {
+        position: relative;
+
+        width: 100%;
+        max-width: 900px;
+
+        padding: 70px 60px;
+
+        text-align: center;
+
+        background:
+            linear-gradient(145deg,
+                rgba(30, 41, 59, 0.8),
+                rgba(15, 23, 42, 0.55));
+
+        border: 1px solid var(--border);
+
+        border-radius: 32px;
+
+        backdrop-filter: blur(22px);
+
+        box-shadow:
+            0 30px 100px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08),
+            0 0 80px rgba(37, 99, 235, 0.08);
+
+        overflow: hidden;
+
+        animation: panelFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes panelFloat {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+
+    .error-box::before {
+        content: "";
+
+        position: absolute;
+        inset: -2px;
+
+        background:
+            linear-gradient(120deg,
+                transparent 20%,
+                rgba(56, 189, 248, 0.25),
+                transparent 50%);
+
+        animation: panelLight 7s linear infinite;
+
+        pointer-events: none;
+    }
+
+    @keyframes panelLight {
+
+        from {
+            transform: translateX(-100%);
+        }
+
+        to {
+            transform: translateX(100%);
+        }
+    }
+
+    /* =========================================================
+   ELECTRIC ICON
+========================================================= */
+
+    .electric-icon {
+        position: relative;
+
+        width: 135px;
+        height: 135px;
+
+        margin: 0 auto 30px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(circle,
+                rgba(250, 204, 21, 0.18),
+                rgba(37, 99, 235, 0.08),
+                transparent 70%);
+
+        border: 1px solid rgba(250, 204, 21, 0.35);
+
+        box-shadow:
+            0 0 25px rgba(250, 204, 21, 0.15),
+            0 0 70px rgba(37, 99, 235, 0.25);
+
+        animation: iconPulse 2.5s ease-in-out infinite;
+    }
+
+    .electric-icon::before,
+    .electric-icon::after {
+        content: "";
+
+        position: absolute;
+
+        inset: -12px;
+
+        border-radius: 50%;
+
+        border: 1px solid rgba(56, 189, 248, 0.25);
+
+        animation: orbit 5s linear infinite;
+    }
+
+    .electric-icon::after {
+        inset: -24px;
+
+        border-color: rgba(239, 68, 68, 0.15);
+
+        animation-duration: 8s;
+
+        animation-direction: reverse;
+    }
+
+    .electric-icon i {
+        font-size: 68px;
+
+        color: var(--energy-yellow);
+
+        filter:
+            drop-shadow(0 0 10px rgba(250, 204, 21, 0.8));
+
+        animation: lightningFlash 1.8s infinite;
+    }
+
+    @keyframes iconPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes orbit {
+
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes lightningFlash {
+
+        0%,
+        90%,
+        100% {
+            opacity: 1;
+        }
+
+        93% {
+            opacity: 0.3;
+        }
+
+        96% {
+            opacity: 0.8;
+        }
+    }
+
+    /* =========================================================
+   ERROR CODE
+========================================================= */
+
+    .error-code {
+        position: relative;
+
+        font-size: clamp(90px, 15vw, 160px);
+
+        font-weight: 900;
+
+        line-height: 0.9;
+
+        letter-spacing: -8px;
+
+        background:
+            linear-gradient(120deg,
+                #ffffff,
+                #7dd3fc,
+                #2563eb);
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        filter:
+            drop-shadow(0 0 25px rgba(56, 189, 248, 0.25));
+
+        margin-bottom: 25px;
+
+        animation: codeGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes codeGlow {
+
+        0%,
+        100% {
+            filter:
+                drop-shadow(0 0 20px rgba(56, 189, 248, 0.2));
+        }
+
+        50% {
+            filter:
+                drop-shadow(0 0 45px rgba(56, 189, 248, 0.5));
+        }
+    }
+
+    .error-title {
+        font-size: clamp(28px, 5vw, 44px);
+
+        font-weight: 800;
+
+        margin-bottom: 20px;
+
+        letter-spacing: -1px;
+    }
+
+    .error-description {
+        max-width: 650px;
+
+        margin: 0 auto 40px;
+
+        color: #cbd5e1;
+
+        font-size: 18px;
+
+        line-height: 1.8;
+    }
+
+    /* =========================================================
+   BUTTONS
+========================================================= */
+
+    .error-actions {
+        display: flex;
+
+        justify-content: center;
+
+        flex-wrap: wrap;
+
+        gap: 18px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        position: relative;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 10px;
+
+        min-width: 190px;
+
+        padding: 16px 28px;
+
+        border-radius: 14px;
+
+        font-size: 15px;
+
+        font-weight: 700;
+
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease,
+            background 0.3s ease;
+
+        overflow: hidden;
+    }
+
+    .primary-btn {
+        color: white;
+
+        background:
+            linear-gradient(135deg,
+                #2563eb,
+                #1d4ed8);
+
+        box-shadow:
+            0 10px 30px rgba(37, 99, 235, 0.3);
+    }
+
+    .primary-btn:hover {
+        color: white;
+
+        transform: translateY(-5px);
+
+        box-shadow:
+            0 15px 40px rgba(37, 99, 235, 0.5);
+    }
+
+    .secondary-btn {
+        color: #e2e8f0;
+
+        border: 1px solid rgba(148, 163, 184, 0.25);
+
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .secondary-btn:hover {
+        color: white;
+
+        transform: translateY(-5px);
+
+        background: rgba(255, 255, 255, 0.1);
+
+        border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    /* =========================================================
+   FLOATING PARTICLES
+========================================================= */
+
+    .particle {
+        position: fixed;
+
+        width: 5px;
+        height: 5px;
+
+        border-radius: 50%;
+
+        background: var(--power-blue);
+
+        box-shadow:
+            0 0 12px var(--power-blue);
+
+        opacity: 0.5;
+
+        animation: particleFloat 10s linear infinite;
+    }
+
+    .particle:nth-child(1) {
+        top: 80%;
+        left: 15%;
+    }
+
+    .particle:nth-child(2) {
+        top: 70%;
+        left: 35%;
+
+        animation-delay: 2s;
+    }
+
+    .particle:nth-child(3) {
+        top: 50%;
+        left: 80%;
+
+        animation-delay: 4s;
+    }
+
+    .particle:nth-child(4) {
+        top: 25%;
+        left: 70%;
+
+        animation-delay: 6s;
+    }
+
+    @keyframes particleFloat {
+
+        0% {
+            transform: translateY(0) scale(0.5);
+            opacity: 0;
+        }
+
+        30% {
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: translateY(-180px) scale(1.2);
+            opacity: 0;
+        }
+    }
+
+    /* =========================================================
+   MOBILE
+========================================================= */
+
+    @media (max-width: 768px) {
+
+        body {
+            overflow-y: auto;
+        }
+
+        .error-container {
+            padding: 18px;
+        }
+
+        .error-box {
+            padding: 50px 25px;
+            border-radius: 24px;
+        }
+
+        .electric-icon {
+            width: 100px;
+            height: 100px;
+        }
+
+        .electric-icon i {
+            font-size: 50px;
+        }
+
+        .error-code {
+            letter-spacing: -4px;
+        }
+
+        .error-description {
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .error-actions {
+            flex-direction: column;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            width: 100%;
+        }
+    }
+</style>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Power Interrupted | Remarobe</title>
-
-    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background:
-                radial-gradient(circle at top, rgba(220, 38, 38, 0.15), transparent 40%),
-                linear-gradient(135deg, #0F172A, #111827);
-            min-height: 100vh;
-            overflow: hidden;
-            font-family: "Segoe UI", sans-serif;
-            color: white;
-            position: relative;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        /* =========================
-        BACKGROUND GRID
-        ========================= */
-
-        .grid-bg {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 1;
-        }
-
-        /* =========================
-        ELECTRIC LINES
-        ========================= */
-
-        .electric-line {
-            position: absolute;
-            width: 2px;
-            height: 100vh;
-            background: linear-gradient(to bottom,
-                    transparent,
-                    rgba(59, 130, 246, 0.7),
-                    transparent);
-            animation: pulseLine 3s linear infinite;
-            opacity: 0.3;
-        }
-
-        .line1 {
-            left: 20%;
-            animation-delay: 0s;
-        }
-
-        .line2 {
-            left: 50%;
-            animation-delay: 1s;
-        }
-
-        .line3 {
-            left: 80%;
-            animation-delay: 2s;
-        }
-
-        @keyframes pulseLine {
-            0% {
-                opacity: 0.1;
-                transform: scaleY(0.8);
-            }
-
-            50% {
-                opacity: 0.7;
-                transform: scaleY(1);
-            }
-
-            100% {
-                opacity: 0.1;
-                transform: scaleY(0.8);
-            }
-        }
-
-        /* =========================
-        MAIN CONTAINER
-        ========================= */
-
-        .error-container {
-            position: relative;
-            z-index: 10;
-
-            width: 100%;
-            min-height: 100vh;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            padding: 20px;
-        }
-
-        .error-box {
-            width: 100%;
-            max-width: 850px;
-
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(14px);
-
-            border: 1px solid rgba(255, 255, 255, 0.08);
-
-            border-radius: 30px;
-
-            padding: 60px 50px;
-
-            text-align: center;
-
-            box-shadow:
-                0 0 50px rgba(0, 0, 0, 0.4),
-                0 0 30px rgba(220, 38, 38, 0.1);
-        }
-
-        /* =========================
-        LIGHTNING ICON
-        ========================= */
-
-        .electric-icon {
-            width: 120px;
-            height: 120px;
-
-            margin: 0 auto 30px;
-
-            border-radius: 50%;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            background:
-                radial-gradient(circle,
-                    rgba(59, 130, 246, 0.25),
-                    rgba(220, 38, 38, 0.15));
-
-            border: 2px solid rgba(255, 255, 255, 0.1);
-
-            animation: glow 2s infinite alternate;
-        }
-
-        .electric-icon i {
-            font-size: 60px;
-            color: #FACC15;
-            animation: flash 1.5s infinite;
-        }
-
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-            }
-
-            to {
-                box-shadow:
-                    0 0 40px rgba(59, 130, 246, 0.6),
-                    0 0 70px rgba(220, 38, 38, 0.3);
-            }
-        }
-
-        @keyframes flash {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.4;
-            }
-        }
-
-        /* =========================
-        404 TEXT
-        ========================= */
-
-        .error-code {
-            font-size: 140px;
-            font-weight: 900;
-            line-height: 1;
-
-            background: linear-gradient(90deg, #ffffff, #60A5FA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-
-            margin-bottom: 10px;
-        }
-
-        .error-title {
-            font-size: 38px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .error-description {
-            color: #CBD5E1;
-            font-size: 18px;
-            line-height: 1.8;
-
-            max-width: 650px;
-            margin: 0 auto 40px;
-        }
-
-        /* =========================
-        BUTTONS
-        ========================= */
-
-        .error-actions {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 18px;
-        }
-
-        .primary-btn,
-        .secondary-btn {
-            padding: 15px 28px;
-            border-radius: 12px;
-
-            font-size: 15px;
-            font-weight: 600;
-
-            transition: 0.3s ease;
-        }
-
-        .primary-btn {
-            background: #DC2626;
-            color: white;
-        }
-
-        .primary-btn:hover {
-            background: #B91C1C;
-            transform: translateY(-3px);
-        }
-
-        .secondary-btn {
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-3px);
-        }
-
-        /* =========================
-        FLOATING PARTICLES
-        ========================= */
-
-        .particle {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-
-            background: #60A5FA;
-            border-radius: 50%;
-
-            opacity: 0.6;
-
-            animation: floatParticle 10s linear infinite;
-        }
-
-        .particle:nth-child(1) {
-            top: 10%;
-            left: 15%;
-            animation-duration: 8s;
-        }
-
-        .particle:nth-child(2) {
-            top: 70%;
-            left: 25%;
-            animation-duration: 10s;
-        }
-
-        .particle:nth-child(3) {
-            top: 50%;
-            left: 80%;
-            animation-duration: 12s;
-        }
-
-        .particle:nth-child(4) {
-            top: 20%;
-            left: 70%;
-            animation-duration: 9s;
-        }
-
-        @keyframes floatParticle {
-            0% {
-                transform: translateY(0px);
-                opacity: 0;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(-120px);
-                opacity: 0;
-            }
-        }
-
-        /* =========================
-        MOBILE
-        ========================= */
-
-        @media(max-width:768px) {
-
-            .error-box {
-                padding: 40px 25px;
-            }
-
-            .electric-icon {
-                width: 90px;
-                height: 90px;
-            }
-
-            .electric-icon i {
-                font-size: 45px;
-            }
-
-            .error-code {
-                font-size: 90px;
-            }
-
-            .error-title {
-                font-size: 28px;
-            }
-
-            .error-description {
-                font-size: 15px;
-            }
-
-            .error-actions {
-                flex-direction: column;
-            }
-
-            .primary-btn,
-            .secondary-btn {
-                width: 100%;
-            }
-        }
-    </style>
 </head>
 
 <body>

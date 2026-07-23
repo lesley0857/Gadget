@@ -16,11 +16,11 @@ class SolarCalculatorForm(forms.Form):
     # SYSTEM SETTINGS
     ##################################
 
-    autonomy = forms.IntegerField(
-        initial=1,
-        min_value=1,
-        label="Battery Autonomy (Days)"
-    )
+    # autonomy = forms.IntegerField(
+    #     initial=1,
+    #     min_value=1,
+    #     label="Battery Autonomy (Days)"
+    # )
 
     peak_sun_hours = forms.FloatField(
         initial=5,
@@ -66,4 +66,19 @@ class SolarCalculatorForm(forms.Form):
     ac_distance = forms.FloatField(
         initial=15,
         label="AC Cable Distance (m)"
+    )
+
+    operating_mode = forms.ChoiceField(
+        choices=[
+            ("off_grid", "Off-grid"),
+            ("solar_battery", "Solar + battery"),
+            ("backup", "Backup"),
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-select"
+            }
+        ),
+        initial="solar_battery",
+        label="System Operating Mode"
     )

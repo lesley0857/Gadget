@@ -16,6 +16,12 @@ from blog.views import *
 from solar.views import *
 from logistics.views import *
 
+from django.contrib import admin
+
+admin.site.site_header = "REMAROBE Administration"
+admin.site.site_title = "REMAROBE Admin"
+admin.site.index_title = "Welcome to REMAROBE Administration"
+
 handler404 = "accounts.views.custom_404"
 
 urlpatterns = [
