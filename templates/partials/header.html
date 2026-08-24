@@ -247,10 +247,7 @@ TOP HEADER
             </a>
 
             {% endif %}
-            <a href="{% url 'solar_calculator' %}">
-                <i class="fa fa-user-plus"></i>
-                Solar Calculator
-            </a>
+            <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle day or night theme" title="Toggle day or night theme"><i class="fa fa-moon-o"></i></button>
         </div>
 
     </div>
@@ -389,6 +386,16 @@ NAVIGATION
 
             {% endfor %}
 
+            <li class="tools-menu">
+                <a href="{% url 'solar_design' %}">Tools <i class="fa fa-chevron-down"></i></a>
+                <ul class="tools-dropdown">
+                    <li><a href="{% url 'solar_design' %}">Solar Calculator</a></li>
+                    <li><a href="{% url 'tool_in_progress' %}">Load Calculator <small>In progress</small></a></li>
+                    <li><a href="{% url 'tool_in_progress' %}">Cable Sizing Calculator <small>In progress</small></a></li>
+                    <li><a href="{% url 'tool_in_progress' %}">Battery Backup Calculator <small>In progress</small></a></li>
+                </ul>
+            </li>
+
 
 
         </ul>
@@ -396,6 +403,15 @@ NAVIGATION
     </div>
 
 </nav>
+
+<script>
+(() => {
+  const key = "remarobe-theme", root = document.documentElement, toggle = document.getElementById("theme-toggle");
+  const apply = value => { root.dataset.theme = value; localStorage.setItem(key, value); if (toggle) toggle.innerHTML = value === "night" ? '<i class="fa fa-sun-o"></i>' : '<i class="fa fa-moon-o"></i>'; };
+  apply(localStorage.getItem(key) || "day");
+  toggle?.addEventListener("click", () => apply(root.dataset.theme === "night" ? "day" : "night"));
+})();
+</script>
 
 <!-- =========================
 STYLES
@@ -411,6 +427,16 @@ GENERAL
         background: #F9FAFB;
         overflow-x: hidden;
     }
+
+    .theme-toggle { border:0; background:transparent; color:inherit; cursor:pointer; font-size:16px; padding:4px 8px; }
+    .tools-menu { position:relative; }
+    .tools-dropdown { display:none; position:absolute; top:100%; left:0; min-width:230px; padding:8px 0; margin:0; list-style:none; background:#fff; box-shadow:0 10px 28px rgba(0,0,0,.14); z-index:10001; }
+    .tools-menu:hover .tools-dropdown, .tools-menu:focus-within .tools-dropdown { display:block; }
+    .tools-dropdown a { display:block; padding:10px 14px; white-space:nowrap; }
+    .tools-dropdown small { color:#777; margin-left:6px; }
+    html[data-theme="night"] body, html[data-theme="night"] #main-header, html[data-theme="night"] #navigation { background:#121826; color:#e5e7eb; }
+    html[data-theme="night"] .tools-dropdown { background:#1f2937; }
+    html[data-theme="night"] .tools-dropdown a, html[data-theme="night"] #navigation a { color:#e5e7eb; }
 
     body.nav-open {
         overflow: hidden;

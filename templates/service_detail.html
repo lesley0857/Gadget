@@ -62,11 +62,11 @@
 
                 <div class="service-actions">
 
-                    <a href="#rfq-section" class="primary-btn">
+                    <a href="#rfq-section" class="primary-btn" title="Jump to the quote request form">
                         Request Quote
                     </a>
 
-                    <a href="{% url 'services' %}" class="secondary-btn">
+                    <a href="{% url 'services' %}" class="secondary-btn" title="View all available services">
                         All Services
                     </a>
 
@@ -331,17 +331,17 @@
 
                         <div class="rfq-grid">
 
-                            <input type="text" placeholder="Full Name" name="name">
+                            <input type="text" placeholder="Full Name" name="name" title="Enter your full name" required>
 
-                            <input type="email" placeholder="Email Address" name="email">
+                            <input type="email" placeholder="Email Address" name="email" title="Enter an email address we can reply to" required>
 
-                            <input type="text" placeholder="Phone Number" name="phone">
+                            <input type="text" placeholder="Phone Number" name="phone" title="Enter a phone number for follow-up" required>
 
-                            <input type="text" placeholder="Company Name" name="company">
+                            <input type="text" placeholder="Company Name" name="company" title="Optional: enter your company name">
 
                         </div>
 
-                        <textarea placeholder="Project Description" name="message"></textarea>
+                        <textarea placeholder="Project Description" name="message" title="Describe your project requirements" required></textarea>
 
                         <div class="upload-box">
 
@@ -353,11 +353,11 @@
 
                             </label>
 
-                            <input type="file" id="document-upload" name="document">
+                            <input type="file" id="document-upload" name="document" title="Optional: upload drawings, a BOQ, or technical files">
 
                         </div>
 
-                        <button type="submit" class="rfq-btn">
+                        <button type="submit" class="rfq-btn" title="Send your request for quotation">
                             Submit Request
                         </button>
 
@@ -448,6 +448,7 @@ HERO
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center;
         transform: scale(1.05);
     }
 
@@ -730,6 +731,20 @@ GALLERY GRID
         grid-template-columns: repeat(4, 1fr);
         gap: 24px;
         margin-top: 30px;
+    }
+
+    .gallery-media {
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: #E5E7EB;
+    }
+
+    .gallery-media img,
+    .gallery-media video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
     }
 
     /* LARGE TABLETS */

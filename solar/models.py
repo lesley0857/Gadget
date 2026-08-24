@@ -1,24 +1,66 @@
+# solar/models.py
+#
+# ================================================================
+# INTEGRATION NOTE — READ BEFORE APPLYING
+# ================================================================
+#
+# Every model that used to carry its OWN commercial fields
+# (brand, model, price, active) has been converted into a
+# "*Specification" model holding ONLY engineering data, linked
+# 1:1 to the marketplace's ProductListing, which now owns all
+# commercial data (name, vendor, price, stock, images, active).
+#
+# REPLACE "marketplace" BELOW WITH YOUR ACTUAL APP LABEL
+# (the app that contains ProductListing) if it isn't "marketplace".
+# It appears once, as PRODUCT_LISTING_MODEL, and is referenced by
+# every OneToOneField below.
+#
+# Appliance, DesignSetting and BOQItem are UNCHANGED — they are not
+# physical catalog products (Appliance is load-profile reference
+# data; BOQItem is a generic labour/material line; DesignSetting is
+# a commercial-settings profile). They can be integrated later the
+# same way if you decide they should also be sellable listings.
+#
+# ================================================================
+
 from django.db import models
+from django.conf import settings
+
+PRODUCT_LISTING_MODEL = "catalog.ProductListing"  # <-- confirm/adjust
 
 
-#################################################
-# APPLIANCES
-#################################################
+# ================================================================
+# APPLIANCES (unchanged — load-profile reference data, not a
+# sellable catalog item)
+# ================================================================
 
 class Appliance(models.Model):
 
     LOAD_TYPES = (
-    ("resistive", "Resistive"),
-    ("motor", "Motor"),
-    ("compressor", "Compressor"),
-    ("electronics", "Electronics"),
-    ("lighting", "Lighting"),
-)
+        ("resistive", "Resistive"),
+        ("motor", "Motor"),
+        ("compressor", "Compressor"),
+        ("electronics", "Electronics"),
+        ("lighting", "Lighting"),
+    )
 
     STARTING_TYPES = (
         ("single", "Starts alone"),
         ("possible", "May start together"),
         ("simultaneous", "Can start simultaneously"),
+    )
+
+    name = models.CharField(max_length=100)
+
+    wattage = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    surge_factor = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=1,
     )
 
     load_type = models.CharField(
@@ -33,16 +75,10 @@ class Appliance(models.Model):
         default="single",
     )
 
-    name = models.CharField(max_length=100)
-
-    wattage = models.FloatField()
-
-    surge_factor = models.FloatField(default=1)
-
     category = models.CharField(
         max_length=30,
-        choices=LOAD_TYPES,
-        default='other'
+        blank=True,
+        default="",
     )
 
     popular = models.BooleanField(default=False)
@@ -51,619 +87,1032 @@ class Appliance(models.Model):
         return f"{self.name} ({self.wattage}W)"
 
 
-#################################################
-# BATTERIES
-#################################################
+# ================================================================
+# BATTERY SPECIFICATION
+# ================================================================
 
-class Battery(models.Model):
+class BatterySpecification(models.Model):
 
     BATTERY_TYPES = (
-        ('lead_acid', 'Lead Acid'),
-        ('lithium', 'Lithium'),
+        ("lead_acid", "Lead Acid"),
+        ("lithium", "Lithium"),
     )
 
-    brand = models.CharField(max_length=100)
-
-    model = models.CharField(max_length=100)
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="battery_spec",
+    )
 
     battery_type = models.CharField(
         max_length=20,
-        choices=BATTERY_TYPES
+        choices=BATTERY_TYPES,
     )
 
-    voltage = models.FloatField()
-
-    capacity_ah = models.FloatField()
-
-    depth_of_discharge = models.FloatField(
-        help_text="0.5 for lead acid, 0.95 for lithium"
-    )
-
-    efficiency = models.FloatField(
-        default=0.90
-    )
-
-    cycles = models.IntegerField(
-        default=3000
-    )
-
-    price = models.DecimalField(
-        max_digits=15,
+    voltage = models.DecimalField(
+        max_digits=8,
         decimal_places=2,
-        default=0
     )
 
-    active = models.BooleanField(
-        default=True
+    capacity_ah = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    depth_of_discharge = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+    )
+
+    efficiency = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=0.90,
+    )
+
+    max_discharge_current = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    max_charge_current = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    cycles = models.PositiveIntegerField(default=3000)
+
+    warranty_years = models.PositiveIntegerField(default=5)
+
+    weight = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
     )
 
     def __str__(self):
         return (
-            f"{self.brand} "
-            f"{self.model} "
-            f"{self.voltage}V "
-            f"{self.capacity_ah}Ah"
+            f"Battery spec — {self.product.name} "
+            f"{self.voltage}V {self.capacity_ah}Ah"
         )
 
 
-#################################################
-# SOLAR PANELS
-#################################################
+# ================================================================
+# SOLAR PANEL SPECIFICATION
+# ================================================================
 
-class SolarPanel(models.Model):
+class PanelSpecification(models.Model):
 
-    brand = models.CharField(max_length=100)
-
-    model = models.CharField(max_length=100)
-
-    power = models.FloatField()
-
-    vmp = models.FloatField()
-
-    voc = models.FloatField()
-
-    imp = models.FloatField()
-
-    isc = models.FloatField()
-
-    efficiency = models.FloatField(
-        default=0.21
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="panel_spec",
     )
 
-    price = models.DecimalField(
-        max_digits=15,
+    power = models.DecimalField(
+        max_digits=12,
         decimal_places=2,
-        default=0
     )
 
-    active = models.BooleanField(
-        default=True
+    vmp = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    voc = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    imp = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    isc = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    efficiency = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=0.21,
+    )
+
+    def __str__(self):
+        return f"Panel spec — {self.product.name} {self.power}W"
+
+
+# ================================================================
+# INVERTER SPECIFICATION
+# ================================================================
+
+class InverterSpecification(models.Model):
+
+    PHASES = (
+        ("single_phase", "Single Phase"),
+        ("three_phase", "Three Phase"),
+    )
+
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="inverter_spec",
+    )
+
+    rated_power = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    surge_power = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    dc_voltage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+    )
+
+    output_voltage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=230,
+    )
+
+    frequency = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=50,
+    )
+
+    phase = models.CharField(
+        max_length=20,
+        choices=PHASES,
+        default="single_phase",
+    )
+
+    efficiency = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=0.95,
+    )
+
+    hybrid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Inverter spec — {self.product.name} {self.rated_power}W"
+
+
+# ================================================================
+# CHARGE CONTROLLER SPECIFICATION
+# ================================================================
+
+class ControllerSpecification(models.Model):
+
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="controller_spec",
+    )
+
+    battery_voltage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+    )
+
+    max_pv_voltage = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    max_charge_current = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    efficiency = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=0.98,
     )
 
     def __str__(self):
         return (
-            f"{self.brand} "
-            f"{self.model} "
-            f"{self.power}W"
-        )
-
-
-#################################################
-# INVERTERS
-#################################################
-
-class Inverter(models.Model):
-
-    brand = models.CharField(max_length=100)
-
-    model = models.CharField(max_length=100)
-
-    rated_power = models.FloatField()
-
-    surge_power = models.FloatField()
-
-    dc_voltage = models.IntegerField()
-
-    efficiency = models.FloatField(
-        default=0.95
-    )
-
-    hybrid = models.BooleanField(
-        default=False
-    )
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0
-    )
-
-    active = models.BooleanField(
-        default=True
-    )
-
-    def __str__(self):
-        return (
-            f"{self.brand} "
-            f"{self.model} "
-            f"{self.rated_power}W"
-        )
-
-
-#################################################
-# MPPT CONTROLLERS
-#################################################
-
-class ChargeController(models.Model):
-
-    brand = models.CharField(max_length=100)
-
-    model = models.CharField(max_length=100)
-
-    battery_voltage = models.IntegerField()
-
-    max_pv_voltage = models.FloatField()
-
-    max_charge_current = models.FloatField()
-
-    efficiency = models.FloatField(
-        default=0.98
-    )
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0
-    )
-
-    active = models.BooleanField(
-        default=True
-    )
-
-    def __str__(self):
-        return (
-            f"{self.brand} "
-            f"{self.model} "
+            f"Controller spec — {self.product.name} "
             f"{self.max_charge_current}A"
         )
 
 
-#################################################
-# DESIGN SETTINGS
-#################################################
+# ================================================================
+# DESIGN SETTINGS (unchanged)
+# ================================================================
 
 class DesignSetting(models.Model):
 
     name = models.CharField(
         max_length=100,
-        unique=True
+        unique=True,
     )
 
-    peak_sun_hours = models.FloatField(
-        default=5
+    peak_sun_hours = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=5,
     )
 
-    performance_ratio = models.FloatField(
-        default=0.75
+    performance_ratio = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=0.75,
     )
 
-    future_expansion = models.FloatField(
-        default=1.2
+    future_expansion = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=1.20,
     )
 
-    installation_percentage = models.FloatField(
-        default=10
+    installation_percentage = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=10,
     )
 
-    profit_percentage = models.FloatField(
-        default=15
+    profit_percentage = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=15,
     )
 
-    vat_percentage = models.FloatField(
-        default=7.5
+    vat_percentage = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=7.5,
     )
 
     def __str__(self):
         return self.name
-    
 
-##############################################
-# CABLES
-##############################################
 
-class Cable(models.Model):
+# ================================================================
+# CABLE SPECIFICATION
+# ================================================================
+
+class CableSpecification(models.Model):
 
     CABLE_TYPES = (
-        ('pv', 'PV Cable'),
-        ('battery', 'Battery Cable'),
-        ('ac', 'AC Cable'),
-        ('earth', 'Earth Cable'),
+        ("pv", "PV Cable"),
+        ("battery", "Battery Cable"),
+        ("ac", "AC Cable"),
+        ("earth", "Earth Cable"),
     )
 
-    manufacturer = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="cable_spec",
     )
 
     cable_type = models.CharField(
         max_length=20,
-        choices=CABLE_TYPES
+        choices=CABLE_TYPES,
     )
 
-    size_mm = models.FloatField()
+    size_mm = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
 
-    ampacity = models.FloatField()
+    ampacity = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
 
-    voltage_rating = models.IntegerField(
+    voltage_rating = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
         blank=True,
-        null=True
-    )
-
-    price_per_meter = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
-    )
-
-    active = models.BooleanField(
-        default=True
-    )
-
-    created = models.DateTimeField(
-        auto_now_add=True
+        null=True,
     )
 
     def __str__(self):
-        return (
-            f"{self.name} "
-            f"{self.size_mm}mm²"
-        )
+        return f"Cable spec — {self.product.name} {self.size_mm}mm²"
 
-##############################################
-# FUSES
-##############################################
 
-class Fuse(models.Model):
+# ================================================================
+# FUSE SPECIFICATION
+# ================================================================
+
+class FuseSpecification(models.Model):
 
     FUSE_TYPES = (
-        ('pv', 'PV Fuse'),
-        ('battery', 'Battery Fuse'),
-        ('ac', 'AC Fuse'),
+        ("pv", "PV Fuse"),
+        ("battery", "Battery Fuse"),
+        ("ac", "AC Fuse"),
     )
 
-    manufacturer = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="fuse_spec",
     )
 
     fuse_type = models.CharField(
         max_length=20,
-        choices=FUSE_TYPES
+        choices=FUSE_TYPES,
     )
 
-    current_rating = models.FloatField()
-
-    voltage_rating = models.FloatField()
-
-    poles = models.IntegerField(
-        default=1
+    current_rating = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
     )
 
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
+    voltage_rating = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
     )
 
-    active = models.BooleanField(
-        default=True
-    )
+    poles = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return (
-            f"{self.name} "
-            f"{self.current_rating}A"
-        )
+        return f"Fuse spec — {self.product.name} {self.current_rating}A"
 
-##############################################
-# BREAKERS
-##############################################
 
-class Breaker(models.Model):
+# ================================================================
+# BREAKER SPECIFICATION
+# ================================================================
+
+class BreakerSpecification(models.Model):
 
     BREAKER_TYPES = (
-        ('ac', 'AC Breaker'),
-        ('dc', 'DC Breaker'),
+        ("ac", "AC Breaker"),
+        ("dc", "DC Breaker"),
     )
 
-    manufacturer = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="breaker_spec",
     )
 
     breaker_type = models.CharField(
         max_length=20,
-        choices=BREAKER_TYPES
+        choices=BREAKER_TYPES,
     )
 
-    current_rating = models.FloatField()
-
-    voltage_rating = models.FloatField()
-
-    poles = models.IntegerField()
-
-    breaking_capacity = models.IntegerField(
-        default=6000
+    current_rating = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
     )
 
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
+    voltage_rating = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
     )
 
-    active = models.BooleanField(
-        default=True
-    )
+    poles = models.PositiveIntegerField()
+
+    breaking_capacity = models.PositiveIntegerField(default=6000)
 
     def __str__(self):
-        return (
-            f"{self.name} "
-            f"{self.current_rating}A"
-        )
+        return f"Breaker spec — {self.product.name} {self.current_rating}A"
 
-##############################################
-# SURGE PROTECTION
-##############################################
 
-class SPD(models.Model):
+# ================================================================
+# SPD SPECIFICATION
+# ================================================================
+
+class SPDSpecification(models.Model):
 
     SPD_TYPES = (
-        ('ac', 'AC SPD'),
-        ('dc', 'DC SPD'),
+        ("ac", "AC SPD"),
+        ("dc", "DC SPD"),
     )
 
-    manufacturer = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="spd_spec",
     )
 
     spd_type = models.CharField(
         max_length=20,
-        choices=SPD_TYPES
+        choices=SPD_TYPES,
     )
 
-    voltage_rating = models.FloatField()
+    voltage_rating = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
 
     protection_level = models.CharField(
         max_length=100,
         blank=True,
-        null=True
-    )
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
-    )
-
-    active = models.BooleanField(
-        default=True
+        null=True,
     )
 
     def __str__(self):
-        return (
-            f"{self.name} "
-            f"{self.voltage_rating}V"
-        )
+        return f"SPD spec — {self.product.name} {self.voltage_rating}V"
 
-##############################################
-# ISOLATORS
-##############################################
 
-class Isolator(models.Model):
+# ================================================================
+# ISOLATOR SPECIFICATION
+# ================================================================
+
+class IsolatorSpecification(models.Model):
 
     ISOLATOR_TYPES = (
-        ('ac', 'AC Isolator'),
-        ('dc', 'DC Isolator'),
+        ("ac", "AC Isolator"),
+        ("dc", "DC Isolator"),
     )
 
-    manufacturer = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="isolator_spec",
     )
 
     isolator_type = models.CharField(
         max_length=20,
-        choices=ISOLATOR_TYPES
+        choices=ISOLATOR_TYPES,
     )
 
-    current_rating = models.FloatField()
-
-    voltage_rating = models.FloatField()
-
-    poles = models.IntegerField()
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
+    current_rating = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
     )
 
-    active = models.BooleanField(
-        default=True
+    voltage_rating = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
     )
+
+    poles = models.PositiveIntegerField()
 
     def __str__(self):
-        return (
-            f"{self.name} "
-            f"{self.current_rating}A"
-        )
-    
-##############################################
-# MOUNTING STRUCTURES
-##############################################
+        return f"Isolator spec — {self.product.name} {self.current_rating}A"
 
-class MountingStructure(models.Model):
+
+# ================================================================
+# MOUNTING STRUCTURE SPECIFICATION
+# ================================================================
+
+class MountingStructureSpecification(models.Model):
 
     TYPES = (
-        ('roof', 'Roof Mount'),
-        ('ground', 'Ground Mount'),
-        ('carport', 'Carport'),
+        ("roof", "Roof Mount"),
+        ("ground", "Ground Mount"),
+        ("carport", "Carport"),
     )
 
-    name = models.CharField(
-        max_length=100
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mounting_structure_spec",
     )
 
     structure_type = models.CharField(
         max_length=20,
-        choices=TYPES
+        choices=TYPES,
     )
 
-    panel_capacity = models.IntegerField()
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
-    )
-
-    active = models.BooleanField(
-        default=True
-    )
+    panel_capacity = models.PositiveIntegerField()
 
     def __str__(self):
-        return self.name
-    
-##############################################
-# ACCESSORIES
-##############################################
+        return f"Mounting spec — {self.product.name}"
 
-class Accessory(models.Model):
+
+# ================================================================
+# ACCESSORY SPECIFICATION
+# ================================================================
+
+class AccessorySpecification(models.Model):
 
     ACCESSORY_TYPES = (
-
-        ('bolt', 'Bolt'),
-
-        ('nut', 'Nut'),
-
-        ('washer', 'Washer'),
-
-        ('hanger', 'Hanger'),
-
-        ('rail', 'Rail'),
-
-        ('lug', 'Cable Lug'),
-
-        ('gland', 'Cable Gland'),
-
-        ('connector', 'MC4 Connector'),
-
-        ('trunking', 'Trunking'),
-
-        ('conduit', 'Conduit'),
-
-        ('clamp', 'Panel Clamp'),
-
-        ('earthing', 'Earthing Material'),
-
-        ('battery_rack', 'Battery Rack'),
-
-        ('other', 'Other'),
+        ("bolt", "Bolt"),
+        ("nut", "Nut"),
+        ("washer", "Washer"),
+        ("hanger", "Hanger"),
+        ("rail", "Rail"),
+        ("lug", "Cable Lug"),
+        ("gland", "Cable Gland"),
+        ("connector", "MC4 Connector"),
+        ("trunking", "Trunking"),
+        ("conduit", "Conduit"),
+        ("clamp", "Panel Clamp"),
+        ("earthing", "Earthing Material"),
+        ("battery_rack", "Battery Rack"),
+        ("other", "Other"),
     )
 
-    name = models.CharField(
-        max_length=200
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="accessory_spec",
     )
 
     accessory_type = models.CharField(
         max_length=30,
         choices=ACCESSORY_TYPES,
-        default='other'
+        default="other",
     )
 
-    description = models.TextField(
-        blank=True,
-        null=True
-    )
-
-    unit = models.CharField(
-        max_length=20,
-        default='pcs'
-    )
-
-    price = models.DecimalField(
-        max_digits=15,
-        decimal_places=2
-    )
-
-    active = models.BooleanField(
-        default=True
-    )
-
-    created = models.DateTimeField(
-        auto_now_add=True
-    )
+    unit = models.CharField(max_length=20, default="pcs")
 
     def __str__(self):
-        return (
-            f"{self.name}"
-        )
-    
-##############################################
-# BOQ ITEMS
-##############################################
+        return f"Accessory spec — {self.product.name}"
+
+
+# ================================================================
+# BOQ ITEMS (unchanged — generic labour/material line, not a
+# physical catalog product)
+# ================================================================
 
 class BOQItem(models.Model):
 
     CATEGORY = (
-        ('material', 'Material'),
-        ('labour', 'Labour'),
-        ('transport', 'Transport'),
+        ("material", "Material"),
+        ("labour", "Labour"),
+        ("transport", "Transport"),
     )
 
-    description = models.CharField(
-        max_length=300
-    )
+    description = models.CharField(max_length=300)
 
     category = models.CharField(
         max_length=20,
-        choices=CATEGORY
+        choices=CATEGORY,
     )
 
-    unit = models.CharField(
-        max_length=20,
-        default='pcs'
-    )
+    unit = models.CharField(max_length=20, default="pcs")
 
     unit_price = models.DecimalField(
         max_digits=15,
-        decimal_places=2
+        decimal_places=2,
     )
 
-    active = models.BooleanField(
-        default=True
-    )
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.description
+
+
+# ================================================================
+# SOLAR DESIGN
+# ================================================================
+
+class SolarDesign(models.Model):
+
+    OPERATING_MODES = (
+        ("off_grid", "Off Grid"),
+        ("hybrid", "Hybrid"),
+        ("grid_tied", "Grid Tied"),
+    )
+
+    STATUS_CHOICES = (
+        ("draft", "Draft"),
+        ("designed", "Designed"),
+        ("quoted", "Quoted"),
+        ("approved", "Approved"),
+        ("installed", "Installed"),
+        ("commissioned", "Commissioned"),
+        ("completed", "Completed"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="solar_designs",
+    )
+
+    project_name = models.CharField(max_length=255)
+
+    client_name = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    project_location = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    description = models.TextField(blank=True)
+
+    operating_mode = models.CharField(
+        max_length=30,
+        choices=OPERATING_MODES,
+        default="off_grid",
+    )
+
+    peak_sun_hours = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=5,
+    )
+
+    autonomy_days = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=1,
+    )
+
+    load_result = models.JSONField(default=dict, blank=True)
+    voltage_result = models.JSONField(default=dict, blank=True)
+    battery_result = models.JSONField(default=dict, blank=True)
+    panel_result = models.JSONField(default=dict, blank=True)
+    controller_result = models.JSONField(default=dict, blank=True)
+    inverter_result = models.JSONField(default=dict, blank=True)
+    protection_result = models.JSONField(default=dict, blank=True)
+    cable_result = models.JSONField(default=dict, blank=True)
+    accessory_result = models.JSONField(default=dict, blank=True)
+    boq_result = models.JSONField(default=dict, blank=True)
+    pricing_result = models.JSONField(default=dict, blank=True)
+    warnings_result = models.JSONField(default=dict, blank=True)
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
+
+    favorite = models.BooleanField(default=False)
+    archived = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.project_name
+
+    @property
+    def total_cost(self):
+        return self.pricing_result.get("grand_total", 0)
+
+    @property
+    def design_complete(self):
+        return all([
+            bool(self.load_result),
+            bool(self.voltage_result),
+            bool(self.battery_result),
+            bool(self.panel_result),
+            bool(self.controller_result),
+            bool(self.inverter_result),
+            bool(self.protection_result),
+            bool(self.cable_result),
+            bool(self.accessory_result),
+            bool(self.boq_result),
+            bool(self.pricing_result),
+        ])
+
+
+# ================================================================
+# SOLAR DESIGN VERSION
+# ================================================================
+
+class SolarDesignVersion(models.Model):
+
+    design = models.ForeignKey(
+        SolarDesign,
+        on_delete=models.CASCADE,
+        related_name="versions",
+    )
+
+    version = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    load_result = models.JSONField(default=dict)
+    voltage_result = models.JSONField(default=dict)
+    battery_result = models.JSONField(default=dict)
+    panel_result = models.JSONField(default=dict)
+    controller_result = models.JSONField(default=dict)
+    inverter_result = models.JSONField(default=dict)
+    protection_result = models.JSONField(default=dict)
+    cable_result = models.JSONField(default=dict)
+    accessory_result = models.JSONField(default=dict)
+    boq_result = models.JSONField(default=dict)
+    pricing_result = models.JSONField(default=dict)
+    warnings_result = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ["-version"]
+        unique_together = ("design", "version")
+
+    def __str__(self):
+        return f"{self.design.project_name} V{self.version}"
+
+
+# ================================================================
+# MAINTENANCE RECORD
+# ================================================================
+
+class MaintenanceRecord(models.Model):
+    """
+    Stores maintenance/service history for an installed solar system.
+    """
+
+    design = models.ForeignKey(
+        SolarDesign,
+        on_delete=models.CASCADE,
+        related_name="maintenance_records",
+    )
+
+    service_date = models.DateField()
+
+    technician = models.CharField(
+        max_length=200,
+    )
+
+    service_type = models.CharField(
+        max_length=100,
+    )
+
+    findings = models.TextField(
+        blank=True,
+    )
+
+    corrective_action = models.TextField(
+        blank=True,
+    )
+
+    next_service_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return (
+            f"{self.design.project_name} - "
+            f"{self.service_date}"
+        )
+
+    class Meta:
+        ordering = [
+            "-service_date",
+            "-created_at",
+        ]
+        verbose_name = "Maintenance Record"
+        verbose_name_plural = "Maintenance Records"
+
+
+# ================================================================
+# PERFORMANCE LOG
+# ================================================================
+
+class PerformanceLog(models.Model):
+    """
+    Stores operational/performance measurements from an installed
+    solar system.
+    """
+
+    design = models.ForeignKey(
+        SolarDesign,
+        on_delete=models.CASCADE,
+        related_name="performance_logs",
+    )
+
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    battery_voltage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    battery_current = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    pv_voltage = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    pv_current = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    inverter_output = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    load_power = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+    )
+
+    def __str__(self):
+        return (
+            f"{self.design.project_name} - "
+            f"{self.timestamp}"
+        )
+
+    class Meta:
+        ordering = [
+            "-timestamp",
+        ]
+        verbose_name = "Performance Log"
+        verbose_name_plural = "Performance Logs"
+
+
+# ================================================================
+# FAULT REPORT
+# ================================================================
+
+class FaultReport(models.Model):
+    """
+    Records faults/problems reported against an installed solar
+    system.
+    """
+
+    SEVERITY = (
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+        ("critical", "Critical"),
+    )
+
+    STATUS = (
+        ("open", "Open"),
+        ("assigned", "Assigned"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
+    )
+
+    design = models.ForeignKey(
+        SolarDesign,
+        on_delete=models.CASCADE,
+        related_name="fault_reports",
+    )
+
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reported_solar_faults",
+    )
+
+    title = models.CharField(
+        max_length=255,
+    )
+
+    description = models.TextField()
+
+    severity = models.CharField(
+        max_length=20,
+        choices=SEVERITY,
+        default="medium",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default="open",
+    )
+
+    reported_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    resolved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    resolution = models.TextField(
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = [
+            "-reported_at",
+        ]
+        verbose_name = "Fault Report"
+        verbose_name_plural = "Fault Reports"
+
+
+# ================================================================
+# SERVICE REQUEST
+# ================================================================
+
+class ServiceRequest(models.Model):
+    """
+    Customer/service workflow for an installed solar system.
+    """
+
+    PRIORITY = (
+        ("low", "Low"),
+        ("normal", "Normal"),
+        ("high", "High"),
+        ("urgent", "Urgent"),
+    )
+
+    STATUS = (
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    )
+
+    design = models.ForeignKey(
+        SolarDesign,
+        on_delete=models.CASCADE,
+        related_name="service_requests",
+    )
+
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="solar_service_requests",
+    )
+
+    subject = models.CharField(
+        max_length=255,
+    )
+
+    description = models.TextField()
+
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY,
+        default="normal",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default="pending",
+    )
+
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="assigned_service_requests",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    scheduled_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    completed_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.subject
+
+    class Meta:
+        ordering = [
+            "-created_at",
+        ]
+        verbose_name = "Service Request"
+        verbose_name_plural = "Service Requests"

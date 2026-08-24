@@ -19,11 +19,11 @@ def dispute_page(request, item_id):
 
         Dispute.objects.create(
             order_item=item,
-            customer=request.user,
+            raised_by=request.user,
             reason=reason
         )
 
-        return redirect("orders")
+        return redirect("orders_page")
 
     return render(request, "dispute.html", {"item": item})
 

@@ -22,9 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", os.getenv("DEBUG", "true")).strip().lower() in {"1", "true", "yes", "on"}
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     'import_export',
     "admin_interface",
     "colorfield",
+    
     
     'rest_framework',
     'django_celery_beat',
@@ -130,27 +132,27 @@ WSGI_APPLICATION = 'phoneappproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         "NAME": os.getenv("DB_NAME"),
-#         "USER": os.getenv("DB_USER"),
-#         'PASSWORD': os.getenv("DB_PASSWORD"),
-#         'HOST' : os.getenv("DB_HOST", "localhost"),         
-#         'PORT': 5432,
-#         'OPTIONS': {
-#             'connect_timeout': 10,  # Recommended by Neon Docs
-#         },
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST' : os.getenv("DB_HOST", "localhost"),         
+        'PORT': 5432,
+        'OPTIONS': {
+            'connect_timeout': 10,  # Recommended by Neon Docs
+        },
+    }
+}
 
 
 # DATABASES = {
@@ -252,7 +254,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SITE_ID = 1
 
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 
 KWIK_TOKEN = "test_token"
 KWIK_VENDOR_ID = "123456"
@@ -271,7 +273,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-if not EMAIL_HOST_PASSWORD:
+if not EMAIL_HOST_PASSWORD and not DEBUG:
     raise Exception(
         "EMAIL PASSWORD missing"
     )
@@ -295,6 +297,19 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 LOGIN_REDIRECT_URL = '/'
 
 ADMIN_EMAIL="nwekelesley@gmail.com" #mail for viewing negotiations
+
+# Production-safe defaults. Configure HTTPS on the deployment before setting
+# DJANGO_DEBUG=false; these headers then protect sessions and CSRF cookies.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
 
 
 USE_L10N = True

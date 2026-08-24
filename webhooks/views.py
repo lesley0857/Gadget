@@ -17,6 +17,8 @@ def paystack_webhook(request):
         "x-paystack-signature",
         ""
     )
+    if not settings.PAYSTACK_SECRET_KEY:
+        return HttpResponse(status=503)
 
     computed = hmac.new(
         settings.PAYSTACK_SECRET_KEY.encode(),
@@ -37,11 +39,8 @@ def paystack_webhook(request):
     except json.JSONDecodeError:
         return HttpResponse(status=400)
 
-    if payload.get("event") == "charge.success":
-
-        process_payment.delay(
-            payload.get("data")
-        )
+    if payload.get("event") == "charge.success" and payload.get("data"):
+        process_payment.delay(payload["data"])
 
     return HttpResponse(status=200)
 

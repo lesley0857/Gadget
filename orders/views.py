@@ -22,7 +22,6 @@ from logistics.models import *
 
 @login_required
 def orders_page(request):
-
     orders = (
         Order.objects
         .select_related("customer")
@@ -34,9 +33,11 @@ def orders_page(request):
         .filter(customer=request.user)
         .order_by("-created_at")
     )
+    delivered = Order.objects.filter(status='delivered').count()
 
     context = {
-        "orders": orders
+        "orders": orders,
+        "delivered":delivered,
     }
 
     return render(request, "order.html", context)

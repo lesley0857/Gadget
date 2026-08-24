@@ -1,915 +1,897 @@
 # solar/services/load_engine.py
 
-###############################################################
+"""
+Solar PV Load Analysis Engine.
 
+Responsibilities
+----------------
+This engine is responsible ONLY for electrical load analysis.
+
+It does NOT:
+    - select system voltage
+    - size batteries
+    - size PV
+    - select panels
+    - select inverters
+    - select charge controllers
+    - size cables
+    - select protection
+    - calculate pricing
+
+Those responsibilities belong to later engines.
+
+Input
+-----
+A list of normalized load dictionaries.
+
+Each load may contain:
+
+{
+    "appliance": Appliance instance,     # optional
+    "name": "Refrigerator",
+    "wattage": Decimal("150"),
+    "quantity": 1,
+    "hours_per_day": Decimal("10"),
+    "surge_factor": Decimal("3"),
+    "load_type": "compressor",
+    "starting_type": "single",
+}
+
+Output
+------
+A standardized engine result dictionary.
+"""
+
+from collections import defaultdict
+from decimal import Decimal
+
+from django.db.models import QuerySet
+
+from ..models import Appliance
+from .engineering import (
+    build_result,
+    make_json_safe,
+    to_decimal,
+    round_decimal,
+)
+from .exceptions import (
+    InvalidDesignInput,
+    MissingDesignInput,
+)
+
+
+# ================================================================
+# CONSTANTS
+# ================================================================
+
+ZERO = Decimal("0")
+ONE = Decimal("1")
+
+MIN_HOURS_PER_DAY = Decimal("0")
+MAX_HOURS_PER_DAY = Decimal("24")
+
+MIN_QUANTITY = 1
+
+VALID_LOAD_TYPES = {
+    "resistive",
+    "motor",
+    "compressor",
+    "electronics",
+    "lighting",
+}
+
+VALID_STARTING_TYPES = {
+    "single",
+    "possible",
+    "simultaneous",
+}
+
+
+# ================================================================
 # LOAD ENGINE
+# ================================================================
 
-###############################################################
-
-def calculate_load(loads):
+class LoadEngine:
     """
-    Solar Load Analysis Engine
-
-    The load engine analyzes the electrical characteristics
-    of all selected appliances.
-
-    It does NOT select the system voltage.
-
-    It calculates:
-
-        1. Total running load
-        2. Daily energy consumption
-        3. Motor/compressor load
-        4. Resistive load
-        5. Surge load
-        6. Number of motors/compressors
-        7. Simultaneous motor-start risk
-        8. Simultaneous starting load
-        9. Largest individual surge
-        10. Average load
-        11. Appliance breakdown
-
-    Expected input:
-
-        {
-            "name": "Frozen Food Freezer",
-            "watts": 500,
-            "qty": 2,
-            "hours": 8,
-            "surge": 3,
-            "load_type": "compressor",
-            "starting_type": "possible",
-        }
-
-    The system-voltage engine later uses these results to
-    select 24 V, 48 V, or 96 V.
+    Main load-analysis engine.
     """
 
+    def __init__(self, loads=None):
+        self.loads = loads or []
 
-    ###########################################################
-    # TOTALS
-    ###########################################################
+    # ============================================================
+    # PUBLIC API
+    # ============================================================
 
-    total_running = 0
+    def calculate(self):
+        """
+        Perform complete load analysis.
+        """
 
-    total_energy = 0
+        normalized_loads = self._normalize_loads()
 
-    total_quantity = 0
+        if not normalized_loads:
+            raise MissingDesignInput(
+                "At least one appliance/load is required."
+            )
 
-    motor_load = 0
+        load_rows = []
 
-    resistive_load = 0
+        for index, load in enumerate(normalized_loads, start=1):
+            load_rows.append(
+                self._calculate_load_row(
+                    load,
+                    index,
+                )
+            )
 
-    total_motors = 0
+        totals = self._calculate_totals(load_rows)
 
-    largest_extra_surge = 0
+        category_summary = self._calculate_category_summary(
+            load_rows
+        )
 
-    simultaneous_start_load = 0
+        starting_summary = self._calculate_starting_summary(
+            load_rows
+        )
 
-    possible_simultaneous_start_load = 0
+        warnings = self._generate_warnings(
+            load_rows,
+            totals,
+        )
 
-    simultaneous_motor_start = False
+        result = build_result(
+            status="ok",
+            inputs={
+                "load_count": len(load_rows),
+            },
+            calculations={
+                "connected_load_w": totals["connected_load_w"],
+                "daily_energy_wh": totals["daily_energy_wh"],
+                "daily_energy_kwh": totals["daily_energy_kwh"],
+                "running_peak_load_w": totals["running_peak_load_w"],
+                "surge_peak_load_w": totals["surge_peak_load_w"],
+                "peak_design_load_w": totals["peak_design_load_w"],
+                "additional_surge_w": totals["additional_surge_w"],
+                "average_daily_load_w": totals[
+                    "average_daily_load_w"
+                ],
+                "load_factor": totals["load_factor"],
+            },
+            selected={
+                "connected_load_w": totals["connected_load_w"],
+                "daily_energy_wh": totals["daily_energy_wh"],
+                "daily_energy_kwh": totals["daily_energy_kwh"],
+                "peak_load_w": totals["peak_design_load_w"],
+                "surge_load_w": totals["surge_peak_load_w"],
+            },
+            candidates=load_rows,
+            warnings=warnings,
+            messages=[
+                "Load analysis completed successfully."
+            ],
+        )
 
+        result["load_rows"] = load_rows
+        result["category_summary"] = category_summary
+        result["starting_summary"] = starting_summary
 
-    ###########################################################
-    # APPLIANCE BREAKDOWN
-    ###########################################################
+        return make_json_safe(result)
 
-    schedule = []
+    # ============================================================
+    # NORMALIZATION
+    # ============================================================
 
+    def _normalize_loads(self):
+        """
+        Normalize every load into a predictable internal structure.
 
-    ###########################################################
-    # EMPTY LOAD VALIDATION
-    ###########################################################
+        This method deliberately converts all engineering numbers
+        to Decimal before calculations begin.
+        """
 
-    if not loads:
+        if isinstance(self.loads, QuerySet):
+            loads = list(self.loads)
+
+        elif isinstance(self.loads, (list, tuple)):
+            loads = list(self.loads)
+
+        else:
+            raise InvalidDesignInput(
+                "Loads must be a list, tuple, or QuerySet."
+            )
+
+        normalized = []
+
+        for index, item in enumerate(loads, start=1):
+
+            if isinstance(item, Appliance):
+                normalized.append(
+                    self._normalize_appliance(
+                        appliance=item,
+                        quantity=1,
+                        hours_per_day=0,
+                    )
+                )
+
+                continue
+
+            if not isinstance(item, dict):
+                raise InvalidDesignInput(
+                    f"Load item {index} must be a dictionary "
+                    f"or Appliance instance."
+                )
+
+            normalized.append(
+                self._normalize_dictionary(
+                    item,
+                    index,
+                )
+            )
+
+        return normalized
+
+    # ============================================================
+    # APPLIANCE NORMALIZATION
+    # ============================================================
+
+    def _normalize_appliance(
+        self,
+        appliance,
+        quantity,
+        hours_per_day,
+    ):
+        wattage = to_decimal(
+            appliance.wattage
+        )
+
+        surge_factor = to_decimal(
+            appliance.surge_factor,
+            default=ONE,
+        )
 
         return {
-
-            "load_watts": 0,
-
-            "daily_energy_wh": 0,
-
-            "surge_watts": 0,
-
-            "motor_load": 0,
-
-            "resistive_load": 0,
-
-            "total_motors": 0,
-
-            "motor_count": 0,
-
-            "simultaneous_start_load": 0,
-
-            "possible_simultaneous_start_load": 0,
-
-            "simultaneous_motor_start": False,
-
-            "largest_extra_surge": 0,
-
-            "total_quantity": 0,
-
-            "diversity_factor": 1.0,
-
-            "average_load_watts": 0,
-
-            "peak_energy_hour": 0,
-
-            "loads": [],
-
+            "name": str(appliance.name),
+            "wattage": wattage,
+            "quantity": int(quantity),
+            "hours_per_day": to_decimal(
+                hours_per_day
+            ),
+            "surge_factor": surge_factor,
+            "load_type": appliance.load_type,
+            "starting_type": appliance.starting_type,
         }
 
+    # ============================================================
+    # DICTIONARY NORMALIZATION
+    # ============================================================
 
-    ###########################################################
-    # PROCESS EACH APPLIANCE
-    ###########################################################
+    def _normalize_dictionary(
+        self,
+        item,
+        index,
+    ):
+        appliance = item.get("appliance")
 
-    for item in loads:
+        if appliance is not None:
 
+            if not isinstance(
+                appliance,
+                Appliance,
+            ):
+                raise InvalidDesignInput(
+                    f"Load item {index}: appliance must be "
+                    f"an Appliance instance."
+                )
 
-        #######################################################
-        # BASIC VALUES
-        #######################################################
-
-        name = (
-
-            item.get(
-
+            name = item.get(
                 "name",
-
-                "Unnamed Appliance"
-
+                appliance.name,
             )
 
-            or
-
-            "Unnamed Appliance"
-
-        )
-
-
-        try:
-
-            watts = float(
-
-                item.get(
-
-                    "watts",
-
-                    0
-
-                )
-
+            wattage = item.get(
+                "wattage",
+                appliance.wattage,
             )
 
-        except (
-
-            TypeError,
-
-            ValueError,
-
-        ):
-
-            watts = 0
-
-
-        try:
-
-            quantity = int(
-
-                float(
-
-                    item.get(
-
-                        "qty",
-
-                        1
-
-                    )
-
-                )
-
+            surge_factor = item.get(
+                "surge_factor",
+                appliance.surge_factor,
             )
 
-        except (
-
-            TypeError,
-
-            ValueError,
-
-        ):
-
-            quantity = 1
-
-
-        try:
-
-            hours = float(
-
-                item.get(
-
-                    "hours",
-
-                    0
-
-                )
-
-            )
-
-        except (
-
-            TypeError,
-
-            ValueError,
-
-        ):
-
-            hours = 0
-
-
-        try:
-
-            surge_factor = float(
-
-                item.get(
-
-                    "surge",
-
-                    1
-
-                )
-
-            )
-
-        except (
-
-            TypeError,
-
-            ValueError,
-
-        ):
-
-            surge_factor = 1
-
-
-        #######################################################
-        # LOAD TYPE
-        #######################################################
-
-        load_type = (
-
-            item.get(
-
+            load_type = item.get(
                 "load_type",
-
-                "resistive"
-
+                appliance.load_type,
             )
 
-            or
-
-            "resistive"
-
-        ).lower()
-
-
-        #######################################################
-        # STARTING TYPE
-        #######################################################
-
-        starting_type = (
-
-            item.get(
-
+            starting_type = item.get(
                 "starting_type",
-
-                "single"
-
+                appliance.starting_type,
             )
-
-            or
-
-            "single"
-
-        ).lower()
-
-
-        #######################################################
-        # SANITIZE VALUES
-        #######################################################
-
-        watts = max(
-
-            watts,
-
-            0
-
-        )
-
-
-        quantity = max(
-
-            quantity,
-
-            0
-
-        )
-
-
-        hours = max(
-
-            min(
-
-                hours,
-
-                24
-
-            ),
-
-            0
-
-        )
-
-
-        surge_factor = max(
-
-            surge_factor,
-
-            1
-
-        )
-
-
-        #######################################################
-        # RUNNING LOAD
-        #######################################################
-
-        running_load = (
-
-            watts
-
-            *
-
-            quantity
-
-        )
-
-
-        #######################################################
-        # DAILY ENERGY
-        #######################################################
-
-        daily_energy = (
-
-            running_load
-
-            *
-
-            hours
-
-        )
-
-
-        #######################################################
-        # MAXIMUM SURGE
-        #######################################################
-
-        surge_load = (
-
-            running_load
-
-            *
-
-            surge_factor
-
-        )
-
-
-        #######################################################
-        # ADDITIONAL SURGE
-        #######################################################
-
-        extra_surge = (
-
-            surge_load
-
-            -
-
-            running_load
-
-        )
-
-
-        #######################################################
-        # TOTAL RUNNING LOAD
-        #######################################################
-
-        total_running += running_load
-
-
-        #######################################################
-        # TOTAL DAILY ENERGY
-        #######################################################
-
-        total_energy += daily_energy
-
-
-        #######################################################
-        # TOTAL QUANTITY
-        #######################################################
-
-        total_quantity += quantity
-
-
-        #######################################################
-        # LOAD CLASSIFICATION
-        #######################################################
-
-        is_motor_load = load_type in (
-
-            "motor",
-
-            "compressor",
-
-        )
-
-
-        if is_motor_load:
-
-            motor_load += running_load
-
-
-            total_motors += quantity
-
 
         else:
 
-            resistive_load += running_load
-
-
-        #######################################################
-        # MOTOR STARTING RISK
-        #######################################################
-
-        if is_motor_load:
-
-
-            if starting_type == "simultaneous":
-
-                simultaneous_motor_start = True
-
-
-                simultaneous_start_load += (
-
-                    surge_load
-
-                )
-
-
-            elif starting_type == "possible":
-
-                possible_simultaneous_start_load += (
-
-                    surge_load
-
-                )
-
-
-        #######################################################
-        # LARGEST INDIVIDUAL SURGE
-        #######################################################
-
-        largest_extra_surge = max(
-
-            largest_extra_surge,
-
-            extra_surge
-
-        )
-
-
-        #######################################################
-        # APPLIANCE BREAKDOWN
-        #######################################################
-
-        schedule.append({
-
-            "name":
-
-                name,
-
-
-            "watts":
-
-                round(
-
-                    watts,
-
-                    2
-
-                ),
-
-
-            "quantity":
-
-                quantity,
-
-
-            "hours":
-
-                round(
-
-                    hours,
-
-                    2
-
-                ),
-
-
-            "load_type":
-
-                load_type,
-
-
-            "starting_type":
-
-                starting_type,
-
-
-            "running_load":
-
-                round(
-
-                    running_load,
-
-                    2
-
-                ),
-
-
-            "daily_energy":
-
-                round(
-
-                    daily_energy,
-
-                    2
-
-                ),
-
-
-            "surge_factor":
-
-                round(
-
-                    surge_factor,
-
-                    2
-
-                ),
-
-
-            "surge_load":
-
-                round(
-
-                    surge_load,
-
-                    2
-
-                ),
-
-
-            "extra_surge":
-
-                round(
-
-                    extra_surge,
-
-                    2
-
-                ),
-
-        })
-
-
-    ###########################################################
-    # TOTAL SURGE CALCULATION
-    ###########################################################
-
-    """
-
-    If motors can definitely start together:
-
-        Total surge
-        =
-        Full simultaneous motor surge
-        +
-        Other running loads
-
-    If simultaneous starting is only possible:
-
-        The possible simultaneous surge is used as
-        an additional design risk.
-
-    Otherwise:
-
-        Total running load
-        +
-        Largest additional surge
-
-    """
-
-
-    if simultaneous_motor_start:
-
-
-        total_surge = max(
-
-            total_running
-
-            +
-
-            largest_extra_surge,
-
-
-            simultaneous_start_load
-
-            +
-
-            (
-
-                total_running
-
-                -
-
-                motor_load
-
+            name = item.get(
+                "name"
             )
 
-        )
-
-
-    elif possible_simultaneous_start_load > 0:
-
-
-        total_surge = max(
-
-            total_running
-
-            +
-
-            largest_extra_surge,
-
-
-            possible_simultaneous_start_load
-
-            +
-
-            (
-
-                total_running
-
-                -
-
-                motor_load
-
+            wattage = item.get(
+                "wattage"
             )
 
+            surge_factor = item.get(
+                "surge_factor",
+                ONE,
+            )
+
+            load_type = item.get(
+                "load_type",
+                "resistive",
+            )
+
+            starting_type = item.get(
+                "starting_type",
+                "single",
+            )
+
+        if not name:
+            raise MissingDesignInput(
+                f"Load item {index} has no appliance name."
+            )
+
+        if wattage is None:
+            raise MissingDesignInput(
+                f"{name}: wattage is required."
+            )
+
+        quantity = item.get(
+            "quantity",
+            1,
         )
 
-
-    else:
-
-
-        total_surge = (
-
-            total_running
-
-            +
-
-            largest_extra_surge
-
+        hours_per_day = item.get(
+            "hours_per_day",
+            0,
         )
 
+        wattage = to_decimal(wattage)
+        surge_factor = to_decimal(
+            surge_factor,
+            default=ONE,
+        )
 
-    ###########################################################
-    # AVERAGE DAILY LOAD
-    ###########################################################
+        quantity = int(quantity)
 
-    average_load = (
+        hours_per_day = to_decimal(
+            hours_per_day
+        )
 
-        total_energy
+        self._validate_load_values(
+            name=name,
+            wattage=wattage,
+            surge_factor=surge_factor,
+            quantity=quantity,
+            hours_per_day=hours_per_day,
+            load_type=load_type,
+            starting_type=starting_type,
+        )
 
-        /
+        return {
+            "name": str(name),
+            "wattage": wattage,
+            "quantity": quantity,
+            "hours_per_day": hours_per_day,
+            "surge_factor": surge_factor,
+            "load_type": load_type,
+            "starting_type": starting_type,
+        }
 
-        24
+    # ============================================================
+    # VALIDATION
+    # ============================================================
 
-    )
+    def _validate_load_values(
+        self,
+        name,
+        wattage,
+        surge_factor,
+        quantity,
+        hours_per_day,
+        load_type,
+        starting_type,
+    ):
 
+        if wattage <= ZERO:
+            raise InvalidDesignInput(
+                f"{name}: wattage must be greater than zero."
+            )
 
-    ###########################################################
-    # PEAK ENERGY LOAD
-    ###########################################################
+        if surge_factor < ONE:
+            raise InvalidDesignInput(
+                f"{name}: surge factor cannot be less than 1."
+            )
 
-    peak_energy_hour = 0
+        if quantity < MIN_QUANTITY:
+            raise InvalidDesignInput(
+                f"{name}: quantity must be at least 1."
+            )
 
+        if (
+            hours_per_day < MIN_HOURS_PER_DAY
+            or hours_per_day > MAX_HOURS_PER_DAY
+        ):
+            raise InvalidDesignInput(
+                f"{name}: hours per day must be between "
+                f"0 and 24."
+            )
 
-    if schedule:
+        if load_type not in VALID_LOAD_TYPES:
+            raise InvalidDesignInput(
+                f"{name}: unsupported load type "
+                f"'{load_type}'."
+            )
 
-        peak_energy_hour = max(
+        if starting_type not in VALID_STARTING_TYPES:
+            raise InvalidDesignInput(
+                f"{name}: unsupported starting type "
+                f"'{starting_type}'."
+            )
 
-            item[
+    # ============================================================
+    # ROW CALCULATION
+    # ============================================================
 
-                "daily_energy"
+    def _calculate_load_row(
+        self,
+        load,
+        index,
+    ):
+        wattage = load["wattage"]
+        quantity = load["quantity"]
+        hours = load["hours_per_day"]
+        surge_factor = load["surge_factor"]
 
+        connected_power = (
+            wattage
+            * Decimal(quantity)
+        )
+
+        daily_energy = (
+            connected_power
+            * hours
+        )
+
+        surge_power = (
+            connected_power
+            * surge_factor
+        )
+
+        additional_surge = (
+            surge_power
+            - connected_power
+        )
+
+        return {
+            "index": index,
+            "name": load["name"],
+            "wattage_w": round_decimal(
+                wattage
+            ),
+            "quantity": quantity,
+            "hours_per_day": round_decimal(
+                hours
+            ),
+            "load_type": load["load_type"],
+            "starting_type": load["starting_type"],
+            "surge_factor": round_decimal(
+                surge_factor
+            ),
+            "connected_power_w": round_decimal(
+                connected_power
+            ),
+            "daily_energy_wh": round_decimal(
+                daily_energy
+            ),
+            "daily_energy_kwh": round_decimal(
+                daily_energy / Decimal("1000")
+            ),
+            "surge_power_w": round_decimal(
+                surge_power
+            ),
+            "additional_surge_w": round_decimal(
+                additional_surge
+            ),
+        }
+
+    # ============================================================
+    # TOTALS
+    # ============================================================
+
+    def _calculate_totals(
+        self,
+        rows,
+    ):
+        connected_load = sum(
+            (
+                to_decimal(
+                    row["connected_power_w"]
+                )
+                for row in rows
+            ),
+            ZERO,
+        )
+
+        daily_energy = sum(
+            (
+                to_decimal(
+                    row["daily_energy_wh"]
+                )
+                for row in rows
+            ),
+            ZERO,
+        )
+
+        # All loads are assumed capable of running together
+        # for the conservative continuous design load.
+        running_peak = connected_load
+
+        additional_surge = (
+            self._calculate_additional_surge(
+                rows
+            )
+        )
+
+        surge_peak = (
+            running_peak
+            + additional_surge
+        )
+
+        # Conservative design peak is the higher of:
+        # running load or calculated surge condition.
+        peak_design = max(
+            running_peak,
+            surge_peak,
+        )
+
+        average_daily_load = (
+            daily_energy / Decimal("24")
+        )
+
+        if connected_load > ZERO:
+            load_factor = (
+                average_daily_load
+                / connected_load
+            )
+        else:
+            load_factor = ZERO
+
+        return {
+            "connected_load_w": round_decimal(
+                connected_load
+            ),
+            "daily_energy_wh": round_decimal(
+                daily_energy
+            ),
+            "daily_energy_kwh": round_decimal(
+                daily_energy
+                / Decimal("1000")
+            ),
+            "running_peak_load_w": round_decimal(
+                running_peak
+            ),
+            "surge_peak_load_w": round_decimal(
+                surge_peak
+            ),
+            "additional_surge_w": round_decimal(
+                additional_surge
+            ),
+            "peak_design_load_w": round_decimal(
+                peak_design
+            ),
+            "average_daily_load_w": round_decimal(
+                average_daily_load
+            ),
+            "load_factor": round_decimal(
+                load_factor
+            ),
+        }
+
+    # ============================================================
+    # SURGE CALCULATION
+    # ============================================================
+
+    def _calculate_additional_surge(
+        self,
+        rows,
+    ):
+        """
+        Determine the additional starting surge.
+
+        Strategy
+        --------
+        simultaneous:
+            All additional surge contributions are included.
+
+        possible:
+            All additional surge contributions are included
+            conservatively.
+
+        single:
+            Only the largest single additional surge is applied.
+
+        This prevents several independent "single-start" loads
+        from automatically being treated as simultaneous starts.
+        """
+
+        simultaneous_surge = ZERO
+        possible_surge = ZERO
+        largest_single_surge = ZERO
+
+        for row in rows:
+
+            additional = to_decimal(
+                row["additional_surge_w"]
+            )
+
+            starting_type = row[
+                "starting_type"
             ]
 
-            for item in schedule
+            if starting_type == "simultaneous":
+                simultaneous_surge += additional
 
+            elif starting_type == "possible":
+                possible_surge += additional
+
+            elif starting_type == "single":
+                largest_single_surge = max(
+                    largest_single_surge,
+                    additional,
+                )
+
+        grouped_surge = (
+            simultaneous_surge
+            + possible_surge
         )
 
+        return max(
+            grouped_surge,
+            largest_single_surge,
+        )
 
-    ###########################################################
-    # DIVERSITY FACTOR
-    ###########################################################
+    # ============================================================
+    # CATEGORY SUMMARY
+    # ============================================================
 
-    diversity_factor = 1.0
+    def _calculate_category_summary(
+        self,
+        rows,
+    ):
+        summary = defaultdict(
+            lambda: {
+                "connected_power_w": ZERO,
+                "daily_energy_wh": ZERO,
+                "quantity": 0,
+            }
+        )
+
+        for row in rows:
+
+            category = row[
+                "load_type"
+            ]
+
+            summary[category][
+                "connected_power_w"
+            ] += to_decimal(
+                row["connected_power_w"]
+            )
+
+            summary[category][
+                "daily_energy_wh"
+            ] += to_decimal(
+                row["daily_energy_wh"]
+            )
+
+            summary[category][
+                "quantity"
+            ] += row["quantity"]
+
+        result = {}
+
+        for category, values in summary.items():
+
+            result[category] = {
+                "connected_power_w": round_decimal(
+                    values["connected_power_w"]
+                ),
+                "daily_energy_wh": round_decimal(
+                    values["daily_energy_wh"]
+                ),
+                "daily_energy_kwh": round_decimal(
+                    values["daily_energy_wh"]
+                    / Decimal("1000")
+                ),
+                "quantity": values["quantity"],
+            }
+
+        return result
+
+    # ============================================================
+    # STARTING SUMMARY
+    # ============================================================
+
+    def _calculate_starting_summary(
+        self,
+        rows,
+    ):
+        summary = {
+            "single": {
+                "count": 0,
+                "additional_surge_w": ZERO,
+            },
+            "possible": {
+                "count": 0,
+                "additional_surge_w": ZERO,
+            },
+            "simultaneous": {
+                "count": 0,
+                "additional_surge_w": ZERO,
+            },
+        }
+
+        for row in rows:
+
+            starting_type = row[
+                "starting_type"
+            ]
+
+            summary[
+                starting_type
+            ]["count"] += 1
+
+            summary[
+                starting_type
+            ]["additional_surge_w"] += to_decimal(
+                row["additional_surge_w"]
+            )
+
+        for values in summary.values():
+            values[
+                "additional_surge_w"
+            ] = round_decimal(
+                values["additional_surge_w"]
+            )
+
+        return summary
+
+    # ============================================================
+    # WARNINGS
+    # ============================================================
+
+    def _generate_warnings(
+        self,
+        rows,
+        totals,
+    ):
+        warnings = []
+
+        if totals["daily_energy_wh"] <= ZERO:
+            warnings.append(
+                "Daily energy consumption is zero."
+            )
+
+        if totals["connected_load_w"] > ZERO:
+
+            load_factor = to_decimal(
+                totals["load_factor"]
+            )
+
+            if load_factor > ONE:
+                warnings.append(
+                    "Calculated load factor exceeds 100%. "
+                    "Review appliance operating hours."
+                )
+
+        for row in rows:
+
+            if row["hours_per_day"] if False else False:
+                pass
+
+        for row in rows:
+
+            hours = to_decimal(
+                row["hours_per_day"]
+            )
+
+            if hours >= Decimal("24"):
+                warnings.append(
+                    f"{row['name']} is configured to operate "
+                    f"24 hours per day."
+                )
+
+            if row["surge_factor"] > Decimal("5"):
+                warnings.append(
+                    f"{row['name']} has a very high surge factor "
+                    f"of {row['surge_factor']}."
+                )
+
+        return warnings
 
 
-    ###########################################################
-    # FINAL RESULT
-    ###########################################################
+# ================================================================
+# FUNCTION API
+# ================================================================
+
+def calculate_load(loads):
+    """
+    Functional API for the Load Engine.
+
+    Example:
+
+        result = calculate_load([
+            {
+                "name": "Refrigerator",
+                "wattage": Decimal("150"),
+                "quantity": 1,
+                "hours_per_day": Decimal("10"),
+                "surge_factor": Decimal("3"),
+                "load_type": "compressor",
+                "starting_type": "single",
+            }
+        ])
+    """
+
+    engine = LoadEngine(
+        loads=loads
+    )
+
+    return engine.calculate()
+
+
+# ================================================================
+# APPLIANCE CATALOG HELPER
+# ================================================================
+
+def build_load_from_appliance(
+    appliance,
+    quantity,
+    hours_per_day,
+):
+    """
+    Convert an Appliance catalogue record plus user inputs
+    into the normalized dictionary consumed by LoadEngine.
+    """
+
+    if not isinstance(
+        appliance,
+        Appliance,
+    ):
+        raise InvalidDesignInput(
+            "appliance must be an Appliance instance."
+        )
+
+    quantity = int(quantity)
+
+    hours_per_day = to_decimal(
+        hours_per_day
+    )
+
+    if quantity < 1:
+        raise InvalidDesignInput(
+            "Quantity must be at least 1."
+        )
+
+    if (
+        hours_per_day < ZERO
+        or hours_per_day > Decimal("24")
+    ):
+        raise InvalidDesignInput(
+            "Hours per day must be between 0 and 24."
+        )
 
     return {
-
-        #######################################################
-        # POWER
-        #######################################################
-
-        "load_watts":
-
-            round(
-
-                total_running,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # ENERGY
-        #######################################################
-
-        "daily_energy_wh":
-
-            round(
-
-                total_energy,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # SURGE
-        #######################################################
-
-        "surge_watts":
-
-            round(
-
-                total_surge,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # LOAD CLASSIFICATION
-        #######################################################
-
-        "motor_load":
-
-            round(
-
-                motor_load,
-
-                2
-
-            ),
-
-
-        "resistive_load":
-
-            round(
-
-                resistive_load,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # MOTOR INFORMATION
-        #######################################################
-
-        "total_motors":
-
-            total_motors,
-
-
-        "motor_count":
-
-            total_motors,
-
-
-        "simultaneous_start_load":
-
-            round(
-
-                simultaneous_start_load,
-
-                2
-
-            ),
-
-
-        "possible_simultaneous_start_load":
-
-            round(
-
-                possible_simultaneous_start_load,
-
-                2
-
-            ),
-
-
-        "simultaneous_motor_start":
-
-            simultaneous_motor_start,
-
-
-        "largest_extra_surge":
-
-            round(
-
-                largest_extra_surge,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # GENERAL INFORMATION
-        #######################################################
-
-        "total_quantity":
-
-            total_quantity,
-
-
-        "diversity_factor":
-
-            diversity_factor,
-
-
-        "average_load_watts":
-
-            round(
-
-                average_load,
-
-                2
-
-            ),
-
-
-        "peak_energy_hour":
-
-            round(
-
-                peak_energy_hour,
-
-                2
-
-            ),
-
-
-        #######################################################
-        # APPLIANCE BREAKDOWN
-        #######################################################
-
-        "loads":
-
-            schedule,
-
+        "appliance": appliance,
+        "quantity": quantity,
+        "hours_per_day": hours_per_day,
     }
-

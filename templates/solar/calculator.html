@@ -1,875 +1,1353 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Solar PV System Designer
+{% endblock %}
 
 {% block content %}
+
 <style>
-    /* =========================================================
-   REMAROBE SOLAR DESIGN STUDIO
-========================================================= */
+    /* =====================================================================
+   SOLAR PV DESIGNER
+   Professional Engineering Interface
+   ===================================================================== */
 
     :root {
+        --solar-primary: #0f766e;
+        --solar-primary-dark: #115e59;
+        --solar-primary-light: #ccfbf1;
 
-        --solar-blue: #2563eb;
-        --solar-cyan: #06b6d4;
-        --solar-green: #10b981;
-        --solar-yellow: #f59e0b;
-        --solar-purple: #7c3aed;
+        --solar-accent: #f59e0b;
+        --solar-accent-light: #fef3c7;
 
-        --dark: #0f172a;
-        --dark-light: #1e293b;
+        --solar-bg: #f5f7fa;
+        --solar-card: #ffffff;
 
-        --glass: rgba(255, 255, 255, 0.75);
+        --solar-text: #172033;
+        --solar-muted: #64748b;
 
-        --border: rgba(148, 163, 184, 0.22);
+        --solar-border: #e2e8f0;
 
-        --shadow:
-            0 15px 45px rgba(15, 23, 42, 0.08);
+        --solar-danger: #dc2626;
+        --solar-danger-bg: #fef2f2;
+
+        --solar-success: #15803d;
+        --solar-success-bg: #f0fdf4;
+
+        --solar-radius: 18px;
+
+        --solar-shadow:
+            0 12px 35px rgba(15, 23, 42, 0.07);
     }
 
-    /* =========================================================
-   PAGE BACKGROUND
-========================================================= */
+    /* =====================================================================
+   PAGE
+   ===================================================================== */
 
-    body {
+    .solar-page {
+        min-height: 100vh;
+        padding: 32px 18px 80px;
 
         background:
+            radial-gradient(circle at 90% 0%,
+                rgba(15, 118, 110, 0.10),
+                transparent 28%),
+            linear-gradient(180deg,
+                #f8fafc 0%,
+                var(--solar-bg) 100%);
 
-            radial-gradient(circle at 10% 10%,
-                rgba(37, 99, 235, 0.08),
-                transparent 30%),
-
-            radial-gradient(circle at 90% 20%,
-                rgba(16, 185, 129, 0.08),
-                transparent 30%),
-
-            linear-gradient(135deg,
-                #f8fafc,
-                #eef2ff);
-
+        color: var(--solar-text);
     }
 
-    /* =========================================================
-   MAIN CONTAINER
-========================================================= */
-
-    .container-fluid {
-
-        animation:
-            pageReveal 0.7s ease-out;
-
+    .solar-container {
+        width: min(1250px, 100%);
+        margin: 0 auto;
     }
 
-    @keyframes pageReveal {
+    /* =====================================================================
+   HERO
+   ===================================================================== */
 
-        from {
-
-            opacity: 0;
-
-            transform:
-                translateY(25px);
-
-        }
-
-        to {
-
-            opacity: 1;
-
-            transform:
-                translateY(0);
-
-        }
-
-    }
-
-    /* =========================================================
-   SOLAR CARDS
-========================================================= */
-
-    .solar-card {
-
+    .solar-hero {
         position: relative;
-
-        border: 1px solid var(--border);
-
-        border-radius: 24px;
-
         overflow: hidden;
 
-        background:
-            rgba(255, 255, 255, 0.82);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
 
-        backdrop-filter:
-            blur(15px);
+        gap: 30px;
 
-        box-shadow:
-            var(--shadow);
+        padding: 44px;
 
-        margin-bottom: 28px;
-
-        transition:
-
-            transform 0.35s ease,
-
-            box-shadow 0.35s ease,
-
-            border-color 0.35s ease;
-
-    }
-
-    .solar-card:hover {
-
-        transform:
-            translateY(-6px);
-
-        box-shadow:
-
-            0 25px 60px rgba(15, 23, 42, 0.13);
-
-        border-color:
-
-            rgba(37, 99, 235, 0.3);
-
-    }
-
-    /* =========================================================
-   CARD HEADERS
-========================================================= */
-
-    .solar-card .card-header {
-
-        position: relative;
-
-        padding: 22px 26px;
-
-        border: none;
-
-        overflow: hidden;
-
-    }
-
-    .solar-card .card-header::after {
-
-        content: "";
-
-        position: absolute;
-
-        top: 0;
-
-        left: -100%;
-
-        width: 100%;
-
-        height: 100%;
-
-        background:
-
-            linear-gradient(90deg,
-                transparent,
-                rgba(255, 255, 255, 0.25),
-                transparent);
-
-        animation:
-            headerShine 6s infinite;
-
-    }
-
-    @keyframes headerShine {
-
-        0% {
-            left: -100%;
-        }
-
-        30% {
-            left: 100%;
-        }
-
-        100% {
-            left: 100%;
-        }
-
-    }
-
-    .section-title {
-
-        font-size: 1.05rem;
-
-        font-weight: 800;
-
-        letter-spacing: 1.2px;
-
-        text-transform: uppercase;
-
-    }
-
-    /* =========================================================
-   MAIN HEADER
-========================================================= */
-
-    .header-gradient {
-
-        background:
-
-            linear-gradient(135deg,
-                #1d4ed8,
-                #2563eb 45%,
-                #06b6d4);
+        border-radius: 28px;
 
         color: white;
 
-    }
-
-    .header-gradient h2 {
-
-        font-weight: 800;
-
-        letter-spacing: -0.5px;
-
-    }
-
-    .header-gradient p {
-
-        opacity: 0.8;
-
-    }
-
-    /* =========================================================
-   CARD BODY
-========================================================= */
-
-    .solar-card .card-body {
-
-        padding: 28px;
-
-    }
-
-    /* =========================================================
-   FORM CONTROLS
-========================================================= */
-
-    .form-control,
-    .form-select {
-
-        border-radius: 12px;
-
-        border: 1px solid #cbd5e1;
-
-        padding: 12px 14px;
-
-        background: rgba(255, 255, 255, 0.8);
-
-        transition:
-
-            border-color 0.25s ease,
-
-            box-shadow 0.25s ease,
-
-            transform 0.25s ease;
-
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-
-        border-color:
-            var(--solar-blue);
-
-        box-shadow:
-
-            0 0 0 4px rgba(37, 99, 235, 0.12);
-
-        transform:
-            translateY(-2px);
-
-    }
-
-    /* =========================================================
-   LABELS
-========================================================= */
-
-    .form-label,
-    label {
-
-        font-size: 0.85rem;
-
-        font-weight: 700;
-
-        color: #334155;
-
-        margin-bottom: 7px;
-
-    }
-
-    /* =========================================================
-   LOAD TABLE
-========================================================= */
-
-    .table {
-
-        margin-bottom: 0;
-
-    }
-
-    .table thead th {
-
-        padding: 15px;
-
-        color: #475569;
-
-        font-size: 0.78rem;
-
-        text-transform: uppercase;
-
-        letter-spacing: 0.8px;
-
-        border-bottom: 2px solid #e2e8f0;
-
-    }
-
-    .table tbody tr {
-
-        transition:
-
-            background 0.25s ease,
-
-            transform 0.25s ease;
-
-    }
-
-    .table tbody tr:hover {
-
         background:
-
-            rgba(37, 99, 235, 0.035);
-
-        transform:
-
-            translateX(4px);
-
-    }
-
-    .table td {
-
-        padding: 15px;
-
-        vertical-align: middle;
-
-    }
-
-    /* =========================================================
-   ADD BUTTONS
-========================================================= */
-
-    #addLoad,
-    #addCustom {
-
-        width: 42px;
-
-        height: 42px;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        border-radius: 12px;
-
-        font-size: 22px;
-
-        font-weight: 700;
-
-        transition:
-
-            transform 0.25s ease,
-
-            box-shadow 0.25s ease;
-
-    }
-
-    #addLoad:hover,
-    #addCustom:hover {
-
-        transform:
-            rotate(90deg) scale(1.1);
-
-        box-shadow:
-
-            0 8px 20px rgba(0, 0, 0, 0.18);
-
-    }
-
-    /* =========================================================
-   REMOVE BUTTON
-========================================================= */
-
-    .remove {
-
-        width: 38px;
-
-        height: 38px;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        border-radius: 10px;
-
-        transition:
-
-            transform 0.25s ease,
-
-            background 0.25s ease;
-
-    }
-
-    .remove:hover {
-
-        transform:
-            rotate(90deg) scale(1.1);
-
-    }
-
-    /* =========================================================
-   CUSTOM APPLIANCE ROW
-========================================================= */
-
-    #customTable tbody tr {
-
-        animation:
-
-            rowAppear 0.4s ease-out;
-
-    }
-
-    @keyframes rowAppear {
-
-        from {
-
-            opacity: 0;
-
-            transform:
-                translateX(-20px);
-
-        }
-
-        to {
-
-            opacity: 1;
-
-            transform:
-                translateX(0);
-
-        }
-
-    }
-
-    /* =========================================================
-   CABLE DISTANCE SECTION
-========================================================= */
-
-    .bg-info {
-
-        background:
-
+            radial-gradient(circle at 85% 20%,
+                rgba(245, 158, 11, 0.22),
+                transparent 25%),
             linear-gradient(135deg,
-                #0891b2,
-                #2563eb) !important;
-
-    }
-
-    /* =========================================================
-   CALCULATE BUTTON
-========================================================= */
-
-    .calc-btn {
-
-        position: relative;
-
-        min-width: 280px;
-
-        padding: 17px 42px;
-
-        border: none;
-
-        border-radius: 50px;
-
-        font-size: 16px;
-
-        font-weight: 800;
-
-        letter-spacing: 0.5px;
-
-        background:
-
-            linear-gradient(135deg,
-                #059669,
-                #10b981);
+                #134e4a,
+                #0f766e 55%,
+                #115e59);
 
         box-shadow:
+            0 28px 65px rgba(15, 118, 110, 0.20);
 
-            0 12px 30px rgba(16, 185, 129, 0.3);
-
-        transition:
-
-            transform 0.3s ease,
-
-            box-shadow 0.3s ease;
-
-        overflow: hidden;
-
+        animation: solarFadeUp .65s ease both;
     }
 
-    .calc-btn::before {
-
+    .solar-hero::before {
         content: "";
 
         position: absolute;
 
-        top: 0;
+        width: 380px;
+        height: 380px;
 
-        left: -100%;
+        right: -180px;
+        bottom: -230px;
 
-        width: 80%;
+        border:
+            1px solid rgba(255, 255, 255, .15);
 
-        height: 100%;
-
-        background:
-
-            linear-gradient(90deg,
-                transparent,
-                rgba(255, 255, 255, 0.35),
-                transparent);
-
-        transform:
-            skewX(-20deg);
-
-        animation:
-            buttonShine 4s infinite;
-
-    }
-
-    @keyframes buttonShine {
-
-        0% {
-            left: -100%;
-        }
-
-        30% {
-            left: 130%;
-        }
-
-        100% {
-            left: 130%;
-        }
-
-    }
-
-    .calc-btn:hover {
-
-        transform:
-            translateY(-5px) scale(1.03);
+        border-radius: 50%;
 
         box-shadow:
-
-            0 18px 45px rgba(16, 185, 129, 0.45);
-
+            0 0 0 45px rgba(255, 255, 255, .025),
+            0 0 0 90px rgba(255, 255, 255, .02);
     }
 
-    /* =========================================================
-   ERROR ALERT
-========================================================= */
+    .solar-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-    .alert-danger {
+        margin-bottom: 12px;
 
-        border: none;
+        font-size: 11px;
+        font-weight: 800;
 
-        border-left: 5px solid #dc2626;
+        letter-spacing: .13em;
+        text-transform: uppercase;
 
-        border-radius: 15px;
+        opacity: .78;
+    }
+
+    .solar-hero h1 {
+        position: relative;
+
+        margin: 0;
+
+        font-size: clamp(32px, 5vw, 56px);
+        line-height: 1.03;
+
+        letter-spacing: -2px;
+    }
+
+    .solar-hero-description {
+        position: relative;
+
+        max-width: 780px;
+
+        margin: 18px 0 0;
+
+        color: rgba(255, 255, 255, .80);
+
+        font-size: 14px;
+        line-height: 1.75;
+    }
+
+    .solar-hero-symbol {
+        position: relative;
+
+        width: 150px;
+        height: 150px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border:
+            1px solid rgba(255, 255, 255, .20);
+
+        border-radius: 50%;
+
+        animation: solarFloat 5s ease-in-out infinite;
+    }
+
+    .solar-hero-symbol::before {
+        content: "";
+
+        position: absolute;
+
+        width: 112px;
+        height: 112px;
+
+        border:
+            1px solid rgba(255, 255, 255, .16);
+
+        border-radius: 50%;
+    }
+
+    .solar-hero-symbol span {
+        position: relative;
+
+        width: 74px;
+        height: 74px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 22px;
 
         background:
+            rgba(255, 255, 255, .12);
 
+        backdrop-filter: blur(10px);
+
+        font-size: 34px;
+    }
+
+    /* =====================================================================
+   ENGINEERING PIPELINE
+   ===================================================================== */
+
+    .solar-pipeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+
+        gap: 12px;
+
+        margin: 22px 0;
+    }
+
+    .solar-pipeline-item {
+        display: flex;
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 15px;
+
+        background: white;
+
+        border:
+            1px solid var(--solar-border);
+
+        border-radius: 14px;
+
+        transition: .25s ease;
+    }
+
+    .solar-pipeline-item:hover {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 12px 30px rgba(15, 23, 42, .07);
+
+        border-color:
+            rgba(15, 118, 110, .25);
+    }
+
+    .solar-pipeline-number {
+        width: 34px;
+        height: 34px;
+
+        flex: 0 0 34px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: var(--solar-primary-light);
+        color: var(--solar-primary);
+
+        font-size: 11px;
+        font-weight: 900;
+    }
+
+    .solar-pipeline strong {
+        display: block;
+
+        font-size: 12px;
+    }
+
+    .solar-pipeline span {
+        display: block;
+
+        margin-top: 3px;
+
+        color: var(--solar-muted);
+
+        font-size: 10px;
+    }
+
+    /* =====================================================================
+   ERROR BANNER
+   ===================================================================== */
+
+    .solar-error-banner {
+        margin-bottom: 20px;
+
+        padding: 16px 18px;
+
+        border:
+            1px solid #fecaca;
+
+        border-radius: 13px;
+
+        background:
+            var(--solar-danger-bg);
+
+        color: #991b1b;
+
+        font-size: 12px;
+
+        animation: solarFadeUp .4s ease both;
+    }
+
+    .solar-error-banner strong {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    /* =====================================================================
+   CARD
+   ===================================================================== */
+
+    .solar-card {
+        overflow: hidden;
+
+        margin-bottom: 20px;
+
+        background:
+            var(--solar-card);
+
+        border:
+            1px solid var(--solar-border);
+
+        border-radius:
+            var(--solar-radius);
+
+        box-shadow:
+            var(--solar-shadow);
+
+        animation:
+            solarFadeUp .6s ease both;
+    }
+
+    .solar-card-header {
+        display: flex;
+        align-items: center;
+
+        gap: 14px;
+
+        padding: 22px 25px;
+
+        border-bottom:
+            1px solid var(--solar-border);
+    }
+
+    .solar-section-icon {
+        width: 44px;
+        height: 44px;
+
+        flex: 0 0 44px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 13px;
+
+        background: #ecfdf5;
+
+        color: var(--solar-primary);
+
+        font-size: 18px;
+    }
+
+    .solar-card-title {
+        margin: 0;
+
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .solar-card-subtitle {
+        margin: 4px 0 0;
+
+        color: var(--solar-muted);
+
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .solar-card-body {
+        padding: 25px;
+    }
+
+    /* =====================================================================
+   FORM GRID
+   ===================================================================== */
+
+    .solar-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 19px;
+    }
+
+    .solar-grid.three {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .solar-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .solar-field label {
+        display: block;
+
+        margin-bottom: 7px;
+
+        color: #334155;
+
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .solar-required {
+        color: var(--solar-danger);
+    }
+
+    .solar-field input,
+    .solar-field select,
+    .solar-field textarea {
+        width: 100%;
+
+        min-height: 47px;
+
+        box-sizing: border-box;
+
+        padding: 11px 13px;
+
+        background: white;
+
+        color: var(--solar-text);
+
+        border:
+            1px solid #cbd5e1;
+
+        border-radius: 11px;
+
+        outline: none;
+
+        font: inherit;
+        font-size: 13px;
+
+        transition: .2s ease;
+    }
+
+    .solar-field textarea {
+        min-height: 105px;
+
+        resize: vertical;
+    }
+
+    .solar-field input:focus,
+    .solar-field select:focus,
+    .solar-field textarea:focus {
+        border-color:
+            var(--solar-primary);
+
+        box-shadow:
+            0 0 0 4px rgba(15, 118, 110, .10);
+    }
+
+    .solar-field.has-error input,
+    .solar-field.has-error select,
+    .solar-field.has-error textarea {
+        border-color:
+            var(--solar-danger);
+
+        background:
+            #fffafa;
+    }
+
+    .solar-help {
+        margin-top: 6px;
+
+        color:
+            var(--solar-muted);
+
+        font-size: 10px;
+
+        line-height: 1.5;
+    }
+
+    .solar-errors {
+        margin: 6px 0 0;
+        padding: 0;
+
+        color:
+            var(--solar-danger);
+
+        font-size: 10px;
+
+        list-style: none;
+    }
+
+    .solar-errors ul {
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    /* =====================================================================
+   LOAD AUDIT
+   ===================================================================== */
+
+    .solar-load-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        margin-bottom: 18px;
+    }
+
+    .solar-load-description {
+        max-width: 760px;
+
+        color: var(--solar-muted);
+
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    .solar-add-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 8px;
+
+        flex: 0 0 auto;
+
+        padding: 11px 16px;
+
+        border: none;
+        border-radius: 11px;
+
+        background:
+            var(--solar-primary);
+
+        color: white;
+
+        font-size: 12px;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 8px 18px rgba(15, 118, 110, .18);
+
+        transition: .2s ease;
+    }
+
+    .solar-add-button:hover {
+        background:
+            var(--solar-primary-dark);
+
+        transform:
+            translateY(-2px);
+    }
+
+    .solar-load-formset-errors {
+        margin-bottom: 15px;
+
+        padding: 12px 14px;
+
+        border:
+            1px solid #fecaca;
+
+        border-radius: 10px;
+
+        background:
+            #fff7f7;
+
+        color:
+            #991b1b;
+
+        font-size: 11px;
+    }
+
+    .solar-load-table-wrap {
+        overflow-x: auto;
+
+        border:
+            1px solid var(--solar-border);
+
+        border-radius: 15px;
+    }
+
+    .solar-load-table {
+        width: 100%;
+
+        min-width: 820px;
+
+        border-collapse: collapse;
+    }
+
+    .solar-load-table th {
+        padding: 13px 12px;
+
+        background:
+            #f8fafc;
+
+        color:
+            #64748b;
+
+        border-bottom:
+            1px solid var(--solar-border);
+
+        text-align: left;
+
+        font-size: 10px;
+        font-weight: 800;
+
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .solar-load-table td {
+        padding: 10px 12px;
+
+        border-bottom:
+            1px solid #f1f5f9;
+
+        vertical-align: top;
+    }
+
+    .solar-load-row {
+        animation:
+            solarRowIn .3s ease both;
+    }
+
+    .solar-load-row.removing {
+        animation:
+            solarRowOut .25s ease forwards;
+    }
+
+    .solar-load-table input,
+    .solar-load-table select {
+        width: 100%;
+
+        min-height: 43px;
+
+        box-sizing: border-box;
+
+        padding: 9px 10px;
+
+        border:
+            1px solid #cbd5e1;
+
+        border-radius: 9px;
+
+        background: white;
+
+        outline: none;
+
+        font-size: 12px;
+    }
+
+    .solar-load-table input:focus,
+    .solar-load-table select:focus {
+        border-color:
+            var(--solar-primary);
+
+        box-shadow:
+            0 0 0 3px rgba(15, 118, 110, .08);
+    }
+
+    .solar-appliance-info {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 5px;
+
+        margin-top: 6px;
+    }
+
+    .solar-chip {
+        display: inline-flex;
+        align-items: center;
+
+        padding: 3px 7px;
+
+        border-radius: 999px;
+
+        background:
+            #f1f5f9;
+
+        color:
+            #64748b;
+
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .solar-chip.power {
+        background:
+            #ecfdf5;
+
+        color:
+            var(--solar-primary);
+    }
+
+    .solar-remove-button {
+        width: 38px;
+        height: 38px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border:
+            1px solid #fecaca;
+
+        border-radius: 10px;
+
+        background:
+            #fff5f5;
+
+        color:
+            var(--solar-danger);
+
+        cursor: pointer;
+
+        font-size: 18px;
+
+        transition: .2s ease;
+    }
+
+    .solar-remove-button:hover {
+        background:
+            #fee2e2;
+
+        transform:
+            scale(1.05);
+    }
+
+    .solar-delete-field {
+        display: none;
+    }
+
+    /* =====================================================================
+   LIVE SUMMARY
+   ===================================================================== */
+
+    .solar-summary {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 12px;
+
+        margin-top: 18px;
+    }
+
+    .solar-metric {
+        position: relative;
+        overflow: hidden;
+
+        padding: 17px;
+
+        background:
+            linear-gradient(145deg,
+                white,
+                #f8fafc);
+
+        border:
+            1px solid var(--solar-border);
+
+        border-radius: 14px;
+    }
+
+    .solar-metric-label {
+        display: block;
+
+        margin-bottom: 6px;
+
+        color:
+            var(--solar-muted);
+
+        font-size: 9px;
+        font-weight: 800;
+
+        text-transform: uppercase;
+    }
+
+    .solar-metric-value {
+        font-size: 21px;
+        font-weight: 800;
+
+        letter-spacing: -.5px;
+    }
+
+    /* =====================================================================
+   NOTICE
+   ===================================================================== */
+
+    .solar-notice {
+        display: flex;
+
+        gap: 11px;
+
+        margin-top: 18px;
+
+        padding: 14px;
+
+        background:
+            #fffbeb;
+
+        border:
+            1px solid #fde68a;
+
+        border-radius: 12px;
+
+        color:
+            #92400e;
+
+        font-size: 11px;
+
+        line-height: 1.6;
+    }
+
+    /* =====================================================================
+   SUBMIT
+   ===================================================================== */
+
+    .solar-submit {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        padding: 22px 25px;
+
+        background:
+            #f8fafc;
+
+        border-top:
+            1px solid var(--solar-border);
+    }
+
+    .solar-submit-info {
+        color:
+            var(--solar-muted);
+
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .solar-submit-info strong {
+        color:
+            var(--solar-text);
+    }
+
+    .solar-submit-button {
+        min-width: 250px;
+        min-height: 52px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 10px;
+
+        border: none;
+        border-radius: 12px;
+
+        background:
             linear-gradient(135deg,
-                #fff1f2,
-                #ffe4e6);
+                var(--solar-primary),
+                var(--solar-primary-dark));
 
-        animation:
+        color: white;
 
-            alertAppear 0.5s ease-out;
+        font-size: 13px;
+        font-weight: 800;
 
+        cursor: pointer;
+
+        box-shadow:
+            0 12px 25px rgba(15, 118, 110, .20);
+
+        transition: .2s ease;
     }
 
-    @keyframes alertAppear {
+    .solar-submit-button:hover {
+        transform:
+            translateY(-2px);
 
+        box-shadow:
+            0 18px 30px rgba(15, 118, 110, .27);
+    }
+
+    .solar-submit-button.loading {
+        opacity: .75;
+
+        pointer-events: none;
+    }
+
+    /* =====================================================================
+   ANIMATIONS
+   ===================================================================== */
+
+    @keyframes solarFadeUp {
         from {
-
             opacity: 0;
-
-            transform:
-                translateY(-15px);
-
+            transform: translateY(18px);
         }
 
         to {
-
             opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
+    @keyframes solarFloat {
+
+        0%,
+        100% {
             transform:
-                translateY(0);
-
+                translateY(0) rotate(0deg);
         }
 
-    }
-
-    /* =========================================================
-   FADE CARD ANIMATION
-========================================================= */
-
-    .fade-card {
-
-        animation:
-
-            cardReveal 0.65s ease-out both;
-
-    }
-
-    .fade-card:nth-child(2) {
-
-        animation-delay:
-            0.1s;
-
-    }
-
-    .fade-card:nth-child(3) {
-
-        animation-delay:
-            0.2s;
-
-    }
-
-    .fade-card:nth-child(4) {
-
-        animation-delay:
-            0.3s;
-
-    }
-
-    @keyframes cardReveal {
-
-        from {
-
-            opacity: 0;
-
+        50% {
             transform:
-                translateY(25px);
+                translateY(-8px) rotate(2deg);
+        }
+    }
 
+    @keyframes solarRowIn {
+        from {
+            opacity: 0;
+            transform:
+                translateY(-8px) scale(.98);
         }
 
         to {
-
             opacity: 1;
-
             transform:
-                translateY(0);
-
+                translateY(0) scale(1);
         }
-
     }
 
-    /* =========================================================
-   MOBILE RESPONSIVENESS
-========================================================= */
-
-    @media (max-width: 768px) {
-
-        .solar-card {
-
-            border-radius: 18px;
-
-            margin-bottom: 20px;
-
+    @keyframes solarRowOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
         }
 
-        .solar-card .card-body {
+        to {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+    }
 
-            padding: 18px;
+    @keyframes solarSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
+    /* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+
+    @media (max-width: 950px) {
+
+        .solar-hero {
+            grid-template-columns: 1fr;
         }
 
-        .solar-card .card-header {
-
-            padding: 18px;
-
+        .solar-hero-symbol {
+            display: none;
         }
 
-        .table {
-
-            min-width: 650px;
-
+        .solar-pipeline {
+            grid-template-columns:
+                repeat(2, 1fr);
         }
 
-        .table-responsive {
-
-            border-radius: 12px;
-
+        .solar-grid.three {
+            grid-template-columns:
+                repeat(2, 1fr);
         }
 
-        .calc-btn {
+        .solar-summary {
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+    }
 
+    @media (max-width: 650px) {
+
+        .solar-page {
+            padding:
+                14px 9px 50px;
+        }
+
+        .solar-hero {
+            padding:
+                28px 22px;
+        }
+
+        .solar-hero h1 {
+            font-size: 34px;
+        }
+
+        .solar-pipeline {
+            grid-template-columns: 1fr;
+        }
+
+        .solar-grid,
+        .solar-grid.three {
+            grid-template-columns: 1fr;
+        }
+
+        .solar-card-body,
+        .solar-card-header {
+            padding: 19px;
+        }
+
+        .solar-load-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .solar-add-button {
             width: 100%;
-
-            min-width: 0;
-
         }
 
-    }
+        .solar-summary {
+            grid-template-columns: 1fr;
+        }
 
-    /* =========================================================
-   REDUCED MOTION ACCESSIBILITY
-========================================================= */
+        .solar-submit {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .solar-submit-button {
+            width: 100%;
+        }
+    }
 
     @media (prefers-reduced-motion: reduce) {
 
         *,
         *::before,
         *::after {
+            animation-duration:
+                .01ms !important;
 
-            animation-duration: 0.01ms !important;
+            animation-iteration-count:
+                1 !important;
 
-            animation-iteration-count: 1 !important;
-
-            transition-duration: 0.01ms !important;
-
+            transition-duration:
+                .01ms !important;
         }
-
     }
 </style>
 
-<div class="container-fluid py-4">
-    {% if error %}
 
-    <div class="alert alert-danger shadow-sm">
+<div class="solar-page">
 
-        <h5>
-            ⚠ Engineering Validation Failed
-        </h5>
+    <div class="solar-container">
 
-        <hr>
 
-        {{ error }}
+        <!-- ===================================================================
+     HERO
+     =================================================================== -->
 
-    </div>
+        <section class="solar-hero">
 
-    {% endif %}
-    <div class="row justify-content-center">
+            <div>
 
-        <div class="col-xl-11">
+                <div class="solar-eyebrow">
+                    <span>☀</span>
+                    Solar Engineering Workspace
+                </div>
 
-            <form method="post">
+                <h1>
+                    Solar PV System Designer
+                </h1>
 
-                {% csrf_token %}
+                <p class="solar-hero-description">
+                    Define the project requirements and electrical loads.
+                    The engineering pipeline will determine the appropriate
+                    system voltage, battery bank, PV array, inverter,
+                    charge controller, protection, cables, accessories,
+                    BOQ and pricing.
+                </p>
 
-                <div class="solar-card fade-card">
+            </div>
 
-                    <div class="card-header header-gradient">
+            <div class="solar-hero-symbol">
+                <span>☀</span>
+            </div>
 
-                        <h2>
+        </section>
 
-                            ⚡ Solar Design Calculator
 
+        <!-- ===================================================================
+     PIPELINE
+     =================================================================== -->
+
+        <div class="solar-pipeline">
+
+            <div class="solar-pipeline-item">
+                <div class="solar-pipeline-number">01</div>
+
+                <div>
+                    <strong>Load Audit</strong>
+                    <span>Electrical demand</span>
+                </div>
+            </div>
+
+
+            <div class="solar-pipeline-item">
+                <div class="solar-pipeline-number">02</div>
+
+                <div>
+                    <strong>System Architecture</strong>
+                    <span>Voltage & battery</span>
+                </div>
+            </div>
+
+
+            <div class="solar-pipeline-item">
+                <div class="solar-pipeline-number">03</div>
+
+                <div>
+                    <strong>PV & Power</strong>
+                    <span>Panels & inverter</span>
+                </div>
+            </div>
+
+
+            <div class="solar-pipeline-item">
+                <div class="solar-pipeline-number">04</div>
+
+                <div>
+                    <strong>Final Design</strong>
+                    <span>Protection & BOQ</span>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================================
+     ENGINEERING ERROR
+     =================================================================== -->
+
+        {% if error %}
+
+        <div class="solar-error-banner">
+
+            <strong>
+                Design could not be completed.
+            </strong>
+
+            <div>
+                {{ error }}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ===================================================================
+     MAIN FORM
+     =================================================================== -->
+
+        <form method="post" action="{% url 'solar_design' %}" id="solarDesignForm" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- ===================================================================
+     PROJECT INFORMATION
+     =================================================================== -->
+
+            <section class="solar-card">
+
+                <div class="solar-card-header">
+
+                    <div class="solar-section-icon">
+                        ◈
+                    </div>
+
+                    <div>
+
+                        <h2 class="solar-card-title">
+                            Project Information
                         </h2>
 
-                        <p class="mb-0">
-
-                            Engineering • Procurement • Quotation
-
+                        <p class="solar-card-subtitle">
+                            Identify the proposed solar installation.
                         </p>
 
                     </div>
 
-                    <div class="card-body">
+                </div>
 
-                        <div class="row">
 
-                            <!-- OPERATING MODE -->
-                            <div class="col-md-3 mb-3">
+                <div class="solar-card-body">
 
-                                <label class="form-label">
+                    <div class="solar-grid">
 
-                                    System Operating Mode
 
-                                </label>
+                        <!-- PROJECT NAME -->
 
-                                {{ form.operating_mode }}
+                        <div class="solar-field{% if design_form.project_name.errors %} has-error{% endif %}">
 
-                                {% if form.operating_mode.errors %}
+                            <label for="{{ design_form.project_name.id_for_label }}">
 
-                                <div class="text-danger small">
+                                {{ design_form.project_name.label }}
 
-                                    {{ form.operating_mode.errors }}
-
-                                </div>
-
+                                {% if design_form.project_name.field.required %}
+                                <span class="solar-required">*</span>
                                 {% endif %}
 
+                            </label>
+
+                            {{ design_form.project_name }}
+
+                            {% if design_form.project_name.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.project_name.help_text }}
                             </div>
+                            {% endif %}
 
-
-                            <!-- AUTONOMY -->
-                            <!-- <div class="col-md-3 mb-3">
-
-                                <label class="form-label">
-
-                                    Autonomy Days
-
-                                </label>
-
-                                {{ form.autonomy }}
-
-                            </div> -->
-
-
-                            <!-- PEAK SUN HOURS -->
-                            <div class="col-md-3 mb-3">
-
-                                <label class="form-label">
-
-                                    Peak Sun Hours
-
-                                </label>
-
-                                {{ form.peak_sun_hours }}
-
+                            {% if design_form.project_name.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.project_name.errors }}
                             </div>
+                            {% endif %}
+
+                        </div>
 
 
-                            <!-- BATTERY -->
-                            <div class="col-md-3 mb-3">
+                        <!-- CLIENT NAME -->
 
-                                <label class="form-label">
+                        <div class="solar-field{% if design_form.client_name.errors %} has-error{% endif %}">
 
-                                    Battery
+                            <label for="{{ design_form.client_name.id_for_label }}">
 
-                                </label>
+                                {{ design_form.client_name.label }}
 
-                                {{ form.battery }}
+                                {% if design_form.client_name.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
 
+                            </label>
+
+                            {{ design_form.client_name }}
+
+                            {% if design_form.client_name.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.client_name.help_text }}
                             </div>
+                            {% endif %}
 
-
-                            <!-- PANEL -->
-                            <div class="col-md-3 mb-3">
-
-                                <label class="form-label">
-
-                                    Panel
-
-                                </label>
-
-                                {{ form.panel }}
-
+                            {% if design_form.client_name.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.client_name.errors }}
                             </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- PROJECT LOCATION -->
+
+                        <div class="solar-field{% if design_form.project_location.errors %} has-error{% endif %}">
+
+                            <label for="{{ design_form.project_location.id_for_label }}">
+
+                                {{ design_form.project_location.label }}
+
+                                {% if design_form.project_location.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ design_form.project_location }}
+
+                            {% if design_form.project_location.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.project_location.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if design_form.project_location.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.project_location.errors }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="solar-field full{% if design_form.description.errors %} has-error{% endif %}">
+
+                            <label for="{{ design_form.description.id_for_label }}">
+
+                                {{ design_form.description.label }}
+
+                                {% if design_form.description.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ design_form.description }}
+
+                            {% if design_form.description.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.description.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if design_form.description.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.description.errors }}
+                            </div>
+                            {% endif %}
 
                         </div>
 
@@ -877,226 +1355,523 @@
 
                 </div>
 
-                <div class="solar-card fade-card">
+            </section>
 
-                    <div class="card-header bg-success text-white">
 
-                        <div class="d-flex justify-content-between">
+            <!-- ===================================================================
+     SYSTEM REQUIREMENTS
+     =================================================================== -->
 
-                            <span class="section-title">
+            <section class="solar-card">
 
-                                Load Audit
+                <div class="solar-card-header">
 
+                    <div class="solar-section-icon">
+                        ⚙
+                    </div>
+
+                    <div>
+
+                        <h2 class="solar-card-title">
+                            System Requirements
+                        </h2>
+
+                        <p class="solar-card-subtitle">
+                            Operating conditions used by the engineering pipeline.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="solar-card-body">
+
+                    <div class="solar-grid three">
+
+
+                        <!-- OPERATING MODE -->
+
+                        <div class="solar-field{% if design_form.operating_mode.errors %} has-error{% endif %}">
+
+                            <label for="{{ design_form.operating_mode.id_for_label }}">
+
+                                {{ design_form.operating_mode.label }}
+
+                                {% if design_form.operating_mode.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ design_form.operating_mode }}
+
+                            {% if design_form.operating_mode.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.operating_mode.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if design_form.operating_mode.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.operating_mode.errors }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- PEAK SUN HOURS -->
+
+                        <div class="solar-field{% if design_form.peak_sun_hours.errors %} has-error{% endif %}">
+
+                            <label for="{{ design_form.peak_sun_hours.id_for_label }}">
+
+                                {{ design_form.peak_sun_hours.label }}
+
+                                {% if design_form.peak_sun_hours.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ design_form.peak_sun_hours }}
+
+                            {% if design_form.peak_sun_hours.help_text %}
+                            <div class="solar-help">
+                                {{ design_form.peak_sun_hours.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if design_form.peak_sun_hours.errors %}
+                            <div class="solar-errors">
+                                {{ design_form.peak_sun_hours.errors }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- AUTONOMY -->
+
+                        {% for field in requirements_form %}
+
+                        <div class="solar-field{% if field.errors %} has-error{% endif %}">
+
+                            <label for="{{ field.id_for_label }}">
+
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                            <div class="solar-help">
+                                {{ field.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if field.errors %}
+                            <div class="solar-errors">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ===================================================================
+     BATTERY PREFERENCE
+     =================================================================== -->
+
+            <section class="solar-card">
+
+                <div class="solar-card-header">
+
+                    <div class="solar-section-icon">
+                        ▣
+                    </div>
+
+                    <div>
+
+                        <h2 class="solar-card-title">
+                            Battery Preference
+                        </h2>
+
+                        <p class="solar-card-subtitle">
+                            Optional battery chemistry preference. The engineering
+                            pipeline remains responsible for the final battery selection.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="solar-card-body">
+
+                    <div class="solar-grid">
+
+                        {% for field in battery_form %}
+
+                        <div class="solar-field{% if field.errors %} has-error{% endif %}">
+
+                            <label for="{{ field.id_for_label }}">
+
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                <span class="solar-required">*</span>
+                                {% endif %}
+
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.help_text %}
+                            <div class="solar-help">
+                                {{ field.help_text }}
+                            </div>
+                            {% endif %}
+
+                            {% if field.errors %}
+                            <div class="solar-errors">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ===================================================================
+     ELECTRICAL LOAD AUDIT
+     =================================================================== -->
+
+            <section class="solar-card">
+
+                <div class="solar-card-header">
+
+                    <div class="solar-section-icon">
+                        ⚡
+                    </div>
+
+                    <div>
+
+                        <h2 class="solar-card-title">
+                            Electrical Load Audit
+                        </h2>
+
+                        <p class="solar-card-subtitle">
+                            Define the appliances and operating profile that the
+                            solar system must supply.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="solar-card-body">
+
+
+                    <!-- MANAGEMENT FORM -->
+
+                    {{ load_formset.management_form }}
+
+
+                    {% if load_formset.non_form_errors %}
+
+                    <div class="solar-load-formset-errors">
+
+                        {{ load_formset.non_form_errors }}
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <div class="solar-load-toolbar">
+
+                        <div class="solar-load-description">
+
+                            Add each electrical appliance that will be supplied by
+                            the proposed system. Enter the quantity and expected
+                            operating hours per day.
+
+                        </div>
+
+
+                        <button type="button" id="addApplianceButton" class="solar-add-button">
+
+                            <span>＋</span>
+
+                            Add Appliance
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- LOAD TABLE -->
+
+                    <div class="solar-load-table-wrap">
+
+                        <table class="solar-load-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Appliance
+                                    </th>
+
+                                    <th style="width:120px;">
+                                        Quantity
+                                    </th>
+
+                                    <th style="width:150px;">
+                                        Hours / Day
+                                    </th>
+
+                                    <th style="width:150px;">
+                                        Energy / Day
+                                    </th>
+
+                                    <th style="width:70px;">
+                                        Remove
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="applianceRows">
+
+
+                                {% for load_form in load_formset %}
+
+                                <tr class="solar-load-row" data-form-index="{{ forloop.counter0 }}">
+
+
+                                    {% for hidden in load_form.hidden_fields %}
+                                    {{ hidden }}
+                                    {% endfor %}
+
+
+                                    {% if load_form.DELETE %}
+                                    <div class="solar-delete-field">
+                                        {{ load_form.DELETE }}
+                                    </div>
+                                    {% endif %}
+
+
+                                    <!-- APPLIANCE -->
+
+                                    <td>
+
+                                        <div
+                                            class="{% if load_form.appliance.errors %}solar-field has-error{% endif %}">
+
+                                            {{ load_form.appliance }}
+
+                                            <div class="solar-custom-appliance">
+                                                <span>or custom:</span>
+                                                {{ load_form.custom_name }}
+                                                {{ load_form.custom_wattage }}
+                                            </div>
+
+                                            {% if load_form.custom_name.errors or load_form.custom_wattage.errors %}
+                                            <div class="solar-errors">{{ load_form.custom_name.errors }}{{ load_form.custom_wattage.errors }}</div>
+                                            {% endif %}
+
+                                            {% if load_form.appliance.errors %}
+                                            <div class="solar-errors">
+                                                {{ load_form.appliance.errors }}
+                                            </div>
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="solar-appliance-info" data-appliance-info>
+
+                                            <span class="solar-chip power" data-wattage-display>
+                                                Select appliance
+                                            </span>
+
+                                            <span class="solar-chip" data-load-type-display></span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- QUANTITY -->
+
+                                    <td>
+
+                                        <div class="{% if load_form.quantity.errors %}solar-field has-error{% endif %}">
+
+                                            {{ load_form.quantity }}
+
+                                            {% if load_form.quantity.errors %}
+                                            <div class="solar-errors">
+                                                {{ load_form.quantity.errors }}
+                                            </div>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- HOURS -->
+
+                                    <td>
+
+                                        <div
+                                            class="{% if load_form.hours_per_day.errors %}solar-field has-error{% endif %}">
+
+                                            {{ load_form.hours_per_day }}
+
+                                            {% if load_form.hours_per_day.errors %}
+                                            <div class="solar-errors">
+                                                {{ load_form.hours_per_day.errors }}
+                                            </div>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- ENERGY -->
+
+                                    <td>
+
+                                        <strong data-row-energy>
+                                            0 Wh
+                                        </strong>
+
+                                    </td>
+
+
+                                    <!-- REMOVE -->
+
+                                    <td>
+
+                                        <button type="button" class="solar-remove-button" data-remove-appliance
+                                            title="Remove appliance">
+                                            ×
+                                        </button>
+
+                                    </td>
+
+
+                                </tr>
+
+                                {% endfor %}
+
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                    <!-- =================================================================
+             LIVE SUMMARY
+             ================================================================= -->
+
+                    <div class="solar-summary">
+
+                        <div class="solar-metric">
+
+                            <span class="solar-metric-label">
+                                Connected Load
                             </span>
 
-                            <button type="button" id="addLoad" class="btn btn-light">
-
-                                +
-
-                            </button>
+                            <strong class="solar-metric-value" id="connectedLoad">
+                                0 W
+                            </strong>
 
                         </div>
 
-                    </div>
 
-                    <div class="card-body">
+                        <div class="solar-metric">
 
-                        <div class="table-responsive">
-
-                            <table class="table align-middle" id="loadTable">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>
-
-                                            Appliance
-
-                                        </th>
-
-                                        <th>
-
-                                            Qty
-
-                                        </th>
-
-                                        <th>
-
-                                            Hours
-
-                                        </th>
-
-                                        <th>
-
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    <tr>
-
-                                        <td>
-
-                                            <select name="appliance_id" class="form-select">
-
-                                                {% for app in appliances %}
-
-                                                <option value="{{app.id}}">
-
-                                                    {{app.name}}
-                                                    -
-                                                    {{app.wattage}}W
-
-                                                </option>
-
-                                                {% endfor %}
-
-                                            </select>
-
-                                        </td>
-
-                                        <td>
-
-                                            <input name="quantity" value="1" class="form-control">
-
-                                        </td>
-
-                                        <td>
-
-                                            <input name="hours" value="6" class="form-control">
-
-                                        </td>
-
-                                        <td>
-
-                                            <button type="button" class="btn btn-danger remove">
-
-                                                ✕
-
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="solar-card fade-card">
-
-                    <div class="card-header bg-warning">
-
-                        <div class="d-flex justify-content-between">
-
-                            <span class="section-title">
-
-                                Custom Appliances
-
+                            <span class="solar-metric-label">
+                                Daily Energy
                             </span>
 
-                            <button type="button" id="addCustom" class="btn btn-dark">
+                            <strong class="solar-metric-value" id="dailyEnergy">
+                                0 Wh
+                            </strong>
 
-                                +
+                        </div>
 
-                            </button>
+
+                        <div class="solar-metric">
+
+                            <span class="solar-metric-label">
+                                Active Appliances
+                            </span>
+
+                            <strong class="solar-metric-value" id="applianceCount">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="solar-metric">
+
+                            <span class="solar-metric-label">
+                                Peak Surge
+                            </span>
+
+                            <strong class="solar-metric-value" id="peakSurge">
+                                0 W
+                            </strong>
 
                         </div>
 
                     </div>
 
-                    <div class="card-body">
 
-                        <div class="table-responsive">
+                    <div class="solar-notice">
 
-                            <table class="table" id="customTable">
+                        <span>ⓘ</span>
 
-                                <thead>
+                        <div>
 
-                                    <tr>
-
-                                        <th>Name</th>
-                                        <th>W</th>
-                                        <th>Qty</th>
-                                        <th>Hrs</th>
-                                        <th>Load Type</th>
-                                        <th>Starting Type</th>
-                                        <th>Surge</th>
-                                        <th></th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="solar-card fade-card">
-
-                    <div class="card-header bg-info text-white">
-
-                        Cable Distances in meters
-
-                    </div>
-
-                    <div class="card-body">
-
-                        <div class="row">
-
-                            <div class="col-md-4">
-
-                                <label>
-
-                                    PV Cable
-
-                                </label>
-
-                                {{form.pv_distance}}
-
-                            </div>
-
-                            <div class="col-md-4">
-
-                                <label>
-
-                                    Battery Cable
-
-                                </label>
-
-                                {{form.battery_distance}}
-
-                            </div>
-
-                            <div class="col-md-4">
-
-                                <label>
-
-                                    AC Cable
-
-                                </label>
-
-                                {{form.ac_distance}}
-
-                            </div>
+                            The live values shown above are interface estimates.
+                            The authoritative electrical calculations are performed
+                            by the Django engineering pipeline after submission.
 
                         </div>
 
@@ -1104,375 +1879,1134 @@
 
                 </div>
 
-                <div class="text-center">
+            </section>
 
-                    <button class="btn btn-success btn-lg calc-btn">
 
-                        ⚡ Calculate Solar System
+            <!-- ===================================================================
+     SUBMIT
+     =================================================================== -->
+
+            <section class="solar-card">
+
+                <div class="solar-submit">
+
+                    <div class="solar-submit-info">
+
+                        <strong>
+                            Ready to engineer the system?
+                        </strong>
+
+                        <br>
+
+                        The validated project information and load schedule will
+                        be passed through the complete solar engineering pipeline.
+
+                    </div>
+
+
+                    <button type="submit" id="calculateButton" class="solar-submit-button">
+
+                        <span id="calculateIcon">
+                            ⚡
+                        </span>
+
+                        <span id="calculateText">
+                            Calculate Solar System
+                        </span>
 
                     </button>
 
                 </div>
 
-            </form>
+            </section>
 
-        </div>
+
+        </form>
 
     </div>
 
 </div>
+
+
+<!-- =====================================================================
+     DJANGO EMPTY FORM TEMPLATE
+     ===================================================================== -->
+
+<template id="emptyApplianceTemplate">
+
+    <tr class="solar-load-row" data-form-index="__prefix__">
+
+
+        {% for hidden in load_formset.empty_form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+
+
+        {% if load_formset.empty_form.DELETE %}
+
+        <div class="solar-delete-field">
+            {{ load_formset.empty_form.DELETE }}
+        </div>
+
+        {% endif %}
+
+
+        <td>
+
+            {{ load_formset.empty_form.appliance }}
+
+            <div class="solar-custom-appliance">
+                <span>or custom:</span>
+                {{ load_formset.empty_form.custom_name }}
+                {{ load_formset.empty_form.custom_wattage }}
+            </div>
+
+            <div class="solar-appliance-info" data-appliance-info>
+
+                <span class="solar-chip power" data-wattage-display>
+                    Select appliance
+                </span>
+
+                <span class="solar-chip" data-load-type-display></span>
+
+            </div>
+
+        </td>
+
+
+        <td>
+
+            {{ load_formset.empty_form.quantity }}
+
+        </td>
+
+
+        <td>
+
+            {{ load_formset.empty_form.hours_per_day }}
+
+        </td>
+
+
+        <td>
+
+            <strong data-row-energy>
+                0 Wh
+            </strong>
+
+        </td>
+
+
+        <td>
+
+            <button type="button" class="solar-remove-button" data-remove-appliance title="Remove appliance">
+                ×
+            </button>
+
+        </td>
+
+    </tr>
+
+</template>
+
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
 
-    /*
-    ===========================================================
-    ADD ADMIN APPLIANCE ROW
-    ===========================================================
-    */
+        const form = document.getElementById("solarDesignForm");
+        const rowsContainer = document.getElementById("applianceRows");
+        const addButton = document.getElementById("addApplianceButton");
+        const emptyTemplate = document.getElementById("emptyApplianceTemplate");
 
-    document
-        .getElementById(
-            "addLoad"
-        )
-        .onclick = function () {
+        const totalForms = document.getElementById("id_form-TOTAL_FORMS");
 
-            let row = document
-                .querySelector(
-                    "#loadTable tbody tr"
-                )
-                .cloneNode(true);
+        const connectedLoad = document.getElementById("connectedLoad");
+        const dailyEnergy = document.getElementById("dailyEnergy");
+        const applianceCount = document.getElementById("applianceCount");
+        const peakSurge = document.getElementById("peakSurge");
 
+        const calculateButton = document.getElementById("calculateButton");
+        const calculateText = document.getElementById("calculateText");
+        const calculateIcon = document.getElementById("calculateIcon");
 
-            document
-                .querySelector(
-                    "#loadTable tbody"
-                )
-                .appendChild(
-                    row
-                );
 
-        };
+        /* ============================================================
+           HELPERS
+        ============================================================ */
 
+        function number(value) {
+            const parsed = parseFloat(value);
 
-    /*
-    ===========================================================
-    ADD CUSTOM APPLIANCE
-    ===========================================================
-    */
-
-    document
-        .getElementById(
-            "addCustom"
-        )
-        .onclick = function () {
-
-
-            let html = `
-
-<tr class="fade-card">
-
-    <!-- NAME -->
-
-    <td>
-
-        <input
-
-            type="text"
-
-            name="custom_name"
-
-            class="form-control"
-
-            placeholder="e.g. Freezer"
-
-            required
-
-        >
-
-    </td>
-
-
-    <!-- WATTAGE -->
-
-    <td>
-
-        <input
-
-            type="number"
-
-            name="custom_watts"
-
-            class="form-control"
-
-            placeholder="Watts"
-
-            min="0"
-
-            step="0.01"
-
-            required
-
-        >
-
-    </td>
-
-
-    <!-- QUANTITY -->
-
-    <td>
-
-        <input
-
-            type="number"
-
-            name="custom_qty"
-
-            class="form-control"
-
-            value="1"
-
-            min="1"
-
-            step="1"
-
-            required
-
-        >
-
-    </td>
-
-
-    <!-- OPERATING HOURS -->
-
-    <td>
-
-        <input
-
-            type="number"
-
-            name="custom_hours"
-
-            class="form-control"
-
-            value="6"
-
-            min="0"
-
-            max="24"
-
-            step="0.1"
-
-            required
-
-        >
-
-    </td>
-
-
-    <!-- LOAD TYPE -->
-
-    <td>
-
-        <select
-
-            name="custom_load_type"
-
-            class="form-control"
-
-            required
-
-        >
-
-            <option value="resistive">
-
-                Resistive
-
-            </option>
-
-
-            <option value="motor">
-
-                Motor
-
-            </option>
-
-
-            <option value="compressor">
-
-                Compressor
-
-            </option>
-
-
-            <option value="electronics">
-
-                Electronics
-
-            </option>
-
-
-            <option value="lighting">
-
-                Lighting
-
-            </option>
-
-        </select>
-
-    </td>
-
-
-    <!-- STARTING TYPE -->
-
-    <td>
-
-        <select
-
-            name="custom_starting_type"
-
-            class="form-control"
-
-            required
-
-        >
-
-            <option value="single">
-
-                Starts alone
-
-            </option>
-
-
-            <option value="possible">
-
-                May start together
-
-            </option>
-
-
-            <option value="simultaneous">
-
-                Can start simultaneously
-
-            </option>
-
-        </select>
-
-    </td>
-
-
-    <!-- SURGE FACTOR -->
-
-    <td>
-
-        <input
-
-            type="number"
-
-            name="custom_surge"
-
-            class="form-control"
-
-            value="1"
-
-            min="1"
-
-            step="0.1"
-
-            required
-
-        >
-
-    </td>
-
-
-    <!-- REMOVE -->
-
-    <td>
-
-        <button
-
-            type="button"
-
-            class="btn btn-danger remove"
-
-        >
-
-            ✕
-
-        </button>
-
-    </td>
-
-</tr>
-
-`;
-
-
-            document
-
-                .querySelector(
-
-                    "#customTable tbody"
-
-                )
-
-                .insertAdjacentHTML(
-
-                    "beforeend",
-
-                    html
-
-                );
-
-        };
-
-
-    /*
-    ===========================================================
-    REMOVE CUSTOM APPLIANCE
-    ===========================================================
-    */
-
-    document
-
-        .addEventListener(
-
-            "click",
-
-            function (event) {
-
-
-                if (
-
-                    event.target
-
-                        .classList
-
-                        .contains(
-
-                            "remove"
-
-                        )
-
-                ) {
-
-
-                    event.target
-
-                        .closest(
-
-                            "tr"
-
-                        )
-
-                        .remove();
-
-                }
-
+            if (!Number.isFinite(parsed)) {
+                return 0;
             }
 
-        );
+            return parsed;
+        }
 
+
+        function format(value) {
+            return new Intl.NumberFormat("en-US", {
+                maximumFractionDigits: 1
+            }).format(value);
+        }
+
+
+        function getRows() {
+            return Array.from(
+                rowsContainer.querySelectorAll(".solar-load-row")
+            );
+        }
+
+
+        function getActiveRows() {
+            return getRows().filter(function (row) {
+
+                const deleteInput = row.querySelector(
+                    'input[name$="-DELETE"]'
+                );
+
+                return !deleteInput || !deleteInput.checked;
+            });
+        }
+
+
+        /* ============================================================
+           ROW INFORMATION
+        ============================================================ */
+
+        function updateRowInformation(row) {
+
+            if (!row) {
+                return;
+            }
+
+            const select = row.querySelector(
+                'select[name$="-appliance"]'
+            );
+
+            const quantity = row.querySelector(
+                'input[name$="-quantity"]'
+            );
+
+            const hours = row.querySelector(
+                'input[name$="-hours_per_day"]'
+            );
+
+            const wattageDisplay = row.querySelector(
+                "[data-wattage-display]"
+            );
+
+            const loadTypeDisplay = row.querySelector(
+                "[data-load-type-display]"
+            );
+
+            const energyDisplay = row.querySelector(
+                "[data-row-energy]"
+            );
+
+
+            if (!select || !select.value) {
+
+                if (wattageDisplay) {
+                    wattageDisplay.textContent = "Select appliance";
+                }
+
+                if (loadTypeDisplay) {
+                    loadTypeDisplay.textContent = "";
+                }
+
+                if (energyDisplay) {
+                    energyDisplay.textContent = "0 Wh";
+                }
+
+                return;
+            }
+
+
+            const option = select.options[select.selectedIndex];
+
+            if (!option) {
+                return;
+            }
+
+
+            const watts = number(
+                option.dataset.wattage
+            );
+
+            const quantityValue = Math.max(
+                number(quantity ? quantity.value : 0),
+                0
+            );
+
+            const hoursValue = Math.max(
+                number(hours ? hours.value : 0),
+                0
+            );
+
+
+            const energy =
+                watts *
+                quantityValue *
+                hoursValue;
+
+
+            if (wattageDisplay) {
+                wattageDisplay.textContent =
+                    format(watts) + " W";
+            }
+
+
+            if (loadTypeDisplay) {
+                loadTypeDisplay.textContent =
+                    option.dataset.loadType || "";
+            }
+
+
+            if (energyDisplay) {
+                energyDisplay.textContent =
+                    format(energy) + " Wh";
+            }
+        }
+
+
+        /* ============================================================
+           SUMMARY
+        ============================================================ */
+
+        function updateSummary() {
+
+            let connected = 0;
+            let energy = 0;
+            let surge = 0;
+            let active = 0;
+
+
+            getActiveRows().forEach(function (row) {
+
+                const select = row.querySelector(
+                    'select[name$="-appliance"]'
+                );
+
+                const quantity = row.querySelector(
+                    'input[name$="-quantity"]'
+                );
+
+                const hours = row.querySelector(
+                    'input[name$="-hours_per_day"]'
+                );
+
+
+                if (!select || !select.value) {
+                    return;
+                }
+
+
+                const option =
+                    select.options[select.selectedIndex];
+
+
+                if (!option) {
+                    return;
+                }
+
+
+                const watts = number(
+                    option.dataset.wattage
+                );
+
+                const surgeFactor =
+                    number(option.dataset.surgeFactor) || 1;
+
+                const qty = Math.max(
+                    number(quantity ? quantity.value : 0),
+                    0
+                );
+
+                const operatingHours = Math.max(
+                    number(hours ? hours.value : 0),
+                    0
+                );
+
+
+                if (watts <= 0 || qty <= 0) {
+                    return;
+                }
+
+
+                connected += watts * qty;
+
+                energy +=
+                    watts *
+                    qty *
+                    operatingHours;
+
+                surge +=
+                    watts *
+                    qty *
+                    surgeFactor;
+
+                active += 1;
+            });
+
+
+            if (connectedLoad) {
+                connectedLoad.textContent =
+                    format(connected) + " W";
+            }
+
+            if (dailyEnergy) {
+                dailyEnergy.textContent =
+                    format(energy) + " Wh";
+            }
+
+            if (applianceCount) {
+                applianceCount.textContent =
+                    String(active);
+            }
+
+            if (peakSurge) {
+                peakSurge.textContent =
+                    format(surge) + " W";
+            }
+        }
+
+
+        /* ============================================================
+           REFRESH
+        ============================================================ */
+
+        function refresh() {
+
+            getActiveRows().forEach(function (row) {
+                updateRowInformation(row);
+            });
+
+            updateSummary();
+        }
+
+
+        /* ============================================================
+           ADD FORM
+        ============================================================ */
+
+        function addAppliance() {
+
+            if (!totalForms || !emptyTemplate) {
+                return;
+            }
+
+
+            const index = parseInt(
+                totalForms.value,
+                10
+            );
+
+
+            const html = emptyTemplate.innerHTML.replace(
+                /__prefix__/g,
+                index
+            );
+
+
+            const temp = document.createElement("tbody");
+
+            temp.innerHTML = html.trim();
+
+
+            const newRow = temp.firstElementChild;
+
+
+            if (!newRow) {
+                return;
+            }
+
+
+            rowsContainer.appendChild(newRow);
+
+
+            /*
+             * IMPORTANT:
+             *
+             * TOTAL_FORMS must represent the number of
+             * forms Django expects to receive.
+             */
+            totalForms.value = index + 1;
+
+
+            refresh();
+
+
+            const select = newRow.querySelector(
+                'select[name$="-appliance"]'
+            );
+
+            if (select) {
+                select.focus();
+            }
+        }
+
+
+        /* ============================================================
+           REMOVE FORM
+        ============================================================ */
+
+        function removeAppliance(button) {
+
+            const row = button.closest(
+                ".solar-load-row"
+            );
+
+            if (!row) {
+                return;
+            }
+
+
+            const deleteInput = row.querySelector(
+                'input[name$="-DELETE"]'
+            );
+
+
+            /*
+             * EXISTING FORM
+             *
+             * Never physically remove an existing
+             * Django form. Mark it DELETE.
+             */
+
+            if (deleteInput) {
+
+                deleteInput.checked = true;
+
+                row.classList.add("removing");
+
+                setTimeout(function () {
+
+                    row.style.display = "none";
+
+                    refresh();
+
+                }, 250);
+
+                return;
+            }
+
+
+            /*
+             * NEW FORM
+             *
+             * New forms have not been saved, so we
+             * can remove them completely.
+             */
+
+            row.classList.add("removing");
+
+            setTimeout(function () {
+
+                row.remove();
+
+                rebuildFormIndexes();
+
+                refresh();
+
+            }, 250);
+        }
+
+
+        /* ============================================================
+           REBUILD FORM INDEXES
+           
+           IMPORTANT:
+           Only used for NEW forms that have not been
+           submitted to Django yet.
+        ============================================================ */
+
+        function rebuildFormIndexes() {
+
+            const rows = getRows();
+
+
+            rows.forEach(function (row, index) {
+
+                row.dataset.formIndex = index;
+
+
+                row.querySelectorAll(
+                    "input, select, textarea"
+                ).forEach(function (field) {
+
+                    const name = field.getAttribute("name");
+
+                    if (!name) {
+                        return;
+                    }
+
+
+                    const newName = name.replace(
+                        /^form-\d+-/,
+                        "form-" + index + "-"
+                    );
+
+
+                    field.setAttribute(
+                        "name",
+                        newName
+                    );
+
+
+                    const id = field.getAttribute("id");
+
+                    if (id) {
+
+                        field.setAttribute(
+                            "id",
+                            id.replace(
+                                /^id_form-\d+-/,
+                                "id_form-" + index + "-"
+                            )
+                        );
+                    }
+                });
+            });
+
+
+            totalForms.value = rows.length;
+        }
+
+
+        /* ============================================================
+           EVENTS
+        ============================================================ */
+
+        if (addButton) {
+
+            addButton.addEventListener(
+                "click",
+                addAppliance
+            );
+        }
+
+
+        if (rowsContainer) {
+
+            rowsContainer.addEventListener(
+                "click",
+                function (event) {
+
+                    const removeButton =
+                        event.target.closest(
+                            "[data-remove-appliance]"
+                        );
+
+
+                    if (!removeButton) {
+                        return;
+                    }
+
+
+                    removeAppliance(
+                        removeButton
+                    );
+                }
+            );
+
+
+            rowsContainer.addEventListener(
+                "change",
+                function (event) {
+
+                    if (
+                        event.target.matches(
+                            'select[name$="-appliance"]'
+                        )
+                    ) {
+
+                        const row =
+                            event.target.closest(
+                                ".solar-load-row"
+                            );
+
+                        updateRowInformation(row);
+                        updateSummary();
+                    }
+                }
+            );
+
+
+            rowsContainer.addEventListener(
+                "input",
+                function (event) {
+
+                    if (
+                        event.target.matches(
+                            'input[name$="-quantity"], input[name$="-hours_per_day"]'
+                        )
+                    ) {
+
+                        const row =
+                            event.target.closest(
+                                ".solar-load-row"
+                            );
+
+                        updateRowInformation(row);
+                        updateSummary();
+                    }
+                }
+            );
+        }
+
+
+        /* ============================================================
+           SUBMIT VALIDATION
+        ============================================================ */
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    /*
+                     * Do not allow submission with zero
+                     * active load rows.
+                     */
+
+                    const activeRows =
+                        getActiveRows();
+
+
+                    let validLoadExists = false;
+
+
+                    activeRows.forEach(function (row) {
+
+                        const appliance =
+                            row.querySelector(
+                                'select[name$="-appliance"]'
+                            );
+
+                        const quantity =
+                            row.querySelector(
+                                'input[name$="-quantity"]'
+                            );
+
+                        const hours =
+                            row.querySelector(
+                                'input[name$="-hours_per_day"]'
+                            );
+
+
+                        if (
+                            appliance &&
+                            appliance.value &&
+                            quantity &&
+                            quantity.value &&
+                            hours &&
+                            hours.value
+                        ) {
+
+                            validLoadExists = true;
+                        }
+                    });
+
+
+                    if (!validLoadExists) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Please add at least one complete electrical load."
+                        );
+
+                        return;
+                    }
+
+
+                    /*
+                     * Prevent double submission.
+                     */
+
+                    if (calculateButton) {
+
+                        calculateButton.classList.add(
+                            "loading"
+                        );
+
+                        calculateButton.disabled = true;
+                    }
+
+
+                    if (calculateText) {
+
+                        calculateText.textContent =
+                            "Engineering System...";
+                    }
+
+
+                    if (calculateIcon) {
+
+                        calculateIcon.textContent = "⟳";
+
+                        calculateIcon.style.animation =
+                            "scSpin 1s linear infinite";
+                    }
+                }
+            );
+        }
+
+
+        /* ============================================================
+           INITIALISE
+        ============================================================ */
+
+        refresh();
+
+    });
 </script>
+<style>
+    .solar-page {
+        --solar-primary: #7b1e3a;
+        --solar-primary-dark: #4f1025;
+        --solar-primary-light: #fbe7ed;
+        --solar-accent: #d98c23;
+        --solar-accent-light: #fff0d4;
+        --solar-bg: #f8f2ed;
+        --solar-card: #fffdfb;
+        --solar-text: #24151a;
+        --solar-muted: #765d64;
+        --solar-border: #ecd9db;
+        --solar-shadow: 0 18px 46px rgba(79, 16, 37, .12);
 
-{% endblock content %}
+        background:
+            radial-gradient(circle at 8% 5%, rgba(217, 140, 35, .18), transparent 25rem),
+            radial-gradient(circle at 94% 17%, rgba(123, 30, 58, .12), transparent 28rem),
+            var(--solar-bg);
+
+        font-size: 17px;
+    }
+
+    .solar-hero {
+        background:
+            radial-gradient(circle at 84% 20%, rgba(246, 192, 94, .35), transparent 22%),
+            linear-gradient(135deg, #4f1025 0%, #7b1e3a 53%, #a53f58 100%);
+
+        box-shadow: 0 28px 70px rgba(79, 16, 37, .25);
+    }
+
+    .solar-hero h1 {
+        font-size: clamp(36px, 5vw, 62px);
+    }
+
+    .solar-hero-description {
+        max-width: 720px;
+        font-size: 17px;
+    }
+
+    .solar-hero-symbol {
+        border-color: rgba(255, 238, 208, .45);
+    }
+
+    .solar-hero-symbol span {
+        font-size: 0;
+        background: rgba(255, 244, 229, .18);
+    }
+
+    .solar-hero-symbol span::before {
+        content: "☀";
+        font-size: 42px;
+    }
+
+    .solar-pipeline-item,
+    .solar-form-card,
+    .solar-summary-card,
+    .solar-load-card {
+        border-color: var(--solar-border);
+        box-shadow: 0 9px 24px rgba(79, 16, 37, .055);
+    }
+
+    .solar-pipeline-number {
+        color: #7b1e3a;
+        background: linear-gradient(135deg, #f9d88e, #fff0d4);
+    }
+
+    .solar-pipeline-item:hover,
+    .solar-form-card:hover,
+    .solar-summary-card:hover,
+    .solar-load-card:hover {
+        border-color: rgba(123, 30, 58, .38);
+        box-shadow: 0 18px 35px rgba(79, 16, 37, .12);
+    }
+
+    .solar-section-title,
+    .solar-form-card h2,
+    .solar-form-card h3 {
+        color: #5f1730;
+        font-size: clamp(21px, 2vw, 27px);
+    }
+
+    .solar-field label,
+    .solar-load-table th,
+    .solar-form-card strong {
+        color: #4f1025;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .solar-page input,
+    .solar-page select,
+    .solar-page textarea {
+        min-height: 50px;
+        color: var(--solar-text);
+        font-size: 16px;
+        font-weight: 600;
+        border-color: #dcc2c8;
+        background: #fffdfb;
+    }
+
+    .solar-page input:focus,
+    .solar-page select:focus,
+    .solar-page textarea:focus {
+        border-color: #a53f58;
+        box-shadow: 0 0 0 4px rgba(165, 63, 88, .14);
+    }
+
+    .solar-custom-appliance {
+        display: grid;
+        grid-template-columns: auto minmax(110px, 1fr) minmax(80px, .55fr);
+        gap: 6px;
+        align-items: center;
+        margin-top: 8px;
+        font-size: 12px;
+    }
+
+    .solar-custom-appliance input {
+        min-width: 0;
+        padding: 7px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+    }
+
+    .solar-calculate-btn,
+    .solar-btn-primary {
+        font-size: 16px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #7b1e3a, #a53f58);
+        box-shadow: 0 13px 25px rgba(123, 30, 58, .25);
+    }
+
+    .solar-calculate-btn:hover,
+    .solar-btn-primary:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, #5f1730, #8e2e49);
+        box-shadow: 0 18px 30px rgba(123, 30, 58, .3);
+    }
+
+    .solar-metric-value,
+    #dailyEnergy,
+    #connectedLoad,
+    #peakSurge {
+        color: #7b1e3a;
+        font-size: clamp(24px, 3vw, 32px);
+    }
+
+    .solar-form-card,
+    .solar-summary-card,
+    .solar-pipeline-item {
+        animation: solarRoseReveal .55s both;
+    }
+
+    .solar-form-card:nth-of-type(2) {
+        animation-delay: .08s;
+    }
+
+    .solar-form-card:nth-of-type(3) {
+        animation-delay: .16s;
+    }
+
+    @keyframes solarRoseReveal {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .solar-form-card,
+        .solar-summary-card,
+        .solar-pipeline-item {
+            animation: none;
+        }
+
+        .solar-calculate-btn:hover,
+        .solar-btn-primary:hover {
+            transform: none;
+        }
+    }
+</style>
+<style id="remarobe-calculator-theme">
+    .solar-page {
+        --solar-primary: #7b1e3a;
+        --solar-primary-dark: #4f1025;
+        --solar-primary-light: #fbe7ed;
+        --solar-accent: #d98c23;
+        --solar-bg: #f8f2ed;
+        --solar-card: #fffdfb;
+        --solar-text: #24151a;
+        --solar-muted: #765d64;
+        --solar-border: #ecd9db;
+        background: radial-gradient(circle at 8% 5%, rgba(217, 140, 35, .18), transparent 25rem), radial-gradient(circle at 94% 17%, rgba(123, 30, 58, .12), transparent 28rem), var(--solar-bg);
+        font-size: 17px
+    }
+
+    .solar-hero {
+        background: radial-gradient(circle at 84% 20%, rgba(246, 192, 94, .35), transparent 22%), linear-gradient(135deg, #4f1025, #7b1e3a 53%, #a53f58);
+        box-shadow: 0 28px 70px rgba(79, 16, 37, .25)
+    }
+
+    .solar-hero h1 {
+        font-size: clamp(36px, 5vw, 62px)
+    }
+
+    .solar-hero-description {
+        font-size: 17px;
+        max-width: 720px
+    }
+
+    .solar-hero-symbol {
+        border-color: rgba(255, 238, 208, .45)
+    }
+
+    .solar-hero-symbol span {
+        font-size: 0;
+        background: rgba(255, 244, 229, .18)
+    }
+
+    .solar-hero-symbol span:before {
+        content: "☀";
+        font-size: 42px
+    }
+
+    .solar-pipeline-item,
+    .solar-form-card,
+    .solar-summary-card,
+    .solar-load-card {
+        border-color: var(--solar-border);
+        box-shadow: 0 9px 24px rgba(79, 16, 37, .055)
+    }
+
+    .solar-pipeline-number {
+        background: linear-gradient(135deg, #f9d88e, #fff0d4);
+        color: #7b1e3a
+    }
+
+    .solar-pipeline-item:hover,
+    .solar-form-card:hover,
+    .solar-summary-card:hover,
+    .solar-load-card:hover {
+        border-color: rgba(123, 30, 58, .38);
+        box-shadow: 0 18px 35px rgba(79, 16, 37, .12)
+    }
+
+    .solar-section-title,
+    .solar-form-card h2,
+    .solar-form-card h3 {
+        color: #5f1730;
+        font-size: clamp(21px, 2vw, 27px)
+    }
+
+    .solar-field label,
+    .solar-load-table th,
+    .solar-form-card strong {
+        color: #4f1025;
+        font-size: 15px;
+        font-weight: 800
+    }
+
+    .solar-page input,
+    .solar-page select,
+    .solar-page textarea {
+        min-height: 50px;
+        color: var(--solar-text);
+        font-size: 16px;
+        font-weight: 600;
+        border-color: #dcc2c8;
+        background: #fffdfb
+    }
+
+    .solar-page input:focus,
+    .solar-page select:focus,
+    .solar-page textarea:focus {
+        border-color: #a53f58;
+        box-shadow: 0 0 0 4px rgba(165, 63, 88, .14)
+    }
+
+    .solar-calculate-btn,
+    .solar-btn-primary {
+        background: linear-gradient(135deg, #7b1e3a, #a53f58);
+        box-shadow: 0 13px 25px rgba(123, 30, 58, .25);
+        font-size: 16px;
+        font-weight: 800
+    }
+
+    .solar-calculate-btn:hover,
+    .solar-btn-primary:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, #5f1730, #8e2e49)
+    }
+
+    .solar-metric-value,
+    #dailyEnergy,
+    #connectedLoad,
+    #peakSurge {
+        color: #7b1e3a;
+        font-size: clamp(24px, 3vw, 32px)
+    }
+
+    .solar-form-card,
+    .solar-summary-card,
+    .solar-pipeline-item {
+        animation: solarRoseReveal .55s both
+    }
+
+    .solar-form-card:nth-of-type(2) {
+        animation-delay: .08s
+    }
+
+    .solar-form-card:nth-of-type(3) {
+        animation-delay: .16s
+    }
+
+    @keyframes solarRoseReveal {
+        from {
+            opacity: 0;
+            transform: translateY(18px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+        .solar-form-card,
+        .solar-summary-card,
+        .solar-pipeline-item {
+            animation: none
+        }
+
+        .solar-calculate-btn:hover,
+        .solar-btn-primary:hover {
+            transform: none
+        }
+    }
+</style>
+
+{% endblock %}

@@ -136,3 +136,5 @@ class OrderItem(models.Model):
     delivery_start = models.DateTimeField(null=True, blank=True)
     delivery_end = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+            return f"{self.product_listing} by {self.vendor}"

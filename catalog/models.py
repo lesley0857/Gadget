@@ -333,7 +333,7 @@ class ProductListing(models.Model):
 
     final_price.short_description = "Final Price"
     def refresh_price(self):
-        self.cached_price=self.calculate_price()
+        self.cached_price=self.final_price()
         self.save(
             update_fields=[
                 "cached_price"

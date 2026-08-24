@@ -5,10 +5,14 @@ import requests
 import uuid
 
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST, require_GET
+from django.http import Http404
 from decimal import Decimal
 from django.urls import reverse
 from orders.models import *
 from django.http import JsonResponse
+from django.conf import settings
 from cart.models import *
 
 from logistics.models import Shipment
@@ -47,6 +51,8 @@ def serialize_decimals(obj):
     return obj
 # "Authorization":"Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
 
+@login_required
+@require_POST
 @transaction.atomic
 def initiate_payment(request):
 
@@ -157,7 +163,6 @@ def initiate_payment(request):
     "total": total,
     })
     
-    print(f'locked_snapshot{locked_snapshot}')
     request.session[
         "checkout_snapshot"
     ] = locked_snapshot
@@ -246,7 +251,7 @@ def initiate_payment(request):
         unit_price = Decimal(
 
             str(
-                listing.cached_price()
+                listing.final_price()
             )
         )
 
@@ -307,8 +312,14 @@ def initiate_payment(request):
             )
         )
     )
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-    response = requests.post(
+    PAYSTACK_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
+    if not PAYSTACK_SECRET_KEY:
+        order.status = "cancelled"
+        order.save(update_fields=["status"])
+        return JsonResponse({"error": "Payment service is not configured."}, status=503)
+
+    try:
+        response = requests.post(
 
         "https://api.paystack.co/"
         "transaction/initialize",
@@ -326,15 +337,20 @@ def initiate_payment(request):
 
             "callback_url":
                 callback,
+
+            "metadata": {"order_id": order.id},
         },
 
         headers={
 
             "Authorization":f"Bearer {PAYSTACK_SECRET_KEY}"
-        }
-    )
-
-    paystack = response.json()
+        }, timeout=15)
+        response.raise_for_status()
+        paystack = response.json()
+    except (requests.RequestException, ValueError):
+        order.status = "cancelled"
+        order.save(update_fields=["status"])
+        return JsonResponse({"error": "Payment service is temporarily unavailable."}, status=503)
 
     if not paystack.get(
         "status"
@@ -373,10 +389,12 @@ def initiate_payment(request):
     })
 
 
+@login_required
+@require_POST
 def resume_payment(request, reference):
 
     try:
-        order = Order.objects.get(reference=reference)
+        order = Order.objects.get(reference=reference, customer=request.user)
     except Order.DoesNotExist:
         return redirect("checkout")
 
@@ -387,7 +405,7 @@ def resume_payment(request, reference):
 
     if amount <= 0:
         return JsonResponse({"error": "Invalid payment amount"}, status=400)
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+    PAYSTACK_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
     callback = (
         request.build_absolute_uri(
             reverse(
@@ -396,55 +414,59 @@ def resume_payment(request, reference):
         )
     )
     
-    response = requests.post(
-        "https://api.paystack.co/transaction/initialize",
-        json={
-            "email": order.customer.email,
-            "amount": amount,
-            "reference": order.reference,
-            "callback_url": callback
-        },
-        headers={
-            "Authorization":  f"Bearer {PAYSTACK_SECRET_KEY}"
-        }
-    )
-
-    res = response.json()
-
-    print("PAYSTACK DEBUG:", res)
+    if not PAYSTACK_SECRET_KEY:
+        return JsonResponse({"error": "Payment service is not configured."}, status=503)
+    try:
+        response = requests.post(
+            "https://api.paystack.co/transaction/initialize",
+            json={"email": order.customer.email, "amount": amount, "reference": order.reference,
+                  "callback_url": callback, "metadata": {"order_id": order.id}},
+            headers={"Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"}, timeout=15,
+        )
+        response.raise_for_status()
+        res = response.json()
+    except (requests.RequestException, ValueError):
+        return JsonResponse({"error": "Payment service is temporarily unavailable."}, status=503)
 
     if not res.get("status"):
         return JsonResponse({
             "error": res.get("message", "Payment failed"),
         }, status=400)
 
-    if not res.get("status"):
-        order.status = "cancelled"
-        order.save()
-        return redirect("checkout")
+    order.payment_url = res["data"]["authorization_url"]
+    order.save(update_fields=["payment_url"])
+    return redirect(order.payment_url)
 
 
 def payment_success(request):
     return render(request, "success.html")
 
 @transaction.atomic
+@login_required
+@require_GET
 def verify_payment(request):
 
     reference = request.GET.get(
         "reference"
     )
 
-    order = Order.objects.get(
-        reference=reference
-    )
+    if not reference:
+        raise Http404("Payment reference not found")
+    try:
+        order = Order.objects.select_for_update().get(reference=reference, customer=request.user)
+    except Order.DoesNotExist:
+        raise Http404("Payment reference not found")
 
     if order.status == "paid":
 
         return redirect(
             "payment_success"
         )
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-    response = requests.get(
+    PAYSTACK_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
+    if not PAYSTACK_SECRET_KEY:
+        return JsonResponse({"error": "Payment service is not configured."}, status=503)
+    try:
+        response = requests.get(
 
         f"https://api.paystack.co/"
         f"transaction/verify/"
@@ -455,19 +477,19 @@ def verify_payment(request):
             "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"
         
 
-        }
-    )
-
-    paystack = response.json()
+        }, timeout=15)
+        response.raise_for_status()
+        paystack = response.json()
+    except (requests.RequestException, ValueError):
+        return JsonResponse({"error": "Payment verification is temporarily unavailable."}, status=503)
 
     if (
 
         not paystack.get("status")
 
-        or paystack["data"][
-            "status"
-        ]
-        != "success"
+        or paystack.get("data", {}).get("status") != "success"
+        or paystack.get("data", {}).get("reference") != reference
+        or Decimal(str(paystack.get("data", {}).get("amount", 0))) != order.total_amount * 100
     ):
 
         return JsonResponse(

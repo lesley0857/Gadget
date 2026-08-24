@@ -13,7 +13,7 @@ from catalog.views import *
 from services.views import *
 from remarobeprojects.views import *
 from blog.views import *
-from solar.views import *
+from solar import views
 from logistics.views import *
 
 from django.contrib import admin
@@ -90,14 +90,115 @@ urlpatterns = [
     path('services/', services_page,name='services'),
     path('services/<slug:slug>/', service_detail,name='service_detail'),
 
-    path('solar/calculator/',solar_calculator ,name="solar_calculator"),
+   
 
-    path('result/',solar_result,name='result'),
-    path('quotation/',solar_quotation,name='quotation'),
-    
-    path("webhooks/paystack/", paystack_webhook),
+    # ==============================================================
+    # MAIN SOLAR DESIGN
+    # ==============================================================
+
+    path("dashboard/", views.solar_dashboard, name="dashboard"),
+
+    path(
+        "design/",
+        views.solar_design,
+        name="solar_design",
+    ),
+    path("tools/in-progress/", views.tool_in_progress, name="tool_in_progress"),
+
+
+    path(
+        "design/<int:design_id>/",
+        views.solar_design_result,
+        name="design_result",
+    ),
+
+    path(
+        "design/<int:design_id>/update/",
+        views.update_solar_design,
+        name="update_design",
+    ),
+
+
+    # ==============================================================
+    # PROJECTS
+    # ==============================================================
+
+    path(
+        "projects/",
+        views.solar_design_history,
+        name="design_history",
+    ),
+
+    path(
+        "projects/<int:design_id>/",
+        views.project_details,
+        name="project_details",
+    ),
+
+    path(
+        "projects/<int:design_id>/favorite/",
+        views.favorite_design,
+        name="favorite_design",
+    ),
+
+    path(
+        "projects/<int:design_id>/duplicate/",
+        views.duplicate_solar_design,
+        name="duplicate_design",
+    ),
+
+    path(
+        "projects/<int:design_id>/archive/",
+        views.archive_design,
+        name="archive_design",
+    ),
+
+    path(
+        "projects/<int:design_id>/restore/",
+        views.restore_design,
+        name="restore_design",
+    ),
+
+    path(
+        "projects/<int:design_id>/delete/",
+        views.delete_solar_design,
+        name="delete_design",
+    ),
+
+    path(
+        "archived/",
+        views.archived_projects,
+        name="archived_projects",
+    ),
+
+
+    # ==============================================================
+    # VERSION CONTROL
+    # ==============================================================
+
+    path(
+        "projects/<int:design_id>/versions/",
+        views.project_versions,
+        name="project_versions",
+    ),
+
+    path(
+        "projects/<int:design_id>/versions/save/",
+        views.save_project_version,
+        name="save_project_version",
+    ),
+
+    path(
+        "versions/<int:version_id>/restore/",
+        views.restore_project_version,
+        name="restore_project_version",
+    ),
+
+
+
+    path("webhooks/paystack/", paystack_webhook, name="paystack_webhook"),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
