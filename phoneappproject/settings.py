@@ -25,7 +25,9 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv("DJANGO_DEBUG", os.getenv("DEBUG", "true")).strip().lower() in {
+    "1", "true", "yes", "on",
+}
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -268,6 +270,23 @@ GROUPING_RADIUS_KM = 3           # vendors within 3km grouped
 
 DEFAULT_FROM_EMAIL = "lemarobenigeria@gmail.com"
 
+# Gunicorn/systemd captures stderr, so unexpected production exceptions remain
+# visible in `journalctl -u gunicorn` while DEBUG stays disabled.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -301,8 +320,6 @@ LOGIN_REDIRECT_URL = '/'
 
 ADMIN_EMAIL="nwekelesley@gmail.com" #mail for viewing negotiations
 
-# Production-safe defaults. Configure HTTPS on the deployment before setting
-# DJANGO_DEBUG=false; these headers then protect sessions and CSRF cookies.
 # if not DEBUG:
 #     SECURE_SSL_REDIRECT = True
 #     SESSION_COOKIE_SECURE = True
