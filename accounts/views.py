@@ -26,7 +26,6 @@ def register_view(request):
     if request.user.is_authenticated:
             return redirect("home")
     if request.method == "POST":
-        print('reg')
         email = request.POST['email']
         username = request.POST['username']
         password = request.POST['password']
@@ -153,7 +152,6 @@ def product_detail(request, name):
     ).exclude(
                 id=product_listing.id
              ).distinct()[:12]
-    print(related_products)
 
     return render(
         request,

@@ -514,10 +514,7 @@ def run_design_pipeline(
     # PHASE 1 — LOAD
     # ---------------------------------------------------------------
 
-    load_result = calculate_load(loads)
-    print("\n========== LOAD RESULT ==========")
-    print(load_result)
-    print("=================================\n")
+    load_result = calculate_load(loads) 
     _engine_success(load_result, "Load Engine")
 
     # ---------------------------------------------------------------

@@ -516,14 +516,10 @@ def negotiation_lookup(request):
     if request.method == "POST":
 
         code = request.POST.get("code")
-        print(code)
-
         negotiation = NegotiationRequest.objects.filter(
             code=code
         ).first()
-        print(negotiation)
         if negotiation:
-            print('True')
             return render(request,"edit_negotiation.html",
                 {"negotiation": negotiation}
             )
@@ -648,7 +644,6 @@ def pay_negotiation(request, code):
         )
     )
     PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-    print(PAYSTACK_SECRET_KEY)
     response = requests.post(
         "https://api.paystack.co/transaction/initialize",
         json={
@@ -867,7 +862,6 @@ def negotiation_detail(request, code):
         i.get_total()
         for i in negotiation.items.all()
     )
-    print(f'oo{negotiation}')
     total = sum(
         i.get_total()
         for i in negotiation.items.all()
@@ -1038,7 +1032,6 @@ def admin_negotiation_detail(request, pk):
         # -------------------------
 
         if action == "save_quote":
-            print('save')
             for item in negotiation.items.all():
 
                 value = request.POST.get(
@@ -1254,7 +1247,6 @@ def checkout_view(request):
     "requires_negotiation":
         data["requires_negotiation"],
     }
-    print("VIEW NEGOTIATION:",data["requires_negotiation"])
 
     return render(request, "checkout.html", context)
 

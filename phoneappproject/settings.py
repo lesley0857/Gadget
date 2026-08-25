@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", os.getenv("DEBUG", "true")).strip().lower() in {"1", "true", "yes", "on"}
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -132,27 +132,27 @@ WSGI_APPLICATION = 'phoneappproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST' : os.getenv("DB_HOST", "localhost"),         
-        'PORT': 5432,
-        'OPTIONS': {
-            'connect_timeout': 10,  # Recommended by Neon Docs
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         "NAME": os.getenv("DB_NAME"),
+#         "USER": os.getenv("DB_USER"),
+#         'PASSWORD': os.getenv("DB_PASSWORD"),
+#         'HOST' : os.getenv("DB_HOST", "localhost"),         
+#         'PORT': 5432,
+#         'OPTIONS': {
+#             'connect_timeout': 10, 
+#         },
+#     }
+# }
 
 
 # DATABASES = {
@@ -249,6 +249,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/")
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# A missing optional/static asset must not turn a page render into a 500.
+# Deployments should still run collectstatic to generate hashed asset URLs.
+WHITENOISE_MANIFEST_STRICT = False
 AUTH_USER_MODEL = 'accounts.User'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -300,16 +303,16 @@ ADMIN_EMAIL="nwekelesley@gmail.com" #mail for viewing negotiations
 
 # Production-safe defaults. Configure HTTPS on the deployment before setting
 # DJANGO_DEBUG=false; these headers then protect sessions and CSRF cookies.
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = "same-origin"
-    X_FRAME_OPTIONS = "DENY"
+# if not DEBUG:
+#     SECURE_SSL_REDIRECT = True
+#     SESSION_COOKIE_SECURE = True
+#     CSRF_COOKIE_SECURE = True
+#     SECURE_HSTS_SECONDS = 31536000
+#     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+#     SECURE_HSTS_PRELOAD = True
+#     SECURE_CONTENT_TYPE_NOSNIFF = True
+#     SECURE_REFERRER_POLICY = "same-origin"
+#     X_FRAME_OPTIONS = "DENY"
 
 
 USE_L10N = True
