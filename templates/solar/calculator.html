@@ -1704,7 +1704,8 @@ Solar PV System Designer
                                             </div>
 
                                             {% if load_form.custom_name.errors or load_form.custom_wattage.errors %}
-                                            <div class="solar-errors">{{ load_form.custom_name.errors }}{{ load_form.custom_wattage.errors }}</div>
+                                            <div class="solar-errors">{{ load_form.custom_name.errors }}{{
+                                                load_form.custom_wattage.errors }}</div>
                                             {% endif %}
 
                                             {% if load_form.appliance.errors %}
@@ -1871,7 +1872,7 @@ Solar PV System Designer
 
                             The live values shown above are interface estimates.
                             The authoritative electrical calculations are performed
-                            by the Django engineering pipeline after submission.
+                            by the Remarobe engineering pipeline after submission.
 
                         </div>
 
