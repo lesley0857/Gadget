@@ -3512,9 +3512,13 @@ PRINT
                 ? item.battery
                 : item;
 
-            const requirement = isObject(result.requirement)
-                ? result.requirement
-                : {};
+            const requirement = isObject(result.required)
+                ? result.required
+                : (
+                    isObject(result.requirement)
+                        ? result.requirement
+                        : {}
+                );
             return {
 
                 success:
@@ -5819,9 +5823,13 @@ PRINT
                 ? batterySelected.battery
                 : batterySelected;
 
-            const batteryRequirement = isObject(RAW.battery.requirement)
-                ? RAW.battery.requirement
-                : {};
+            const batteryRequirement = isObject(RAW.battery.required)
+                ? RAW.battery.required
+                : (
+                    isObject(RAW.battery.requirement)
+                        ? RAW.battery.requirement
+                        : {}
+                );
 
             const panelSelected = selected(RAW.panel);
 
@@ -5847,7 +5855,15 @@ PRINT
 
             const controllerRequirement = isObject(RAW.controller.requirement)
                 ? RAW.controller.requirement
-                : {};
+                : (
+                    isObject(RAW.controller.required)
+                        ? RAW.controller.required
+                        : (
+                            isObject(RAW.controller.engineering?.requirement)
+                                ? RAW.controller.engineering.requirement
+                                : {}
+                        )
+                );
 
             const cards = [];
 
@@ -5855,6 +5871,29 @@ PRINT
                 comparisonCard(
                     "Battery Bank",
                     [
+                        comparisonRow(
+                            "Daily energy",
+                            batteryRequirement.daily_energy_wh,
+                            null,
+                            "Wh"
+                        ),
+
+                        comparisonRow(
+                            "Autonomy",
+                            batteryRequirement.autonomy_days,
+                            null,
+                            "days",
+                            1
+                        ),
+
+                        comparisonRow(
+                            "Design reserve",
+                            batteryRequirement.reserve_factor,
+                            null,
+                            "×",
+                            2
+                        ),
+
                         comparisonRow(
                             "Usable energy",
                             first(
@@ -5874,7 +5913,7 @@ PRINT
                             first(
                                 batteryRequirement,
                                 ["system_voltage"],
-                                batterySelected.system_voltage
+                                RAW.battery.system_voltage
                             ),
                             batterySelected.actual_bank_voltage,
                             "V"
@@ -5888,6 +5927,13 @@ PRINT
                                 batterySelected.required_continuous_current
                             ),
                             batterySelected.bank_max_discharge_current,
+                            "A"
+                        ),
+
+                        comparisonRow(
+                            "Surge current",
+                            batteryRequirement.required_surge_current,
+                            null,
                             "A"
                         ),
 
@@ -6034,6 +6080,20 @@ PRINT
                         ),
 
                         comparisonRow(
+                            "PV power",
+                            controllerRequirement.minimum_pv_power,
+                            first(
+                                controllerSelected,
+                                [
+                                    "total_controller_power",
+                                    "controller_power"
+                                ],
+                                null
+                            ),
+                            "W"
+                        ),
+
+                        comparisonRow(
                             "Controller power",
                             controllerRequirement.minimum_controller_power,
                             first(
@@ -6045,6 +6105,13 @@ PRINT
                                 null
                             ),
                             "W"
+                        ),
+
+                        comparisonRow(
+                            "Minimum quantity",
+                            controllerRequirement.minimum_controller_quantity,
+                            controllerSelected.quantity,
+                            "units"
                         )
                     ]
                 )

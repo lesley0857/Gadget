@@ -2646,26 +2646,64 @@ PERFORMANCE
 
 
         .cookie-banner {
-
-            background: #111827;
-
-            color: white;
+            position: fixed;
+            z-index: 1000002;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            width: min(720px, calc(100% - 32px));
+            display: none;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            border: 1px solid rgba(255, 255, 255, .16);
+            border-radius: 18px;
+            color: #fff;
+            background: linear-gradient(135deg, #4f1025, #7b1e3a);
+            box-shadow: 0 22px 55px rgba(30, 8, 16, .34);
+            animation: cookieBannerIn .35s ease both;
         }
 
+        .cookie-banner-icon {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: #7b1e3a;
+            background: #ffe9b6;
+            font-size: 20px;
+        }
 
-        .cookie-banner button {
+        .cookie-banner-copy { flex: 1; }
+        .cookie-banner-copy strong { display: block; font-size: 16px; }
+        .cookie-banner-copy p { margin: 3px 0 0; color: rgba(255,255,255,.82); font-size: 13px; line-height: 1.45; }
+        .cookie-banner-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 
-            background: #0d6efd;
-
-            border: none;
-
-            color: white;
-
-            padding: 8px 18px;
-
-            border-radius: 30px;
-
+        .cookie-btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 10px 13px;
             cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            transition: transform .2s ease, background .2s ease;
+        }
+
+        .cookie-btn:hover { transform: translateY(-2px); }
+        .cookie-btn-primary { color: #35101c; background: #f6c968; }
+        .cookie-btn-secondary { color: #fff; border-color: rgba(255,255,255,.42); background: rgba(255,255,255,.09); }
+
+        @keyframes cookieBannerIn {
+            from { opacity: 0; transform: translate(-50%, 16px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        @media (max-width: 620px) {
+            .cookie-banner { align-items: flex-start; }
+            .cookie-banner-actions { width: 100%; justify-content: stretch; }
+            .cookie-btn { flex: 1; }
         }
 
 
@@ -3633,7 +3671,7 @@ CART SIDEBAR
                 display: none;
                 justify-content: center;
                 align-items: center;
-                z-index: 9999;
+                z-index: 1000003;
                 padding: 20px;
             }
 
@@ -3645,9 +3683,9 @@ CART SIDEBAR
                 background: #fff;
                 width: 100%;
                 max-width: 550px;
-                border-radius: 12px;
+                border-radius: 20px;
                 overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 28px 72px rgba(0, 0, 0, 0.32);
                 animation: popup .25s ease;
             }
 
@@ -3664,7 +3702,8 @@ CART SIDEBAR
             }
 
             .negotiation-header {
-                background: #f8f9fa;
+                background: linear-gradient(135deg, #4f1025, #7b1e3a);
+                color: #fff;
                 padding: 18px 24px;
                 border-bottom: 1px solid #eee;
             }
@@ -3696,9 +3735,10 @@ CART SIDEBAR
 
             .btn-secondary {
                 border: none;
-                background: #ddd;
+                background: #f4e8eb;
+                color: #4f1025;
                 padding: 10px 18px;
-                border-radius: 6px;
+                border-radius: 10px;
                 cursor: pointer;
             }
         </style>
@@ -3865,7 +3905,7 @@ CART SIDEBAR
         const cancelBtn = document.getElementById('cancel-negotiation');
         const continueBtn = document.getElementById('continue-negotiation');
 
-        negotiateBtn.addEventListener('click', function (e) {
+        negotiateBtn?.addEventListener('click', function (e) {
 
             e.preventDefault();
 
@@ -3873,19 +3913,19 @@ CART SIDEBAR
 
         });
 
-        cancelBtn.addEventListener('click', function () {
+        cancelBtn?.addEventListener('click', function () {
 
             modal.classList.remove('show');
 
         });
 
-        continueBtn.addEventListener('click', function () {
+        continueBtn?.addEventListener('click', function () {
 
             window.location.href = "{% url 'negotiate_cart' %}";
 
         });
 
-        modal.addEventListener('click', function (e) {
+        modal?.addEventListener('click', function (e) {
 
             if (e.target === modal) {
 
@@ -4123,15 +4163,21 @@ CART SIDEBAR
 COOKIE BANNER
 =========================== -->
 
-    <div id="cookieBanner" class="bottom-banner cookie-banner">
+    <div id="cookieBanner" class="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie preferences">
 
-        <div class="banner-text">
-            We use cookies to improve your experience.
+        <div class="cookie-banner-icon" aria-hidden="true">
+            <i class="fa-solid fa-cookie-bite"></i>
         </div>
 
-        <button id="acceptCookies">
-            Accept
-        </button>
+        <div class="cookie-banner-copy">
+            <strong>Your privacy matters</strong>
+            <p>We use essential cookies to run the site and optional cookies to improve your experience.</p>
+        </div>
+
+        <div class="cookie-banner-actions">
+            <button type="button" id="essentialCookies" class="cookie-btn cookie-btn-secondary">Only essential</button>
+            <button type="button" id="acceptCookies" class="cookie-btn cookie-btn-primary">Accept all</button>
+        </div>
 
     </div>
 
@@ -4283,34 +4329,32 @@ SOLAR PROMO BANNER
                     "cookieBanner"
                 );
 
-            const accepted =
+            const cookiePreference =
                 localStorage.getItem(
-                    "cookiesAccepted"
+                    "cookieConsent"
                 );
 
-            if (!accepted) {
+            if (!cookiePreference) {
 
                 cookieBanner.style.display =
                     "flex";
             }
 
-            document
-                .getElementById(
-                    "acceptCookies"
-                )
-                ?.addEventListener(
-                    "click",
-                    function () {
+            function saveCookiePreference(preference) {
+                localStorage.setItem("cookieConsent", preference);
+                localStorage.setItem("cookiesAccepted", "yes");
+                cookieBanner?.remove();
+            }
 
-                        localStorage.setItem(
-                            "cookiesAccepted",
-                            "yes"
-                        );
+            document.getElementById("acceptCookies")
+                ?.addEventListener("click", function () {
+                    saveCookiePreference("all");
+                });
 
-                        cookieBanner.style.display =
-                            "none";
-                    }
-                );
+            document.getElementById("essentialCookies")
+                ?.addEventListener("click", function () {
+                    saveCookiePreference("essential");
+                });
         }
     );
 
