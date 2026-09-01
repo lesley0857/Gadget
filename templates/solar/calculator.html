@@ -1186,6 +1186,29 @@ Solar PV System Designer
 
         {% endif %}
 
+        <section class="solar-card" aria-labelledby="calculator-flow-title">
+            <div class="solar-card-header">
+                <div class="solar-section-icon">☀</div>
+                <div>
+                    <h2 class="solar-card-title" id="calculator-flow-title">How your system is designed</h2>
+                    <p class="solar-card-subtitle">Your loads determine the required power and energy; the calculator then matches compatible active catalogue products.</p>
+                </div>
+            </div>
+            <div class="solar-card-body">
+                <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;text-align:center">
+                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>1. Loads</strong><br>Appliances, hours & surge</div>
+                    <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
+                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>2. Sizing</strong><br>Power, energy & voltage</div>
+                    <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
+                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>3. Product match</strong><br>Battery, panels & inverter</div>
+                    <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
+                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>4. Safe proposal</strong><br>Protection, cables & quotation</div>
+                </div>
+            </div>
+        </section>
+
+
+        <p class="solar-help" id="appliance-type-note" aria-live="polite"></p><p class="solar-help"><a href="{% url 'earthing_assessment' %}">Need a full industrial/commercial earthing assessment for this solar project? Open the Earthing Design Assessment.</a></p>
 
         <!-- ===================================================================
      MAIN FORM
@@ -1392,6 +1415,18 @@ Solar PV System Designer
 
                         <!-- OPERATING MODE -->
 
+                        <div class="solar-field{% if design_form.installation_type.errors %} has-error{% endif %}">
+                            <label for="{{ design_form.installation_type.id_for_label }}">
+                                {{ design_form.installation_type.label }}
+                                <span class="solar-required">*</span>
+                            </label>
+                            {{ design_form.installation_type }}
+                            <div class="solar-help" role="note" title="Residential means homes and small apartments. Industrial / Commercial means shops, offices, workshops and larger business loads."><strong>What does this mean?</strong> Residential is for homes and small apartments. Industrial / Commercial is for shops, offices, workshops and larger business loads; it uses three-phase equipment where appropriate.</div>
+                            {% if design_form.installation_type.errors %}
+                            <div class="solar-errors">{{ design_form.installation_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
                         <div class="solar-field{% if design_form.operating_mode.errors %} has-error{% endif %}">
 
                             <label for="{{ design_form.operating_mode.id_for_label }}">
@@ -1405,6 +1440,14 @@ Solar PV System Designer
                             </label>
 
                             {{ design_form.operating_mode }}
+                            <details class="solar-help" style="margin-top:10px">
+                                <summary style="cursor:pointer;font-weight:700">What does each system type mean?</summary>
+                                <ul style="margin:8px 0 0;padding-left:18px">
+                                    <li><strong>Off-grid:</strong> runs independently of public power. Batteries store energy for night-time and outages.</li>
+                                    <li><strong>Hybrid:</strong> combines solar, batteries and grid or generator supply. It can use stored solar energy first and switch source when needed.</li>
+                                    <li><strong>Grid-tied:</strong> works with public electricity and normally has no backup during an outage unless separate backup equipment is included.</li>
+                                </ul>
+                            </details>
 
                             {% if design_form.operating_mode.help_text %}
                             <div class="solar-help">
@@ -2586,6 +2629,16 @@ Solar PV System Designer
                                 'select[name$="-appliance"]'
                             );
 
+                        const customName =
+                            row.querySelector(
+                                'input[name$="-custom_name"]'
+                            );
+
+                        const customWattage =
+                            row.querySelector(
+                                'input[name$="-custom_wattage"]'
+                            );
+
                         const quantity =
                             row.querySelector(
                                 'input[name$="-quantity"]'
@@ -2597,9 +2650,17 @@ Solar PV System Designer
                             );
 
 
+                        const hasCatalogueAppliance = Boolean(
+                            appliance && appliance.value
+                        );
+
+                        const hasCustomAppliance = Boolean(
+                            customName && customName.value.trim() &&
+                            customWattage && customWattage.value
+                        );
+
                         if (
-                            appliance &&
-                            appliance.value &&
+                            (hasCatalogueAppliance || hasCustomAppliance) &&
                             quantity &&
                             quantity.value &&
                             hours &&
@@ -2616,7 +2677,7 @@ Solar PV System Designer
                         event.preventDefault();
 
                         alert(
-                            "Please add at least one complete electrical load."
+                            "Please add a catalogue appliance or a custom appliance name and wattage, then complete its quantity and daily hours."
                         );
 
                         return;
@@ -3009,5 +3070,29 @@ Solar PV System Designer
         }
     }
 </style>
-
+<script>
+(function () {
+    function filterAppliances() {
+        const type = document.getElementById("id_installation_type")?.value || "residential";
+        document.querySelectorAll("select[data-appliance-select]").forEach((select) => {
+            Array.from(select.options).forEach((option) => {
+                if (!option.value) return;
+                const allowed = option.dataset.installationType === type;
+                option.hidden = !allowed;
+                option.disabled = !allowed;
+                if (!allowed && option.selected) select.value = "";
+            });
+        });
+        const note = document.getElementById("appliance-type-note");
+        if (note) note.textContent = type === "industrial"
+            ? "Showing industrial and commercial equipment. Typical wattages are planning values; confirm nameplate ratings for final design."
+            : "Showing household appliances. Typical wattages are planning values; confirm nameplate ratings for final design.";
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("id_installation_type")?.addEventListener("change", filterAppliances);
+        document.addEventListener("formset:added", filterAppliances);
+        filterAppliances();
+    });
+})();
+</script>
 {% endblock %}

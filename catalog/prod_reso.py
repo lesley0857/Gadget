@@ -9,6 +9,7 @@ from solar.models import (
     CableSpecification, ControllerSpecification, FuseSpecification,
     InverterSpecification, IsolatorSpecification,
     MountingStructureSpecification, PanelSpecification, SPDSpecification,
+    SolarGeneratorSpecification,
 )
 
 from .models import Category, ProductListing
@@ -22,6 +23,7 @@ SPECIFICATIONS = {
         "depth_of_discharge": "depth_of_discharge", "efficiency": "efficiency",
         "max_discharge_current": "max_discharge_current", "max_charge_current": "max_charge_current",
         "cycles": "cycles", "warranty_years": "warranty_years", "weight": "weight",
+        "hybrid_compatible": "hybrid_compatible",
     }),
     "panel": (PanelSpecification, "panel_spec", {
         "power": "power", "vmp": "vmp", "voc": "voc", "imp": "imp", "isc": "isc", "efficiency": "efficiency",
@@ -30,6 +32,11 @@ SPECIFICATIONS = {
         "rated_power": "rated_power", "surge_power": "surge_power", "dc_voltage": "dc_voltage",
         "output_voltage": "output_voltage", "frequency": "frequency", "phase": "phase",
         "efficiency": "efficiency", "hybrid": "hybrid",
+    }),
+    "solar_generator": (SolarGeneratorSpecification, "solar_generator_spec", {
+        "battery_capacity_kwh": "battery_capacity_kwh", "inverter_rated_power": "inverter_rated_power",
+        "inverter_surge_power": "inverter_surge_power", "output_voltage": "output_voltage",
+        "phase": "phase", "hybrid": "hybrid",
     }),
     "controller": (ControllerSpecification, "controller_spec", {
         "battery_voltage": "battery_voltage", "max_pv_voltage": "max_pv_voltage",

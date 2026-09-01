@@ -74,6 +74,17 @@ class OrderAdmin(admin.ModelAdmin):
         "status",
         "created_at",
     ]
+    search_fields = [
+        "order_number", "reference", "email", "phone", "first_name", "last_name",
+        "customer__email", "customer__username", "shipping_city", "tracking_number",
+        "courier_name", "items__product_listing__name", "items__vendor__store_name",
+    ]
+    list_filter = ["status", "requires_shipping_negotiation", "created_at", "paid_at"]
+    date_hierarchy = "created_at"
+    list_select_related = ["customer"]
+    list_per_page = 50
+    ordering = ["-created_at"]
+
     def negotiation_badge(self,obj):
 
         if obj.negotiation:

@@ -35,6 +35,7 @@ class SolarDesignForm(forms.ModelForm):
             "client_name",
             "project_location",
             "description",
+            "installation_type",
             "operating_mode",
             "peak_sun_hours",
         )
@@ -75,6 +76,10 @@ class SolarDesignForm(forms.ModelForm):
                 }
             ),
 
+            "installation_type": forms.Select(
+                attrs={"class": SELECT_INPUT_CLASS}
+            ),
+
             "peak_sun_hours": forms.NumberInput(
                 attrs={
                     "class": NUMBER_INPUT_CLASS,
@@ -91,6 +96,7 @@ class SolarDesignForm(forms.ModelForm):
             "project_location": "Project Location",
             "description": "Project Description",
             "operating_mode": "System Type",
+            "installation_type": "Project Type",
             "peak_sun_hours": "Peak Sun Hours",
         }
 
@@ -174,6 +180,7 @@ class ApplianceSelect(forms.Select):
                 "data-load-type": appliance.load_type or "",
                 "data-starting-type": appliance.starting_type or "",
                 "data-category": appliance.category or "",
+                "data-installation-type": appliance.installation_type or "residential",
             })
 
         return option
@@ -263,7 +270,9 @@ class LoadItemForm(forms.Form):
 
         # Allow the formset to determine whether a completely
         # empty extra form should be ignored.
-        if not appliance and not custom_name and custom_wattage is None and quantity in (None, "") and hours in (None, ""):
+        # The quantity widget defaults to 1, so it must not turn an otherwise
+        # blank extra formset row into a validation error.
+        if not appliance and not custom_name and custom_wattage is None and hours in (None, ""):
             return cleaned_data
 
         if appliance is None and not custom_name:
@@ -348,6 +357,24 @@ class BatteryPreferenceForm(forms.Form):
             }
         ),
         label="Battery Chemistry Preference",
+    )
+
+    require_hybrid_battery = forms.BooleanField(
+        required=False,
+        label="Hybrid-compatible battery only",
+        help_text="Show batteries configured for hybrid inverter systems.",
+    )
+
+    solution_preference = forms.ChoiceField(
+        required=False,
+        choices=(
+            ("components", "Component system (recommended)"),
+            ("generator", "Offer a compatible all-in-one solar generator"),
+        ),
+        initial="components",
+        widget=forms.Select(attrs={"class": SELECT_INPUT_CLASS}),
+        label="Preferred solution",
+        help_text="Generators are offered as a catalogue alternative when their output and stored energy meet the load.",
     )
 
     def clean_battery_type(self):

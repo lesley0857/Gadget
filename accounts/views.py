@@ -69,8 +69,16 @@ def logout_view(request):
     return redirect('home')
 
 def about_us(request):
-    context = {}
+    context = {"services": Service.objects.filter(is_active=True)}
     return render(request,"about-us.html",context)
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html")
+
+
+def terms_and_conditions(request):
+    return render(request, "terms_and_conditions.html")
+
 
 def home(request):
     productList = ProductListing.objects.filter(

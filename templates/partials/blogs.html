@@ -61,6 +61,15 @@ BLOG SECTION
                 background: #f3f4f6;
             }
 
+            .blog-image-placeholder {
+                height: 220px;
+                display: grid;
+                place-items: center;
+                color: #fff;
+                font-size: 42px;
+                background: #17324d;
+            }
+
             /* CONTENT */
 
             .blog-content {
@@ -169,7 +178,11 @@ BLOG SECTION
 
             <a href="{% url 'blog_detail' blog.slug %}" class="blog-card">
 
-                <img src="{{ blog.featured_image.url }}">
+                {% if blog.featured_image %}
+                <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}">
+                {% else %}
+                <div class="blog-image-placeholder" aria-label="Engineering article image placeholder"><i class="fa fa-bolt"></i></div>
+                {% endif %}
 
                 <div class="blog-content">
 

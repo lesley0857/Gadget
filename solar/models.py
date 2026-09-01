@@ -36,6 +36,11 @@ PRODUCT_LISTING_MODEL = "catalog.ProductListing"  # <-- confirm/adjust
 
 class Appliance(models.Model):
 
+    INSTALLATION_TYPES = (
+        ("residential", "Residential"),
+        ("industrial", "Industrial / Commercial"),
+    )
+
     LOAD_TYPES = (
         ("resistive", "Resistive"),
         ("motor", "Motor"),
@@ -79,6 +84,14 @@ class Appliance(models.Model):
         max_length=30,
         blank=True,
         default="",
+    )
+
+    installation_type = models.CharField(
+        max_length=20,
+        choices=INSTALLATION_TYPES,
+        default="residential",
+        db_index=True,
+        help_text="Where this typical appliance load is normally used.",
     )
 
     popular = models.BooleanField(default=False)
@@ -143,6 +156,11 @@ class BatterySpecification(models.Model):
     cycles = models.PositiveIntegerField(default=3000)
 
     warranty_years = models.PositiveIntegerField(default=5)
+
+    hybrid_compatible = models.BooleanField(
+        default=False,
+        help_text="Suitable for use with a hybrid inverter system.",
+    )
 
     weight = models.DecimalField(
         max_digits=12,
@@ -264,6 +282,25 @@ class InverterSpecification(models.Model):
 
     def __str__(self):
         return f"Inverter spec — {self.product.name} {self.rated_power}W"
+
+
+class SolarGeneratorSpecification(models.Model):
+    """An all-in-one solar generator sold through ProductListing."""
+
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="solar_generator_spec",
+    )
+    battery_capacity_kwh = models.DecimalField(max_digits=8, decimal_places=2)
+    inverter_rated_power = models.DecimalField(max_digits=12, decimal_places=2)
+    inverter_surge_power = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    output_voltage = models.DecimalField(max_digits=8, decimal_places=2, default=230)
+    phase = models.CharField(max_length=20, choices=InverterSpecification.PHASES, default="single_phase")
+    hybrid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Solar generator — {self.product.name}"
 
 
 # ================================================================
@@ -671,6 +708,11 @@ class SolarDesign(models.Model):
         ("grid_tied", "Grid Tied"),
     )
 
+    INSTALLATION_TYPES = (
+        ("residential", "Residential"),
+        ("industrial", "Industrial / Commercial"),
+    )
+
     STATUS_CHOICES = (
         ("draft", "Draft"),
         ("designed", "Designed"),
@@ -705,6 +747,12 @@ class SolarDesign(models.Model):
         max_length=30,
         choices=OPERATING_MODES,
         default="off_grid",
+    )
+
+    installation_type = models.CharField(
+        max_length=20,
+        choices=INSTALLATION_TYPES,
+        default="residential",
     )
 
     peak_sun_hours = models.DecimalField(
@@ -1116,3 +1164,21 @@ class ServiceRequest(models.Model):
         ]
         verbose_name = "Service Request"
         verbose_name_plural = "Service Requests"
+
+class EarthingDesign(models.Model):
+    """Persisted standalone or solar-linked earthing engineering assessment."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="earthing_designs")
+    solar_design = models.ForeignKey("solar.SolarDesign", null=True, blank=True, on_delete=models.SET_NULL, related_name="earthing_assessments")
+    project_name = models.CharField(max_length=255)
+    installation_type = models.CharField(max_length=30, default="industrial")
+    standard = models.CharField(max_length=100, blank=True)
+    inputs = models.JSONField(default=dict)
+    result = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at",)
+
+    def __str__(self):
+        return f"Earthing — {self.project_name}"

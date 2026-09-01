@@ -74,6 +74,10 @@
                     Print
                 </button>
 
+                <a class="result-btn" href="{% url 'earthing_assessment' %}?solar_design={{ design.id }}" title="Open the industrial/commercial earthing assessment for this solar project">
+                    <i class="bi bi-lightning-charge"></i>
+                    Earthing Details
+                </a>
                 <button type="button" class="result-btn result-btn-whatsapp" id="whatsapp-negotiation-btn" title="Send this solar result for negotiation on WhatsApp">
                     <i class="bi bi-whatsapp"></i>
                     Negotiate on WhatsApp
@@ -82,6 +86,22 @@
             </div>
 
         </header>
+
+        {% with generator=inverter.solar_generator_option %}
+        {% if generator %}
+        <section class="design-status {% if generator.available is False %}status-warning{% else %}status-ready{% endif %}" aria-label="Solar generator option">
+            <div class="status-icon"><i class="bi bi-battery-charging"></i></div>
+            <div class="status-content">
+                <strong>All-in-one solar generator option</strong>
+                {% if generator.available is False %}
+                <span>{{ generator.note }}</span>
+                {% else %}
+                <span>{{ generator.brand }} {{ generator.name }} — {{ generator.battery_capacity_kwh }} kWh storage, {{ generator.inverter_rated_power }} W inverter{% if generator.price %}, ₦{{ generator.price|floatformat:2 }}{% endif %}. {{ generator.note }}</span>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+        {% endwith %}
 
 
         <!-- =========================================================
@@ -693,6 +713,7 @@
             </div>
 
 
+            <p class="pricing-data-status" id="boq-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -1063,6 +1084,7 @@
             </div>
 
 
+            <p class="pricing-data-status" id="boq-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -1154,6 +1176,7 @@
             </div>
 
 
+            <p class="pricing-data-status" id="boq-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -1218,6 +1241,7 @@
             </div>
 
 
+            <p class="pricing-data-status" id="pricing-status" role="status"></p>
             <div class="pricing-grid">
 
                 <div class="pricing-row">
@@ -1408,6 +1432,12 @@
 <script>
     document.getElementById("whatsapp-negotiation-btn")?.addEventListener("click", function () {
         const value = (id) => document.getElementById(id)?.textContent.trim() || "To be confirmed";
+        const rawBoq = JSON.parse(document.getElementById("solar-boq-data")?.textContent || "{}");
+        const lines = Array.isArray(rawBoq.items) ? rawBoq.items : (Array.isArray(rawBoq.boq_items) ? rawBoq.boq_items : []);
+        const components = lines.slice(0, 40).map((item) => {
+            const name = item.description || item.name || "Component";
+            return `- ${item.quantity || 1} ${item.unit || "pcs"} ${name}`;
+        });
         const message = [
             "Hello, I would like to negotiate this solar design.",
             "Project: {{ design.project_name|default:'Solar PV Design'|escapejs }}",
@@ -1416,6 +1446,10 @@
             "Daily energy: " + value("kpi-daily-energy") + " Wh/day",
             "PV array: " + value("kpi-pv-power") + " kW",
             "Estimated cost: " + value("kpi-grand-total"),
+            "",
+            "Selected / required components (BOQ):",
+            ...(components.length ? components : ["- Please review the linked design for the complete BOQ."]),
+            "",
             "Result link: " + window.location.href,
         ].join("\n");
         window.open("https://wa.me/2348100911189?text=" + encodeURIComponent(message), "_blank", "noopener");
@@ -2477,6 +2511,8 @@ PRICING
                 #f8fbff 100%);
     }
 
+    .pricing-data-status { margin: 0 0 16px; color: var(--solar-muted); font-size: .9rem; }
+    .pricing-data-status.is-warning { padding: 12px 14px; border-left: 4px solid var(--solar-warning); background: #fff8e8; color: #704b00; border-radius: 6px; }
     .pricing-grid {
         width: min(760px, 100%);
         margin-left: auto;
@@ -4386,41 +4422,15 @@ PRINT
            ========================================================= */
 
         function normalizeBOQ(result) {
-
-            const items =
-                Array.isArray(result.items)
-                    ? result.items
-                    : [];
-
-            const totals =
-                isObject(result.totals)
-                    ? result.totals
-                    : {};
-
+            const items = Array.isArray(result.items)
+                ? result.items
+                : (Array.isArray(result.boq_items) ? result.boq_items : (Array.isArray(result.lines) ? result.lines : []));
+            const totals = isObject(result.totals) ? result.totals : {};
+            const calculatedTotal = items.reduce((sum, item) => sum + number(first(item, ["total_price", "total_cost", "amount"], number(item.quantity || item.qty || 0) * number(item.unit_price || item.price || 0))), 0);
             return {
-
                 items,
-
-                lineCount:
-                    number(
-                        first(
-                            totals,
-                            ["line_count"],
-                            items.length
-                        )
-                    ),
-
-                total:
-                    number(
-                        first(
-                            totals,
-                            [
-                                "total_price",
-                                "grand_total"
-                            ],
-                            0
-                        )
-                    )
+                lineCount: number(first(totals, ["line_count", "item_count"], items.length)),
+                total: number(first(totals, ["total_price", "grand_total", "total_cost"], first(result, ["total_price", "grand_total", "total_cost"], calculatedTotal)))
             };
         }
 
@@ -4430,76 +4440,21 @@ PRINT
            ========================================================= */
 
         function normalizePricing(result) {
-
+            const summary = isObject(result.summary) ? result.summary : {};
+            const read = (keys, fallback = 0) => number(first(result, keys, first(summary, keys, fallback)));
+            const material = read(["material_cost", "materials_total"]);
+            const labour = read(["labour_cost", "labor_cost"]);
+            const transport = read(["transport_cost", "delivery_cost"]);
+            const installation = read(["installation_cost", "installation"]);
+            const subtotal = read(["subtotal"], material + labour + transport);
             return {
-
-                currency:
-                    text(
-                        result.currency,
-                        "NGN"
-                    ),
-
-                material:
-                    number(
-                        result.material_cost
-                    ),
-
-                labour:
-                    number(
-                        result.labour_cost
-                    ),
-
-                transport:
-                    number(
-                        result.transport_cost
-                    ),
-
-                subtotal:
-                    number(
-                        result.subtotal
-                    ),
-
-                installation:
-                    number(
-                        result.installation_cost
-                    ),
-
-                costBeforeProfit:
-                    number(
-                        result.cost_before_profit
-                    ),
-
-                // profit:
-                //     number(
-                //         result.profit
-                //     ),
-
-                discount:
-                    number(
-                        result.discount
-                    ),
-
-                taxable:
-                    number(
-                        result.taxable_amount
-                    ),
-
-                vat:
-                    number(
-                        first(
-                            result,
-                            [
-                                "vat",
-                                "tax"
-                            ],
-                            0
-                        )
-                    ),
-
-                grandTotal:
-                    number(
-                        result.grand_total
-                    )
+                currency: text(result.currency, "NGN"),
+                material, labour, transport, subtotal, installation,
+                costBeforeProfit: read(["cost_before_profit"], subtotal + installation),
+                discount: read(["discount"]),
+                taxable: read(["taxable_amount"], subtotal + installation),
+                vat: read(["vat", "tax"]),
+                grandTotal: read(["grand_total", "total"], subtotal + installation)
             };
         }
 
@@ -6818,6 +6773,23 @@ PRINT
            BOQ
            ========================================================= */
 
+        function renderResultDataStatus() {
+            const boqStatus = document.getElementById("boq-status");
+            const pricingStatus = document.getElementById("pricing-status");
+            const boqErrors = Array.isArray(RAW.boq?.errors) ? RAW.boq.errors : [];
+            const pricingErrors = Array.isArray(RAW.pricing?.errors) ? RAW.pricing.errors : [];
+            if (boqStatus && RAW.boq?.success === false) {
+                boqStatus.textContent = "BOQ unavailable: " + (boqErrors.join(" ") || RAW.boq.message || "Complete the missing engineering selections, then recalculate.");
+                boqStatus.classList.add("is-warning");
+            }
+            if (pricingStatus && RAW.pricing?.success === false) {
+                pricingStatus.textContent = "Pricing unavailable: " + (pricingErrors.join(" ") || RAW.pricing.message || "A complete priced BOQ is required.");
+                pricingStatus.classList.add("is-warning");
+            } else if (pricingStatus && DATA.boq.items.some(item => number(item.unit_price || item.price || 0) <= 0)) {
+                pricingStatus.textContent = "Some BOQ lines are not priced in the catalogue. Their unit price and total remain pending until a ProductListing price is added.";
+                pricingStatus.classList.add("is-warning");
+            }
+        }
         function renderBOQ() {
 
             const body =
@@ -7513,7 +7485,8 @@ PRINT
 
                 renderProtection();
 
-                renderBOQ();
+                renderResultDataStatus();
+            renderBOQ();
 
                 renderPricing();
 
@@ -8006,6 +7979,60 @@ PRINT
             animation-iteration-count: 1 !important;
             transition-duration: .01ms !important;
             scroll-behavior: auto !important
+        }
+    }
+
+    /* High-visibility engineering headings and review information. */
+    .section-header h2,
+    .component-comparison-section .section-heading h2 {
+        font-size: clamp(1.65rem, 2.4vw, 2.2rem) !important;
+        line-height: 1.18;
+        letter-spacing: -.02em;
+    }
+
+    .section-header p,
+    .component-comparison-section .section-heading p {
+        font-size: 1rem !important;
+        line-height: 1.6;
+    }
+
+    .section-kicker {
+        font-size: .95rem !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .stage-name {
+        font-size: 1rem !important;
+    }
+
+    .stage-status {
+        font-size: .8rem !important;
+    }
+
+    .stage-message {
+        font-size: .9rem !important;
+        line-height: 1.55;
+    }
+
+    .final-message strong {
+        font-size: 1.35rem !important;
+    }
+
+    .final-message p {
+        font-size: 1rem !important;
+        line-height: 1.6;
+    }
+
+    .comparison-card h3 {
+        font-size: 1.2rem !important;
+    }
+
+    @media (max-width: 640px) {
+        .section-header h2,
+        .component-comparison-section .section-heading h2 {
+            font-size: 1.45rem !important;
         }
     }
 </style>

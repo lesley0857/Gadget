@@ -33,6 +33,8 @@ urlpatterns = [
     path("summernote/", include("django_summernote.urls")),
     path('cart/', cart_view, name='cart'),
     path('about-us/', about_us, name='about_us'),
+    path('privacy-policy/', privacy_policy, name='privacy_policy'),
+    path('terms-and-conditions/', terms_and_conditions, name='terms_and_conditions'),
     path('cart/add/<int:listing_id>/', add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:listing_id>/', remove_from_cart, name='remove_from_cart'),
     path("cart/summary/", cart_summary, name="cart_summary"),
@@ -104,6 +106,7 @@ urlpatterns = [
         name="solar_design",
     ),
     path("tools/in-progress/", views.tool_in_progress, name="tool_in_progress"),
+    path("earthing/", views.earthing_assessment, name="earthing_assessment"),
 
 
     path(

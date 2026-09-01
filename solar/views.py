@@ -35,6 +35,8 @@ from typing import Any, Dict, Iterable
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
+from catalog.models import ProductListing
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import (
@@ -49,8 +51,10 @@ from .models import (
     DesignSetting,
     SolarDesign,
     SolarDesignVersion,
+    EarthingDesign,
 )
 from .services import product_bridge
+from .services.earthing_engine import design as calculate_earthing_design
 
 from .services.load_engine import calculate_load
 from .services.system_voltage_engine import determine_system_voltage
@@ -491,6 +495,9 @@ def run_design_pipeline(
     peak_sun_hours: Any,
     autonomy_days: Any = Decimal("1"),
     battery_type_preference: Any = None,
+    require_hybrid_battery: bool = False,
+    installation_type: str = "residential",
+    offer_solar_generator: bool = False,
     settings: DesignSetting | None = None,
 ) -> Dict[str, Any]:
     """
@@ -542,6 +549,12 @@ def run_design_pipeline(
             == battery_type_preference
         ]
 
+    if require_hybrid_battery:
+        battery_candidates = [
+            candidate for candidate in battery_candidates
+            if getattr(candidate, "hybrid_compatible", False)
+        ]
+
     battery_result = _call_engine(
         calculate_battery_system,
         load_result=load_result,
@@ -584,14 +597,58 @@ def run_design_pipeline(
     # PHASE 5 — INVERTER
     # ---------------------------------------------------------------
 
+    inverter_candidates = product_bridge.get_active_inverters()
+    if operating_mode == "hybrid":
+        inverter_candidates = [candidate for candidate in inverter_candidates if candidate.hybrid]
+    if installation_type == "industrial":
+        inverter_candidates = [
+            candidate for candidate in inverter_candidates
+            if getattr(candidate, "phase", "single_phase") == "three_phase"
+        ]
+
     inverter_result = _call_engine(
         calculate_inverter,
         load_result=load_result,
         voltage_result=voltage_result,
         battery_result=battery_result,
-        inverters=product_bridge.get_active_inverters(),
+        inverters=inverter_candidates,
     )
     _engine_success(inverter_result, "Inverter Engine", allow_catalogue_gap=True)
+
+    if offer_solar_generator:
+        calculations = load_result.get("calculations", {})
+        required_power = Decimal(str(calculations.get("peak_design_load_w", 0)))
+        required_energy = Decimal(str(calculations.get("daily_energy_kwh", 0))) * Decimal(str(autonomy_days))
+        phase = "three_phase" if installation_type == "industrial" else "single_phase"
+        compatible_generators = [
+            generator for generator in product_bridge.get_active_solar_generators()
+            if Decimal(str(generator.inverter_rated_power)) >= required_power
+            and Decimal(str(generator.battery_capacity_kwh)) >= required_energy
+            and getattr(generator, "phase", "single_phase") == phase
+        ]
+        if compatible_generators:
+            generator = min(
+                compatible_generators,
+                key=lambda item: (Decimal(str(item.inverter_rated_power)), Decimal(str(item.price))),
+            )
+            inverter_result["solar_generator_option"] = {
+                "product_id": generator.product_id,
+                "name": generator.name,
+                "brand": generator.brand,
+                "model": generator.model,
+                "price": generator.price,
+                "battery_capacity_kwh": generator.battery_capacity_kwh,
+                "inverter_rated_power": generator.inverter_rated_power,
+                "inverter_surge_power": generator.inverter_surge_power,
+                "phase": generator.phase,
+                "hybrid": generator.hybrid,
+                "note": "Alternative integrated solar-generator option; confirm PV input and runtime with the supplier.",
+            }
+        else:
+            inverter_result["solar_generator_option"] = {
+                "available": False,
+                "note": "No active catalogue solar generator meets this load, energy and phase requirement.",
+            }
 
 
     # ---------------------------------------------------------------
@@ -699,6 +756,8 @@ def run_design_pipeline(
             "operating_mode": operating_mode,
             "peak_sun_hours": peak_sun_hours,
             "autonomy_days": autonomy_days,
+            "installation_type": installation_type,
+            "solution_preference": "generator" if offer_solar_generator else "components",
         },
     }
 
@@ -878,6 +937,10 @@ def solar_design(request: HttpRequest) -> HttpResponse:
     # ================================================================
 
     design_data = design_form.cleaned_data
+    mismatched = [row["name"] for row in loads if row.get("installation_type") and row["installation_type"] != design_data["installation_type"]]
+    if mismatched:
+        load_formset._non_form_errors = load_formset.error_class(["Select appliances that match the Project Type: " + ", ".join(mismatched)])
+        return render(request, "solar/calculator.html", _design_context(design_form=design_form, requirements_form=requirements_form, battery_form=battery_form, load_formset=load_formset))
     requirement_data = requirements_form.cleaned_data
 
     # Battery preference is intentionally retained as part of the
@@ -902,6 +965,9 @@ def solar_design(request: HttpRequest) -> HttpResponse:
                 "autonomy_days"
             ],
             battery_type_preference=battery_data["battery_type"],
+            require_hybrid_battery=battery_data["require_hybrid_battery"],
+            installation_type=design_data["installation_type"],
+            offer_solar_generator=(battery_data["solution_preference"] == "generator"),
         )
 
     except Exception as exc:
@@ -995,6 +1061,8 @@ def solar_design(request: HttpRequest) -> HttpResponse:
             operating_mode=design_data[
                 "operating_mode"
             ],
+
+            installation_type=design_data["installation_type"],
 
             peak_sun_hours=design_data[
                 "peak_sun_hours"
@@ -1459,6 +1527,7 @@ def restore_project_version(
 ) -> HttpResponse:
     version = get_object_or_404(
         SolarDesignVersion,
+    EarthingDesign,
         id=version_id,
         design__user=request.user,
     )
@@ -1571,6 +1640,9 @@ def update_solar_design(
             peak_sun_hours=design_data["peak_sun_hours"],
             autonomy_days=requirement_data["autonomy_days"],
             battery_type_preference=battery_data["battery_type"],
+            require_hybrid_battery=battery_data["require_hybrid_battery"],
+            installation_type=design_data["installation_type"],
+            offer_solar_generator=(battery_data["solution_preference"] == "generator"),
         )
 
         for field in ENGINE_KEYS:
@@ -1585,6 +1657,7 @@ def update_solar_design(
         design.project_location = design_data.get("project_location", "")
         design.description = design_data.get("description", "")
         design.operating_mode = design_data["operating_mode"]
+        design.installation_type = design_data["installation_type"]
         design.peak_sun_hours = design_data["peak_sun_hours"]
         design.autonomy_days = requirement_data["autonomy_days"]
         design.status = "designed"
@@ -1620,3 +1693,32 @@ def update_solar_design(
                 "error": str(exc),
             },
         )
+
+
+def earthing_assessment(request: HttpRequest):
+    """Standalone or solar-linked preliminary earthing design and catalogue BOQ."""
+    solar_design_id = request.GET.get("solar_design") or request.POST.get("solar_design")
+    linked_design = None
+    if solar_design_id and request.user.is_authenticated:
+        linked_design = SolarDesign.objects.filter(id=solar_design_id, user=request.user).first()
+    defaults = {"project_name": "", "ac_voltage": "400", "dc_voltage": "", "inverter_power": "", "pv_power": ""}
+    if linked_design:
+        inverter = ((linked_design.inverter_result or {}).get("selected") or {})
+        panel = ((linked_design.panel_result or {}).get("selected") or {})
+        defaults.update({"project_name": linked_design.project_name, "ac_voltage": str(inverter.get("output_voltage", 230)), "inverter_power": str(inverter.get("rated_power", inverter.get("power", ""))), "pv_power": str(panel.get("array_power", panel.get("power", "")))})
+    values = defaults.copy()
+    result = None
+    if request.method == "POST":
+        values.update({key: value for key, value in request.POST.items()})
+        result = calculate_earthing_design(values)
+        keywords = ("earth rod", "earthing rod", "earth clamp", "earth pit", "inspection chamber", "copper tape", "copper strip", "earth cable", "bentonite", "ground enhancement", "test link", "earthing")
+        catalogue = []
+        for term in keywords:
+            listing = ProductListing.objects.filter(is_active=True).filter(Q(name__icontains=term) | Q(categories__name__icontains=term)).distinct().first()
+            if listing and listing not in catalogue:
+                catalogue.append(listing)
+        quantities = [result["rod_count"], result["ring_conductor_m"], result["rod_count"], result["rod_count"], result["enhancement_kg"]]
+        result["boq"] = [{"product": product, "quantity": quantities[min(index, len(quantities)-1)], "unit": "m" if index == 1 else ("kg" if index == 4 else "pcs")} for index, product in enumerate(catalogue)]
+        if request.user.is_authenticated:
+            EarthingDesign.objects.create(user=request.user, solar_design=linked_design, project_name=values.get("project_name") or "Earthing Design", installation_type=values.get("installation_type", "industrial"), standard=values.get("standard", ""), inputs=_json_safe(values), result=_json_safe({key: value for key, value in result.items() if key != "boq"}))
+    return render(request, "solar/earthing_assessment.html", {"result": result, "values": values, "solar_design_id": solar_design_id, "linked_design": linked_design})

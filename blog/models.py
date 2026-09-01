@@ -22,7 +22,9 @@ class BlogPost(models.Model):
     content = models.TextField()
 
     featured_image = models.ImageField(
-        upload_to="blog"
+        upload_to="blog",
+        blank=True,
+        null=True,
     )
 
     category = models.ForeignKey(

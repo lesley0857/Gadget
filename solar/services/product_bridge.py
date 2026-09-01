@@ -163,6 +163,10 @@ class InverterCandidate(ProductCandidate):
     pass
 
 
+class SolarGeneratorCandidate(ProductCandidate):
+    pass
+
+
 class ControllerCandidate(ProductCandidate):
     pass
 
@@ -232,6 +236,11 @@ def get_active_panels(require_stock: bool = False) -> List[PanelCandidate]:
 def get_active_inverters(require_stock: bool = False) -> List[InverterCandidate]:
     from solar.models import InverterSpecification
     return _wrap(InverterSpecification.objects.all(), InverterCandidate, require_stock)
+
+
+def get_active_solar_generators(require_stock: bool = False) -> List[SolarGeneratorCandidate]:
+    from solar.models import SolarGeneratorSpecification
+    return _wrap(SolarGeneratorSpecification.objects.all(), SolarGeneratorCandidate, require_stock)
 
 
 def get_active_controllers(require_stock: bool = False) -> List[ControllerCandidate]:

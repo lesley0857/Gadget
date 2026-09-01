@@ -14,6 +14,7 @@ from .models import (
     BatterySpecification,
     PanelSpecification,
     InverterSpecification,
+    SolarGeneratorSpecification,
     ControllerSpecification,
     CableSpecification,
     FuseSpecification,
@@ -71,11 +72,12 @@ class BatterySpecificationAdmin(BaseSpecificationAdmin):
         "efficiency",
         "max_charge_current",
         "max_discharge_current",
+        "hybrid_compatible",
         "cycles",
         "product_price",
         "product_active",
     )
-    list_filter = ("battery_type",)
+    list_filter = ("battery_type", "hybrid_compatible")
     search_fields = ("product__name", "product__brand", "product__model_number")
     ordering = ("product__brand", "product__model_number")
 
@@ -115,6 +117,17 @@ class InverterSpecificationAdmin(BaseSpecificationAdmin):
     list_filter = ("phase", "hybrid")
     search_fields = ("product__name", "product__brand", "product__model_number")
     ordering = ("rated_power",)
+
+
+@admin.register(SolarGeneratorSpecification)
+class SolarGeneratorSpecificationAdmin(BaseSpecificationAdmin):
+    list_display = (
+        "product_name", "battery_capacity_kwh", "inverter_rated_power",
+        "inverter_surge_power", "phase", "hybrid", "product_price", "product_active",
+    )
+    list_filter = ("phase", "hybrid")
+    search_fields = ("product__name", "product__brand", "product__model_number")
+    ordering = ("inverter_rated_power",)
 
 
 @admin.register(ControllerSpecification)

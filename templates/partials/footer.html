@@ -410,30 +410,29 @@ RESPONSIVE
                     <p class="footer-about">
 
                         We are Professional in industrial electrical engineering,
-                        earthing installation, cathodic protection,
-                        switchgear supply and automation solutions
-                        across Nigeria.
+                        solar system installation, earthing installation and
+                        switchgear supply across Nigeria.
 
                     </p>
 
                     <!-- SOCIALS -->
                     <div class="footer-socials">
 
-                        <a href="#">
+                        <!-- <a href="#">
                             <i class="fa fa-facebook"></i>
                         </a>
 
                         <a href="#">
                             <i class="fa fa-instagram"></i>
-                        </a>
+                        </a> -->
 
-                        <a href="#">
+                        <a href="https://www.linkedin.com/company/remarobe/">
                             <i class="fa fa-linkedin"></i>
                         </a>
 
-                        <a href="#">
+                        <!-- <a href="#">
                             <i class="fa fa-youtube-play"></i>
-                        </a>
+                        </a> -->
 
                     </div>
 
@@ -503,7 +502,7 @@ RESPONSIVE
                         {%for service in services%}
                         <li>
                             <a href="#">
-                                Electrical Earthing
+                                {{service.title}}
                             </a>
                         </li>
                         {% endfor %}
@@ -613,11 +612,11 @@ RESPONSIVE
 
             <div class="footer-bottom-links">
 
-                <a href="#">
+                <a href="{% url 'privacy_policy' %}">
                     Privacy Policy
                 </a>
 
-                <a href="#">
+                <a href="{% url 'terms_and_conditions' %}">
                     Terms & Conditions
                 </a>
 

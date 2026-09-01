@@ -19,6 +19,7 @@ from solar.models import (
     IsolatorSpecification,
     MountingStructureSpecification,
     AccessorySpecification,
+    SolarGeneratorSpecification,
 )
 
 
@@ -36,6 +37,12 @@ class PanelSpecInline(admin.StackedInline):
 
 class InverterSpecInline(admin.StackedInline):
     model = InverterSpecification
+    extra = 0
+    max_num = 1
+
+
+class SolarGeneratorSpecInline(admin.StackedInline):
+    model = SolarGeneratorSpecification
     extra = 0
     max_num = 1
 
@@ -93,7 +100,17 @@ class AccessorySpecInline(admin.StackedInline):
 # ✅ CATEGORY
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
+    list_display = ["name", "parent", "profit_percentage", "display_order", "product_count"]
+    list_editable = ["profit_percentage", "display_order"]
+    list_filter = ["parent"]
+    search_fields = ["name", "description", "slug"]
+    prepopulated_fields = {"slug": ("name",)}
+    ordering = ["parent__name", "display_order", "name"]
+    list_select_related = ["parent"]
+
+    @admin.display(description="Products")
+    def product_count(self, obj):
+        return obj.product_listings.count()
 
 # ✅ PRICING RULE
 @admin.register(PricingRule)
@@ -162,7 +179,7 @@ class ProductListingAdmin(ImportExportModelAdmin):
     def get_export_queryset(self, request):
         """Avoid one specification query per product when exporting CSV."""
         return super().get_export_queryset(request).select_related(
-            "battery_spec", "panel_spec", "inverter_spec", "controller_spec",
+            "battery_spec", "panel_spec", "inverter_spec", "solar_generator_spec", "controller_spec",
             "cable_spec", "fuse_spec", "breaker_spec", "spd_spec",
             "isolator_spec", "mounting_structure_spec", "accessory_spec",
         )
@@ -182,7 +199,7 @@ class ProductListingAdmin(ImportExportModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-    inlines = [ProductMediaInline,BatterySpecInline, PanelSpecInline, InverterSpecInline,
+    inlines = [ProductMediaInline,BatterySpecInline, PanelSpecInline, InverterSpecInline, SolarGeneratorSpecInline,
        ControllerSpecInline, CableSpecInline, FuseSpecInline,
        BreakerSpecInline, SPDSpecInline, IsolatorSpecInline,
        MountingStructureSpecInline, AccessorySpecInline,]
