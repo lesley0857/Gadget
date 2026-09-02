@@ -17,27 +17,29 @@
 
             <div class="main-media" id="mainMedia">
 
-                {% with primary=product_listing.media.all|first %}
+                {% if primary_media %}
 
-                {% if primary.media_type == "video" %}
+                {% if primary_media.media_type == "video" %}
 
                 <video controls autoplay muted>
-                    <source src="{{ primary.file.url }}">
+                    <source src="{{ primary_media.file.url }}">
                 </video>
 
                 {% else %}
 
-                <img src="{{ primary.file.url }}">
+                <img src="{{ primary_media.file.url }}" alt="{{ product_listing.name }}">
 
                 {% endif %}
 
-                {% endwith %}
+                {% else %}
+                <div class="media-unavailable">Product media is not available yet.</div>
+                {% endif %}
 
             </div>
 
             <div class="thumbnail-row">
 
-                {% for media in product_listing.media.all %}
+                {% for media in media_items %}
 
                 {% if media.media_type == "image" %}
 
@@ -161,13 +163,13 @@
             {% endif %}
             <div class="action-buttons">
 
-                <button class="add-cart-btn" id="add-to-cart-btn" data-id="{{ product_listing.id }}">
+                <button type="button" class="add-cart-btn" id="add-to-cart-btn" data-id="{{ product_listing.id }}">
                     Add To Cart
                 </button>
 
-                <a href="{% url 'checkout' %}" class="buy-now-btn">
+                <button type="button" class="buy-now-btn" id="buy-now-btn" data-id="{{ product_listing.id }}">
                     Buy Now
-                </a>
+                </button>
 
 
 
@@ -437,9 +439,7 @@
 
             const listingId = this.dataset.id;
 
-            const quantity = parseInt(
-                document.getElementById("qty").value
-            );
+            const quantity = 1;
 
             let requests = [];
 
@@ -473,6 +473,28 @@
                         .add("active");
                 });
         });
+    });
+
+    document.getElementById("buy-now-btn")?.addEventListener("click", function () {
+        const button = this;
+        button.disabled = true;
+        fetch(`/cart/add/${button.dataset.id}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "quantity=1"
+        })
+        .then(response => response.json().then(data => ({ response, data })))
+        .then(({ response, data }) => {
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "Unable to add this product to your cart.");
+            }
+            window.location.href = "{% url 'checkout' %}";
+        })
+        .catch(error => alert(error.message))
+        .finally(() => { button.disabled = false; });
     });
 
     function getCSRFToken() {

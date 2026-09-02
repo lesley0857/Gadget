@@ -92,9 +92,9 @@ def build_vendor_checkout(user):
                 )
             )
 
-            shipping_fee += (
-                fee * item.quantity
-            )
+            # Charge each product's fixed fee once while the combined
+            # cart weight remains below the 15 kg negotiation threshold.
+            shipping_fee += fee
 
     
 
@@ -231,6 +231,26 @@ def send_customer_quotation_email(request,negotiation):
         email.send()
     except smtplib.SMTPException as e:
         print("Email failed:", e)
+
+def send_customer_negotiation_confirmation_email(request, negotiation):
+    """Confirm the WhatsApp negotiation request to its current user."""
+    recipient = getattr(negotiation.user, "email", "")
+    if not recipient:
+        return
+
+    detail_url = request.build_absolute_uri(
+        reverse("negotiation_detail", args=[negotiation.code])
+    )
+    EmailMultiAlternatives(
+        subject=f"Negotiation Request Received ({negotiation.code})",
+        body=(
+            "We received your negotiation request and will send your "
+            f"quotation shortly. Review its status here: {detail_url}"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[recipient],
+    ).send(fail_silently=True)
+
 
 def get_negotiation_total(negotiation):
     subtotal = Decimal("0.00")

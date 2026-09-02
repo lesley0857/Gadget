@@ -164,7 +164,7 @@ class ProductListingAdmin(ImportExportModelAdmin):
     # 🔍 REQUIRED
     search_fields = [
         "name",
-        "vendor__store__name",
+        "vendor__store_name",
         "vendor__user__email"
     ]
 

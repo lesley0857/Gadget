@@ -1192,14 +1192,8 @@ def select_charge_controller(
 
         try:
 
-            from solar.models import ChargeController
-
-            controllers = (
-                ChargeController.objects
-                .filter(
-                    active=True
-                )
-            )
+            from solar.services import product_bridge
+            controllers = product_bridge.get_active_controllers()
 
         except Exception as exc:
 

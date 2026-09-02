@@ -2,13 +2,11 @@ import os
 import dj_database_url
 import cloudinary
 import cloudinary.uploader
-import cloudinary.api	
+import cloudinary.api
 
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import timedelta
-
-
 
 
 load_dotenv()
@@ -56,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'django.contrib.humanize',
 
     'django.contrib.sites',
@@ -67,8 +65,8 @@ INSTALLED_APPS = [
     'import_export',
     "admin_interface",
     "colorfield",
-    
-    
+
+
     'rest_framework',
     'django_celery_beat',
     'cloudinary',
@@ -91,7 +89,7 @@ INSTALLED_APPS = [
     'remarobeprojects',
     'testimonials',
     'blog',
-    'solar',    
+    'solar',
 ]
 
 MIDDLEWARE = [
@@ -140,7 +138,7 @@ WSGI_APPLICATION = 'phoneappproject.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-#postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
+# postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i
 
 DATABASES = {
     'default': {
@@ -148,10 +146,10 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST' : os.getenv("DB_HOST", "localhost"),         
+        'HOST': os.getenv("DB_HOST", "localhost"),
         'PORT': 5432,
         'OPTIONS': {
-            'connect_timeout': 10, 
+            'connect_timeout': 10,
         },
     }
 }
@@ -159,7 +157,7 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': dj_database_url.parse(
-       
+
 #         url="postgresql://neondb_owner:npg_TJ02eojwrcXZ@ep-gentle-wave-aplz2z82-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
 #         url = "postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i",
 #         conn_max_age=600,    # optional: connection pooling
@@ -317,7 +315,7 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 LOGIN_REDIRECT_URL = '/'
 
-ADMIN_EMAIL="nwekelesley@gmail.com" #mail for viewing negotiations
+ADMIN_EMAIL = "nwekelesley@gmail.com"  # mail for viewing negotiations
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -332,4 +330,3 @@ if not DEBUG:
 
 
 USE_L10N = True
-

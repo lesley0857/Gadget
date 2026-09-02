@@ -36,6 +36,14 @@ def add_to_cart(request, listing_id):
 
     if request.method == "POST":
 
+        try:
+            quantity = max(1, int(request.POST.get("quantity", 1)))
+        except (TypeError, ValueError):
+            return JsonResponse({
+                "success": False,
+                "error": "Quantity must be a positive whole number."
+            }, status=400)
+
         listing = get_object_or_404(
             ProductListing,
             id=listing_id
@@ -60,7 +68,7 @@ def add_to_cart(request, listing_id):
             )
 
             if not created:
-                item.quantity += 1
+                item.quantity += quantity
                 item.save()
 
             items = cart.items.all()
@@ -101,12 +109,12 @@ def add_to_cart(request, listing_id):
             # ADD OR INCREMENT
             if str(listing_id) in cart:
 
-                cart[str(listing_id)]["quantity"] += 1
+                cart[str(listing_id)]["quantity"] += quantity
 
             else:
 
                 cart[str(listing_id)] = {
-                    "quantity": 1
+                    "quantity": quantity
                 }
 
             request.session["cart"] = cart
@@ -217,8 +225,13 @@ def update_cart(request):
     listing_id = request.POST.get("product_id")
     action = request.POST.get("action")
 
+    if not listing_id or action not in {"increment", "decrement", "remove"}:
+        return JsonResponse({
+            "success": False,
+            "error": "Invalid cart update request."
+        }, status=400)
     if request.user.is_authenticated:
-        cart = Cart.objects.get(user=request.user)
+        cart, _ = Cart.objects.get_or_create(user=request.user)
 
         if cart.status == "locked":
             return JsonResponse({
@@ -264,6 +277,7 @@ def update_cart(request):
                 del cart[listing_id]
 
         request.session["cart"] = cart
+        request.session.modified = True
 
         items = []
         for id, item in cart.items():
@@ -474,6 +488,10 @@ def negotiate_cart(request,negotiation_type="cart"):
         )
 
     send_admin_negotiation_email(
+        request,
+        negotiation
+    )
+    send_customer_negotiation_confirmation_email(
         request,
         negotiation
     )

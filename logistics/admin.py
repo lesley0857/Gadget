@@ -99,7 +99,8 @@ class ShipmentAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
-        "code",
-        "customer__username",
-        "customer__email"
+        "tracking_id",
+        "order__reference",
+        "delivery_agent_name",
+        "delivery_agent_phone",
     ]

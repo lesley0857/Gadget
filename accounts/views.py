@@ -154,6 +154,9 @@ def product_detail(request, name):
         ProductListing,
         name=name
     )
+    media_items = product_listing.media.order_by(
+        "-is_primary", "sort_order", "id"
+    )
     related_products = ProductListing.objects.filter(
         categories__in = product_listing.categories.all(),
         is_active=True
@@ -167,6 +170,8 @@ def product_detail(request, name):
         {
             "product_listing": product_listing,
             "related_products": related_products,
+            "media_items": media_items,
+            "primary_media": media_items.first(),
         }
     )
 

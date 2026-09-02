@@ -1750,14 +1750,8 @@ def select_inverter(
 
         try:
 
-            from solar.models import Inverter
-
-            inverters = (
-                Inverter.objects
-                .filter(
-                    active=True
-                )
-            )
+            from solar.services import product_bridge
+            inverters = product_bridge.get_active_inverters()
 
         except Exception as exc:
 
