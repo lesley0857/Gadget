@@ -308,102 +308,94 @@ def update_cart(request):
             "price": float(price),
             "quantity": quantity,
             "subtotal": float(subtotal),
+            "shipping_fee": float(listing.fixed_shipping_fee or 0),
             "image": listing.media.first().file.url if listing.media.exists() else ""
         })
 
         total += subtotal
+    checkout_data = build_vendor_checkout(request.user) if request.user.is_authenticated else build_vendor_checkout(session_cart=request.session.get("cart", {}))
     cart_count = len(cart_items_data)
     return JsonResponse({
         "success": True,
         "cart_items": cart_items_data,
-        "total": float(total),
+        "subtotal": float(checkout_data["subtotal"]),
+        "shipping": float(checkout_data["shipping"]),
+        "total": float(checkout_data["total"]),
         "cart_count":cart_count,
     })
 
 def cart_summary(request):
-
+    """Return side-cart lines plus delivery totals using the checkout rules."""
     if request.user.is_authenticated:
         cart = Cart.objects.filter(user=request.user).first()
-
-        if not cart:
-            return JsonResponse({
-                "cart_count": 0,
-                "total": 0,
-                "cart_items": []
-            })
-
-        items = cart.items.all()
-
-        cart_items_data = []
-        total = 0
-        count = 0
-
-        for item in items:
-            listing = item.product_listing
-            price = listing.final_price()
-            subtotal = price * item.quantity
-
-            cart_items_data.append({
-                "id": listing.id,
-                "name": listing.name,
-                "price": float(price),
-                "quantity": item.quantity,
-                "subtotal": float(subtotal),
-                "image": listing.media.first().file.url if listing.media.exists() else ""
-            })
-
-            total += subtotal
-
-            # ✅ FIXED
-            count += item.quantity
-        count = len(cart_items_data)
-
+        source_items = [(row.product_listing, row.quantity) for row in cart.items.select_related("product_listing").prefetch_related("product_listing__media").all()] if cart else []
     else:
-        cart = request.session.get("cart", {})
+        source_items = []
+        for listing_id, row in request.session.get("cart", {}).items():
+            listing = ProductListing.objects.filter(pk=listing_id).prefetch_related("media").first()
+            if listing:
+                source_items.append((listing, max(1, int(row.get("quantity", 1)))))
 
-        cart_items_data = []
-        total = 0
-        count = 0
+    subtotal = Decimal("0.00")
+    total_weight = Decimal("0.00")
+    charged_product_ids = set()
+    shipping = Decimal("0.00")
+    lines = []
+    for listing, quantity in source_items:
+        unit_price = Decimal(str(listing.final_price()))
+        line_total = unit_price * quantity
+        weight = Decimal(str(listing.weight or 0)) * quantity
+        media = listing.media.filter(is_primary=True).first() or listing.media.first()
+        lines.append({
+            "id": listing.id, "name": listing.name, "price": float(unit_price),
+            "quantity": quantity, "subtotal": float(line_total),
+            "shipping_fee": float(listing.fixed_shipping_fee or 0),
+            "shipping_weight": float(weight),
+            "image": media.file.url if media else "",
+        })
+        subtotal += line_total
+        total_weight += weight
 
-        for id, item in cart.items():
-            listing = ProductListing.objects.get(id=id)
-            price = listing.final_price()
-            subtotal = price * item["quantity"]
+    if total_weight < Decimal("15"):
+        for listing, _ in source_items:
+            if listing.id not in charged_product_ids:
+                shipping += Decimal(str(listing.fixed_shipping_fee or 0))
+                charged_product_ids.add(listing.id)
 
-            cart_items_data.append({
-                "id": listing.id,
-                "name": listing.name,
-                "price": float(price),
-                "quantity": item["quantity"],
-                "subtotal": float(subtotal),
-                "image": listing.media.first().file.url if listing.media.exists() else ""
-            })
-
-            total += subtotal
-
-            # ✅ FIXED
-            count += item["quantity"]
-        count = len(cart_items_data)
-        
     return JsonResponse({
-        "cart_items": cart_items_data,
-        "total": float(total),
-        "cart_count": count
+        "cart_items": lines, "cart_count": len(lines), "subtotal": float(subtotal),
+        "shipping": float(shipping), "total": float(subtotal + shipping),
     })
-
-@login_required
 def negotiate_cart(request,negotiation_type="cart"):
 
-    cart = get_object_or_404(
-        Cart,
-        user=request.user
-    )
+    user = request.user
+    if not user.is_authenticated:
+        from accounts.models import User
+        guest_id = uuid.uuid4().hex
+        user = User.objects.create_user(username=f"guest-neg-{guest_id}", email=f"guest-neg-{guest_id}@checkout.remarobe.invalid")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        cart = Cart.objects.create(user=user)
+        for listing_id, row in request.session.get("cart", {}).items():
+            listing = ProductListing.objects.filter(pk=listing_id).first()
+            if listing:
+                CartItem.objects.create(cart=cart, product_listing=listing, quantity=max(1, int(row.get("quantity", 1))))
+    else:
+        cart = get_object_or_404(Cart, user=user)
 
-    profile, created = (
-        UserProfile.objects.get_or_create(
-            user=request.user
-        )
-    )
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    # Billing-form details are accepted for guest negotiation requests.
+    profile.first_name = request.POST.get("first_name", profile.first_name)
+    profile.last_name = request.POST.get("last_name", profile.last_name)
+    profile.phone = request.POST.get("shipping_phone", request.POST.get("phone", profile.phone))
+    profile.address = request.POST.get("shipping_address", profile.address)
+    profile.city = request.POST.get("shipping_city", profile.city)
+    profile.state = request.POST.get("shipping_state", profile.state)
+    profile.save()
+    if request.POST.get("email"):
+        user.email = request.POST["email"]
+        user.save(update_fields=["email"])
+
     if not profile.phone:
         messages.error(
             request,
@@ -414,7 +406,7 @@ def negotiate_cart(request,negotiation_type="cart"):
     active_negotiation = (
             NegotiationRequest.objects
             .filter(
-                user=request.user,
+                user=user,
                 cart_signature=signature,
                 status__in=[
                     "pending",
@@ -426,7 +418,7 @@ def negotiate_cart(request,negotiation_type="cart"):
         )  
     # set to expired when cart has same items and pending neotiations
     NegotiationRequest.objects.filter(
-            user=request.user,
+            user=user,
             status="pending"
         ).exclude(
             cart_signature=signature
@@ -452,10 +444,10 @@ def negotiate_cart(request,negotiation_type="cart"):
         "cart"
     )
     negotiation = NegotiationRequest.objects.create(
-        user=request.user,
+        user=user,
         negotiation_type=negotiation_type,
         customer_name=f"{profile.first_name} {profile.last_name}",
-        customer_email=request.user.email,
+        customer_email=user.email,
         customer_phone=profile.phone,
 
         cart_signature=signature,
@@ -1201,72 +1193,51 @@ def admin_negotiation_detail(request, pk):
     )
 
 @transaction.atomic
-@login_required
 def checkout_view(request):
-    user = request.user
-
-    # =========================
-    # CART SAFETY CHECK
-    # =========================
-    cart = Cart.objects.filter(user=user).first()
-    if not cart or cart.items.count() == 0:
-        return render(request, "checkout.html", {
-            "items": [],
-            "vendors_data": [],
-            "subtotal": 0,
-            "shipping": 0,
-            "total": 0,
-            "shipping_options": []
-        })
-
-    items = cart.items.all()
-
-    profile, created = UserProfile.objects.get_or_create(user=user)
-
-    missing_profile = False
-
-    if not profile.address or not profile.phone:
-        missing_profile = True
-
-    # =========================
-    # CORE BUILD (DO ALL LOGIC HERE)
-    # =========================
-    data = build_vendor_checkout(user)
-    # =========================
-    # CANCEL OLD PROCESSING ORDER SAFELY
-    # =========================
-    Order.objects.filter(
-        customer=user,
-        status= "processing",
-        created_at__lt=timezone.now()-timedelta(hours=1)
-    ).update(status="cancelled")
-
-    # =========================
-    # SAFE SHIPPING EXTRACTION
-    # =========================
-    shipping_options = data.get("shipping_options") or []
-
-    # =========================
-    # CONTEXT (NO OVERWRITES)
-    # =========================
-    context = {
-
-    "items": cart.items.all(),
-
-    "subtotal": data["subtotal"],
-
-    "shipping": data["shipping"],
-
-    "total": data["total"],
-
-    "paystack_amount":
-        int(data["total"] * 100),
-
-    "requires_negotiation":
-        data["requires_negotiation"],
-    }
-
-    return render(request, "checkout.html", context)
+    """Checkout is deliberately available without an account."""
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+        items = list(cart.items.select_related("product_listing").prefetch_related("product_listing__media")) if cart else []
+        data = build_vendor_checkout(request.user) if items else {"subtotal": 0, "shipping": 0, "total": 0, "requires_negotiation": False}
+    else:
+        session_cart = request.session.get("cart", {})
+        items = []
+        for listing_id, row in session_cart.items():
+            listing = ProductListing.objects.filter(pk=listing_id).first()
+            if listing:
+                items.append(type("GuestCartItem", (), {"product_listing": listing, "quantity": max(1, int(row.get("quantity", 1))), "get_total_price": lambda item: item.product_listing.final_price() * item.quantity})())
+        data = build_vendor_checkout(session_cart=session_cart) if items else {"subtotal": 0, "shipping": 0, "total": 0, "requires_negotiation": False}
+    cart_product_ids = [item.product_listing.id for item in items]
+    category_ids = set()
+    for item in items:
+        product = item.product_listing
+        item.shipping_fee = product.fixed_shipping_fee or Decimal("0.00")
+        item.shipping_type = product.shipping_type
+        item.weight = product.weight or Decimal("0.00")
+        item.display_name = product.name
+        item.unit_price = product.final_price()
+        item.line_total = item.unit_price * item.quantity
+        media_items = list(product.media.all())
+        media = next((entry for entry in media_items if entry.is_primary), None) or (media_items[0] if media_items else None)
+        item.media_url = media.file.url if media else ""
+        item.media_type = media.media_type if media else ""
+        category_ids.update(product.categories.values_list("id", flat=True))
+    related_products = list(ProductListing.objects.filter(
+        is_active=True, categories__id__in=category_ids
+    ).exclude(id__in=cart_product_ids).prefetch_related("media", "categories").distinct().order_by("-id")[:4])
+    for product in related_products:
+        media_items = list(product.media.all())
+        media = next((entry for entry in media_items if entry.is_primary), None) or (media_items[0] if media_items else None)
+        product.display_media_url = media.file.url if media else ""
+        product.display_media_type = media.media_type if media else ""
+    shipping_details = {}
+    if request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        shipping_details = {"first_name": profile.first_name, "last_name": profile.last_name, "email": request.user.email, "phone": profile.phone, "address": profile.address, "city": profile.city, "state": profile.state}
+    return render(request, "checkout.html", {
+        "items": items, **data, "paystack_amount": int(data["total"] * 100),
+        "related_products": related_products, "shipping_details": shipping_details,
+    })
 
 
 def update_checkout(request):

@@ -2256,3 +2256,7 @@ textarea.input {
     margin-top: 10px;
   }
 }
+/* REMAROBE project-wide dark preference */
+@media (prefers-color-scheme: dark) {
+ :root{color-scheme:dark} body,.body-wrapper,.checkout-area,.services-page,.categories-section{background:#171316!important;color:#f5ecef} .card,.service-card,.your-order,input,select,textarea,table{background:#261f23!important;color:#f5ecef!important;border-color:#4d4046!important} p,.text-muted{color:#d2c4ca!important} h1,h2,h3,h4,th,td{color:#fff4f7!important}
+}

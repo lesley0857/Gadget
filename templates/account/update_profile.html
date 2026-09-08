@@ -114,11 +114,12 @@
                 Keep your shipping and contact information updated.
             </p>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
 
                 {% csrf_token %}
 
                 <div class="form-grid">
+                    <div class="form-group full"><label>Profile photo</label>{% if profile.image %}<img src="{{ profile.image.url }}" alt="Current profile photo" style="width:86px;height:86px;object-fit:cover;border-radius:50%;margin-bottom:10px">{% endif %}<input type="file" name="image" accept="image/*"></div>
 
                     <div class="form-group">
 

@@ -250,6 +250,8 @@ def update_profile(request):
         profile.state = request.POST.get("state")
         profile.latitude = request.POST.get("latitude")
         profile.longitude = request.POST.get("longitude")
+        if request.FILES.get("image"):
+            profile.image = request.FILES["image"]
         profile.save()
 
         return redirect("profile")

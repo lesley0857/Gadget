@@ -98,7 +98,7 @@ def search_suggestions(request):
                 else "/static/images/product-placeholder.png",
 
             "price":
-                str(p.cached_price),
+                str(p.final_price()),
 
             "url":
                 f"/product/{p.name}/",
@@ -177,6 +177,7 @@ def category_products(request, name):
         )
     )
 )
+
     return render(request, "category.html", {
         "category": category,
         "categories":categories,

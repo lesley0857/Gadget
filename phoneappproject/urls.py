@@ -106,7 +106,8 @@ urlpatterns = [
         name="solar_design",
     ),
     path("tools/in-progress/", views.tool_in_progress, name="tool_in_progress"),
-    path("earthing/", views.earthing_assessment, name="earthing_assessment"),
+    path("design/<int:design_id>/maintenance/", views.request_maintenance, name="request_maintenance"),
+    path("earthing/", include("earthing.urls")),
 
 
     path(

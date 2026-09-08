@@ -30,7 +30,7 @@ SIDEBAR
         height: fit-content;
     }
 
-    .profile-avatar {
+    .profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.profile-avatar {
         width: 110px;
         height: 110px;
         border-radius: 50%;
@@ -247,9 +247,7 @@ MOBILE
             <!-- SIDEBAR -->
             <div class="profile-sidebar">
 
-                <div class="profile-avatar">
-                    {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
-                </div>
+                <div class="profile-avatar">{% if profile.image %}<img src="{{ profile.image.url }}" alt="{{ profile.first_name }} profile photo">{% else %}{{ profile.first_name|default:request.user.email|slice:":1"|upper }}{% endif %}</div>
 
                 <div class="profile-name">
 

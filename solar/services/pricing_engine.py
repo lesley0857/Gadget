@@ -116,11 +116,9 @@ def _extract_pricing_settings(
         settings = {}
 
     installation_percentage = _to_decimal(
-        settings.get(
-            "installation_percentage"
-        ),
-        DEFAULT_INSTALLATION_PERCENTAGE,
+        settings.get("installation_percentage"), DEFAULT_INSTALLATION_PERCENTAGE,
     )
+    installation_price = _to_decimal(settings.get("installation_price"), ZERO)
 
     profit_percentage = _to_decimal(
         settings.get(
@@ -154,8 +152,8 @@ def _extract_pricing_settings(
     )
 
     return {
-        "installation_percentage":
-            installation_percentage,
+        "installation_percentage": installation_percentage,
+        "installation_price": installation_price,
 
         "profit_percentage":
             profit_percentage,
@@ -760,11 +758,8 @@ def calculate_pricing(
         )
     )
 
-    installation_percentage = (
-        commercial_settings[
-            "installation_percentage"
-        ]
-    )
+    installation_percentage = commercial_settings["installation_percentage"]
+    installation_price = commercial_settings["installation_price"]
 
     profit_percentage = (
         commercial_settings[
@@ -828,10 +823,8 @@ def calculate_pricing(
     # INSTALLATION
     # ==============================================================
 
-    installation_cost = (
-        material_cost
-        * installation_percentage
-        / HUNDRED
+    installation_cost = installation_price if installation_price > ZERO else (
+        material_cost * installation_percentage / HUNDRED
     )
 
     # ==============================================================
@@ -1042,8 +1035,7 @@ def calculate_pricing(
     )
 
     messages.append(
-        f"Installation allowance applied at "
-        f"{_output_number(installation_percentage)}%."
+        (f"Fixed installation price applied: {_output_number(installation_price)}." if installation_price > ZERO else f"Installation allowance applied at {_output_number(installation_percentage)}%.")
     )
 
     messages.append(
@@ -1159,10 +1151,8 @@ def calculate_pricing(
         # ----------------------------------------------------------
 
         "settings": {
-            "installation_percentage":
-                _output_number(
-                    installation_percentage
-                ),
+            "installation_percentage": _output_number(installation_percentage),
+            "installation_price": _output_number(installation_price),
 
             "profit_percentage":
                 _output_number(

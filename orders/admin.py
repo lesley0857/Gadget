@@ -1,6 +1,11 @@
 from django.contrib import admin
 import json
 from django.utils.html import format_html
+from django.urls import path
+from django.shortcuts import render
+from django.db.models import Count, Sum
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import Order, OrderItem
 from wallets.models import Commission
@@ -112,6 +117,14 @@ class OrderAdmin(admin.ModelAdmin):
             "commissions",
             "shipments"
         )
+
+    def get_urls(self):
+        return [path("analytics/", self.admin_site.admin_view(self.analytics_view), name="orders_order_analytics")] + super().get_urls()
+
+    def analytics_view(self, request):
+        paid = Order.objects.filter(status__in=["paid", "shipped", "out_for_delivery", "delivered"])
+        recent = paid.filter(created_at__gte=timezone.now() - timedelta(days=30))
+        return render(request, "admin/order_analytics.html", {**self.admin_site.each_context(request), "title": "Order analytics", "order_count": Order.objects.count(), "paid_count": paid.count(), "sales": paid.aggregate(value=Sum("total_amount"))["value"] or 0, "sales_30": recent.aggregate(value=Sum("total_amount"))["value"] or 0, "by_status": Order.objects.values("status").annotate(total=Count("id"), sales=Sum("total_amount")).order_by("status")})
 
     # =========================
     # SIMPLE COMMISSION TOTAL

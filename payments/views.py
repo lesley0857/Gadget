@@ -23,7 +23,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
 from wallets.models import VendorWallet, WalletTransaction, Commission
-from accounts.models import Vendor
+from accounts.models import Vendor, User
 
 from decimal import Decimal
 
@@ -51,13 +51,24 @@ def serialize_decimals(obj):
     return obj
 # "Authorization":"Bearer sk_test_6982814d5e1a9c3c49e4a7a434d84469247442ba"
 
-@login_required
 @require_POST
 @transaction.atomic
 def initiate_payment(request):
 
     user = request.user
- 
+    # Guest purchases receive a non-login, unusable account so existing
+    # order, escrow and vendor relations remain intact.
+    if not user.is_authenticated:
+        guest_id = uuid.uuid4().hex
+        user = User.objects.create_user(username=f"guest-{guest_id}", email=f"guest-{guest_id}@checkout.remarobe.invalid")
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        guest_cart = Cart.objects.create(user=user)
+        for listing_id, row in request.session.get("cart", {}).items():
+            listing = ProductListing.objects.filter(pk=listing_id).first()
+            if listing:
+                CartItem.objects.create(guest_cart, listing, max(1, int(row.get("quantity", 1))))
+
     required_fields = [
 
         "first_name",
@@ -73,6 +84,10 @@ def initiate_payment(request):
         "city",
 
         "state",
+        "shipping_address",
+        "shipping_city",
+        "shipping_state",
+        "shipping_phone",
     ]
 
     for field in required_fields:
@@ -110,9 +125,14 @@ def initiate_payment(request):
     # REBUILD CHECKOUT FRESH
     # =====================================
 
-    checkout = build_vendor_checkout(
-        user
-    )
+    checkout = build_vendor_checkout(user)
+    # Delivery is calculated server-side using mandatory destination state.
+    # Configure these values per business policy without trusting the browser.
+    local_state = os.getenv("REMAROBE_LOCAL_DELIVERY_STATE", "Lagos").strip().lower()
+    destination_state = request.POST.get("shipping_state", "").strip().lower()
+    if destination_state and destination_state != local_state:
+        checkout["shipping"] += Decimal(os.getenv("REMAROBE_OUT_OF_STATE_DELIVERY_FEE", "0"))
+        checkout["total"] = checkout["subtotal"] + checkout["shipping"]
 
     shipping_fee = Decimal(
         str(checkout["shipping"])
@@ -327,7 +347,7 @@ def initiate_payment(request):
         json={
 
             "email":
-                user.email,
+                request.POST.get("email"),
 
             "amount":
                 int(total * 100),
@@ -442,7 +462,6 @@ def payment_success(request):
     return render(request, "success.html")
 
 @transaction.atomic
-@login_required
 @require_GET
 def verify_payment(request):
 
@@ -453,7 +472,7 @@ def verify_payment(request):
     if not reference:
         raise Http404("Payment reference not found")
     try:
-        order = Order.objects.select_for_update().get(reference=reference, customer=request.user)
+        order = Order.objects.select_for_update().get(reference=reference)
     except Order.DoesNotExist:
         raise Http404("Payment reference not found")
 
@@ -531,9 +550,9 @@ def verify_payment(request):
                 status="created",
             )
 
-    cart = Cart.objects.get(
-        user=order.customer
-    )
+    cart = Cart.objects.get(user=order.customer)
+    request.session["cart"] = {}
+    request.session.modified = True
 
     cart.items.all().delete()
 

@@ -378,6 +378,14 @@ class DesignSetting(models.Model):
         default=10,
     )
 
+    installation_price = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Optional fixed installation charge. When set, this overrides the percentage.",
+    )
+
     profit_percentage = models.DecimalField(
         max_digits=6,
         decimal_places=2,
@@ -727,6 +735,8 @@ class SolarDesign(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="solar_designs",
+        null=True,
+        blank=True,
     )
 
     project_name = models.CharField(max_length=255)

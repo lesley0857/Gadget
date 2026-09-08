@@ -82,7 +82,7 @@
 
                         <td>
 
-                            {{ item.product_listing.product.name }}
+                            {{ item.product_listing.name }}
 
                         </td>
 
@@ -94,7 +94,7 @@
 
                         <td>
 
-                            ₦{{ item.negotiated_price|floatformat:2|intcomma }}
+                            ₦{{ item.get_price|floatformat:2|intcomma }}
 
                         </td>
 

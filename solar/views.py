@@ -52,6 +52,7 @@ from .models import (
     SolarDesign,
     SolarDesignVersion,
     EarthingDesign,
+    ServiceRequest,
 )
 from .services import product_bridge
 from .services.earthing_engine import design as calculate_earthing_design
@@ -725,6 +726,12 @@ def run_design_pipeline(
         accessory_result=accessory_result,
     )
     _engine_success(boq_result, "BOQ Engine", allow_catalogue_gap=True)
+    boq_result["settings"] = {
+        "installation_percentage": settings.installation_percentage,
+        "installation_price": settings.installation_price,
+        "profit_percentage": settings.profit_percentage,
+        "vat_percentage": settings.vat_percentage,
+    }
 
     # ---------------------------------------------------------------
     # PRICING
@@ -787,7 +794,6 @@ def run_design_pipeline(
 # CREATE DESIGN
 # ---------------------------------------------------------------------
 
-@login_required
 @transaction.atomic
 def solar_design(request: HttpRequest) -> HttpResponse:
     """
@@ -1037,7 +1043,7 @@ def solar_design(request: HttpRequest) -> HttpResponse:
 
     try:
         design = SolarDesign.objects.create(
-            user=request.user,
+            user=request.user if request.user.is_authenticated else None,
 
             project_name=design_data[
                 "project_name"
@@ -1154,24 +1160,25 @@ def solar_design(request: HttpRequest) -> HttpResponse:
         ),
     )
 
-    return redirect(
-        "design_result",
-        design_id=design.id,
-    )
+    if not request.user.is_authenticated:
+        ids = set(request.session.get("guest_solar_design_ids", []))
+        ids.add(design.id)
+        request.session["guest_solar_design_ids"] = list(ids)
+    return redirect("design_result", design_id=design.id)
 # ---------------------------------------------------------------------
 # RESULT
 # ---------------------------------------------------------------------
 
-@login_required
 def solar_design_result(
     request: HttpRequest,
     design_id: int,
 ) -> HttpResponse:
-    design = get_object_or_404(
-        SolarDesign,
-        id=design_id,
-        user=request.user,
-    )
+    designs = SolarDesign.objects.filter(id=design_id)
+    if request.user.is_authenticated:
+        designs = designs.filter(user=request.user)
+    else:
+        designs = designs.filter(user__isnull=True, id__in=request.session.get("guest_solar_design_ids", []))
+    design = get_object_or_404(designs)
 
     return render(
         request,
@@ -1528,6 +1535,7 @@ def restore_project_version(
     version = get_object_or_404(
         SolarDesignVersion,
     EarthingDesign,
+    ServiceRequest,
         id=version_id,
         design__user=request.user,
     )
@@ -1695,17 +1703,40 @@ def update_solar_design(
         )
 
 
+@login_required
+def request_maintenance(request: HttpRequest, design_id: int) -> HttpResponse:
+    design = get_object_or_404(SolarDesign, id=design_id, user=request.user)
+    if request.method == "POST":
+        ServiceRequest.objects.create(
+            design=design,
+            customer=request.user,
+            subject=request.POST.get("subject") or f"Maintenance request — {design.project_name}",
+            description=request.POST.get("description", ""),
+            priority=request.POST.get("priority", "normal"),
+        )
+        messages.success(request, "Your maintenance request has been sent to the REMAROBE service team.")
+        return redirect("design_result", design_id=design.id)
+    return render(request, "solar/maintenance_request.html", {"design": design})
+
 def earthing_assessment(request: HttpRequest):
     """Standalone or solar-linked preliminary earthing design and catalogue BOQ."""
     solar_design_id = request.GET.get("solar_design") or request.POST.get("solar_design")
     linked_design = None
     if solar_design_id and request.user.is_authenticated:
         linked_design = SolarDesign.objects.filter(id=solar_design_id, user=request.user).first()
-    defaults = {"project_name": "", "ac_voltage": "400", "dc_voltage": "", "inverter_power": "", "pv_power": ""}
+    defaults = {"project_name": "", "client_name": "", "client_email": getattr(request.user, "email", ""), "project_location": "", "installation_type": "solar_pv", "ac_voltage": "400", "dc_voltage": "", "inverter_power": "", "pv_power": ""}
     if linked_design:
         inverter = ((linked_design.inverter_result or {}).get("selected") or {})
         panel = ((linked_design.panel_result or {}).get("selected") or {})
-        defaults.update({"project_name": linked_design.project_name, "ac_voltage": str(inverter.get("output_voltage", 230)), "inverter_power": str(inverter.get("rated_power", inverter.get("power", ""))), "pv_power": str(panel.get("array_power", panel.get("power", "")))})
+        defaults.update({
+            "project_name": linked_design.project_name,
+            "client_name": linked_design.client_name or getattr(request.user, "get_full_name", lambda: "")(),
+            "project_location": linked_design.project_location,
+            "installation_type": "solar_pv",
+            "ac_voltage": str(inverter.get("output_voltage", 230)),
+            "inverter_power": str(inverter.get("rated_power", inverter.get("power", ""))),
+            "pv_power": str(panel.get("array_power", panel.get("power", ""))),
+        })
     values = defaults.copy()
     result = None
     if request.method == "POST":

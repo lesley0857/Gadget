@@ -373,6 +373,8 @@
         const closeBtn = document.getElementById("close-cart-btn");
 
         const cartTotals = document.querySelectorAll(".cart-total");
+        const cartSubtotals = document.querySelectorAll(".cart-subtotal");
+        const cartShippings = document.querySelectorAll(".cart-shipping");
 
         const cartCounts = document.querySelectorAll(".cart-count");
 
@@ -418,10 +420,9 @@
                 el.innerText = data.cart_count;
             });
 
-            cartTotals.forEach(el => {
-
-                el.innerText = data.total;
-            });
+            cartTotals.forEach(el => el.innerText = formatMoney(data.total));
+            cartSubtotals.forEach(el => el.innerText = formatMoney(data.subtotal ?? data.total));
+            cartShippings.forEach(el => el.innerText = formatMoney(data.shipping ?? 0));
 
             renderCartItems(data.cart_items);
         }
@@ -454,7 +455,7 @@
                 cartBody.innerHTML += `
                 <div class="cart-item">
 
-                    <img src="${item.image}" alt="">
+                    <img src="${item.image || '/static/logo/Remarobelogo.png'}" alt="${item.name}">
 
                     <div class="cart-item-info">
 
@@ -462,9 +463,7 @@
                             ${item.name}
                         </div>
 
-                        <div class="cart-item-price">
-                            ₦${formatMoney(item.price)}
-                        </div>
+                        <div class="cart-item-price">Unit: ₦${formatMoney(item.price)}</div><div class="cart-item-price">Line total: ₦${formatMoney(item.subtotal)}</div>${Number(item.shipping_fee || 0) > 0 ? `<div class="cart-item-shipping">Shipping: ₦${formatMoney(item.shipping_fee)}</div>` : ""}
 
                         <div class="cart-controls">
 
@@ -3490,7 +3489,7 @@ CART SIDEBAR
             margin-bottom: 10px;
         }
 
-        .cart-item-price {
+        .cart-item-shipping{font-size:12px;color:#6b7280;margin-top:4px}.cart-item-shipping{font-size:12px;color:#6b7280;margin-top:4px}.cart-item-price {
 
             color: #2A7DB4;
 
@@ -3829,15 +3828,7 @@ CART SIDEBAR
             <!-- FOOTER -->
             <div class="cart-bottom">
 
-                <div class="cart-summary">
-
-                    <span>Total</span>
-
-                    <strong>
-                        ₦<span class="cart-total">0</span>
-                    </strong>
-
-                </div>
+                <div class="cart-summary"><span>Subtotal</span><strong>₦<span class="cart-subtotal">0.00</span></strong></div><div class="cart-summary"><span>Shipping</span><strong>₦<span class="cart-shipping">0.00</span></strong></div><div class="cart-summary cart-grand"><span>Total</span><strong>₦<span class="cart-total">0.00</span></strong></div>
                 <a href="#" id="negotiate-btn" class="checkout-link btn">
                     Negotiate
                 </a>

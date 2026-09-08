@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.conf import settings
+from django.core.mail import send_mail
 
 # Create your views here.
 from rest_framework import generics
@@ -17,12 +19,24 @@ def dispute_page(request, item_id):
     if request.method == "POST":
         reason = request.POST.get("reason")
 
-        Dispute.objects.create(
+        dispute = Dispute.objects.create(
             order_item=item,
             raised_by=request.user,
             reason=reason
         )
-
+        recipients = [email for _, email in getattr(settings, "ADMINS", [])]
+        if not recipients and getattr(settings, "ADMIN_EMAIL", ""):
+            recipients = [settings.ADMIN_EMAIL]
+        if not recipients and getattr(settings, "DEFAULT_FROM_EMAIL", ""):
+            recipients = [settings.DEFAULT_FROM_EMAIL]
+        if recipients:
+            send_mail(
+                subject=f"New customer dispute #{dispute.id}",
+                message=f"{request.user} raised a dispute for order item #{item.id}.`nReason: {reason}",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=recipients,
+                fail_silently=True,
+            )
         return redirect("orders_page")
 
     return render(request, "dispute.html", {"item": item})

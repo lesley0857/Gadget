@@ -9,9 +9,16 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.urls import reverse
 
-def build_vendor_checkout(user):
-
-    cart = Cart.objects.get(user=user)
+def build_vendor_checkout(user=None, session_cart=None):
+    """Calculate totals from either an authenticated cart or guest session cart."""
+    if user is not None and getattr(user, "is_authenticated", False):
+        cart_items = list(Cart.objects.get(user=user).items.select_related("product_listing"))
+    else:
+        cart_items = []
+        for listing_id, row in (session_cart or {}).items():
+            product = ProductListing.objects.filter(pk=listing_id).first()
+            if product:
+                cart_items.append(type("GuestCartItem", (), {"product_listing": product, "quantity": max(1, int(row.get("quantity", 1)))})())
 
     subtotal = Decimal("0.00")
     total_weight = Decimal("0.00")
@@ -20,12 +27,11 @@ def build_vendor_checkout(user):
     requires_shipping = False
 
     shipping_fee = Decimal("0.00")
+    charged_product_ids = set()
 
     items_data = []
 
-    for item in cart.items.select_related(
-        "product_listing"
-    ):
+    for item in cart_items:
 
         product = item.product_listing
 
@@ -56,7 +62,7 @@ def build_vendor_checkout(user):
             requires_shipping = True
 
         # NEGOTIATION CHECK
-        if product.requires_negotiation:
+        if product.requires_negotiation or product.shipping_type == "negotiation":
             requires_negotiation = True
 
         items_data.append({
@@ -71,6 +77,8 @@ def build_vendor_checkout(user):
 
             "weight": str(weight),
 
+            "shipping_fee": str(product.fixed_shipping_fee or 0),
+
             "subtotal": str(line_total),
         })
 
@@ -79,11 +87,11 @@ def build_vendor_checkout(user):
         requires_negotiation = True
 
     # SHIPPING CALCULATION
-    if not requires_negotiation:
+    # Below 15 kg, show the admin-configured per-product delivery fees
+    # even when the customer also has the option to negotiate delivery.
+    if total_weight < Decimal("15"):
 
-        for item in cart.items.select_related(
-            "product_listing"
-        ):
+        for item in cart_items:
 
             fee = Decimal(
                 str(
@@ -92,9 +100,12 @@ def build_vendor_checkout(user):
                 )
             )
 
-            # Charge each product's fixed fee once while the combined
-            # cart weight remains below the 15 kg negotiation threshold.
-            shipping_fee += fee
+            # A fixed delivery fee is charged once per distinct product,
+            # regardless of quantity. Heavy carts move to negotiation instead.
+            product_id = item.product_listing.id
+            if product_id not in charged_product_ids:
+                shipping_fee += fee
+                charged_product_ids.add(product_id)
 
     
 
@@ -102,22 +113,6 @@ def build_vendor_checkout(user):
         subtotal
         + shipping_fee
     )
-
-    print(
-        "NEGOTIATION:",
-        requires_negotiation
-    )
-
-    print(
-        "SHIPPING:",
-        shipping_fee
-    )
-
-    print(
-        "TOTAL:",
-        total
-    )
-
     return {
 
         "items": items_data,
