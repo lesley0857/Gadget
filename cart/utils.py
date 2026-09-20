@@ -8,6 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.urls import reverse
+from pricing.services import calculate_checkout_pricing
 
 def build_vendor_checkout(user=None, session_cart=None):
     """Calculate totals from either an authenticated cart or guest session cart."""
@@ -65,21 +66,29 @@ def build_vendor_checkout(user=None, session_cart=None):
         if product.requires_negotiation or product.shipping_type == "negotiation":
             requires_negotiation = True
 
+        media_item = product.media.filter(is_primary=True).first() or product.media.first()
+        media_url = ""
+        media_type = ""
+        if media_item and media_item.file:
+            try:
+                media_url = media_item.file.url
+                media_type = media_item.media_type
+            except Exception:
+                media_url = ""
+
         items_data.append({
-
             "product_id": product.id,
-
             "name": product.name,
-
+            "display_name": product.name,
             "quantity": qty,
-
             "price": str(price),
-
+            "unit_price": price,
             "weight": str(weight),
-
             "shipping_fee": str(product.fixed_shipping_fee or 0),
-
             "subtotal": str(line_total),
+            "line_total": line_total,
+            "media_url": media_url,
+            "media_type": media_type,
         })
 
     # HEAVY LOAD RULE
@@ -109,27 +118,23 @@ def build_vendor_checkout(user=None, session_cart=None):
 
     
 
-    total = (
-        subtotal
-        + shipping_fee
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping_fee
     )
+
     return {
-
         "items": items_data,
-
-        "subtotal": subtotal,
-
-        "shipping": shipping_fee,
-
-        "total": total,
-
+        "subtotal": pricing.subtotal,
+        "shipping": pricing.shipping,
+        "net_total": pricing.net_total,
+        "amount_before_gateway_fee": pricing.net_total,
+        "gateway_fee": pricing.gateway_fee,
+        "total": pricing.total,
+        "paystack_amount": pricing.paystack_amount_kobo,
         "total_weight": total_weight,
-
-        "requires_shipping":
-            requires_shipping,
-
-        "requires_negotiation":
-            requires_negotiation,
+        "requires_shipping": requires_shipping,
+        "requires_negotiation": requires_negotiation,
     }
 
 def send_admin_negotiation_email(request, negotiation):
@@ -155,7 +160,7 @@ def send_admin_negotiation_email(request, negotiation):
     html = render_to_string(
         "emails/admin_negotiation_request.html",
         context
-)
+    )
 
     email = EmailMultiAlternatives(
         subject=f"Negotiation Request ({negotiation.code})",
@@ -187,23 +192,19 @@ def send_customer_quotation_email(request,negotiation):
         item.get_total()
         for item in negotiation.items.all()
     )
-
-    total = (
-        subtotal +
-        negotiation.shipping_fee
+    shipping = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping
     )
 
     context = {
-
         "negotiation": negotiation,
-
         "payment_url": payment_url,
-
         "subtotal": subtotal,
-
-        "total": total,
+        "shipping": shipping,
+        "total": pricing.total,
     }
-
 
     html = render_to_string(
         "emails/customer_quotation_ready.html",
@@ -251,18 +252,18 @@ def get_negotiation_total(negotiation):
     subtotal = Decimal("0.00")
 
     for item in negotiation.items.all():
-
         subtotal += (
             item.get_price()
             *
             item.quantity
         )
 
-    return (
-        subtotal
-        +
-        negotiation.shipping_fee
+    shipping = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping
     )
+    return pricing.total
 
 def generate_cart_signature(cart):
     data = []

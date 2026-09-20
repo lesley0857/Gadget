@@ -1,11 +1,259 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Solar PV System Designer
-{% endblock %}
+{% block title %}Solar PV System Designer{% endblock %}
 
 {% block content %}
+
+<!-- SOLAR ONBOARDING TOUR MODAL -->
+<div id="solar-tour-overlay" class="st-overlay" style="display:none;">
+    <div class="st-modal">
+        <div class="st-header">
+            <span class="st-badge" id="st-badge">Step 1 of 4</span>
+            <button type="button" class="st-close" id="st-close">&times;</button>
+        </div>
+        <div class="st-body">
+            <div class="st-icon" id="st-icon"><i class="fa fa-map-marker"></i></div>
+            <h3 id="st-title">1. Project & Location Setup</h3>
+            <p id="st-desc">Enter your project details (e.g. project name, Client Name, Location).
+                You can edit local peak sun hours .</p>
+        </div>
+        <div class="st-footer">
+            <button type="button" class="st-btn st-btn-sec" id="st-prev">Previous</button>
+            <div class="st-dots" id="st-dots"></div>
+            <button type="button" class="st-btn st-btn-pri" id="st-next">Next Step →</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .st-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: stFadeIn .25s ease;
+    }
+
+    .st-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        max-width: 520px;
+        width: 100%;
+        padding: 32px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .st-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .st-badge {
+        background: #fef3c7;
+        color: #d97706;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .st-close {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        color: #94a3b8;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .st-close:hover {
+        color: #1e293b;
+    }
+
+    .st-body {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .st-icon {
+        width: 64px;
+        height: 64px;
+        background: #ccfbf1;
+        color: #0f766e;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.8rem;
+        margin: 0 auto 16px;
+    }
+
+    .st-body h3 {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .st-body p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .st-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 20px;
+    }
+
+    .st-dots {
+        display: flex;
+        gap: 6px;
+    }
+
+    .st-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        transition: background .2s;
+    }
+
+    .st-dot.active {
+        background: #0f766e;
+        width: 20px;
+        border-radius: 999px;
+    }
+
+    .st-btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        border: none;
+    }
+
+    .st-btn-pri {
+        background: #0f766e;
+        color: #fff;
+    }
+
+    .st-btn-pri:hover {
+        background: #115e59;
+    }
+
+    .st-btn-sec {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .st-btn-sec:hover {
+        background: #e2e8f0;
+    }
+
+    @keyframes stFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<script>
+    (() => {
+        const calcSteps = [
+            {
+                badge: "Step 1 of 4",
+                icon: "<i class='fa fa-map-marker'></i>",
+                title: "1. Project & Location Setup",
+                desc: "Enter your project details (e.g. project name, Client Name, Location).You can edit local peak sun hours ."
+            },
+            {
+                badge: "Step 2 of 4",
+                icon: "<i class='fa fa-bolt'></i>",
+                title: "2. Electrical Load Audit",
+                desc: "Add your appliances (ACs, pumps, refrigerators, lighting), specify wattage, quantity, and daily operating hours to determine daily energy demand (kWh/day)."
+            },
+            {
+                badge: "Step 3 of 4",
+                icon: "<i class='fa fa-car'></i>",
+                title: "3. Battery & System Architecture",
+                desc: "Select your battery chemistry(Lithium or Lead Acid) and Project TYpe"
+            },
+            {
+                badge: "Step 4 of 4",
+                icon: "<i class='fa fa-cogs'></i>",
+                title: "4. Generate Engineering Proposal",
+                desc: "Click 'Calculate System Design' to execute engineering algorithms for solar array size, inverter selection, cable gauges, protection, and itemized BOQ."
+            }
+        ];
+
+        let currentStep = 0;
+
+        function renderStep(idx) {
+            const s = calcSteps[idx];
+            document.getElementById('st-badge').textContent = s.badge;
+            document.getElementById('st-icon').innerHTML = s.icon;
+            document.getElementById('st-title').textContent = s.title;
+            document.getElementById('st-desc').textContent = s.desc;
+            document.getElementById('st-prev').style.visibility = idx === 0 ? 'hidden' : 'visible';
+            document.getElementById('st-next').textContent = idx === calcSteps.length - 1 ? 'Finish Tour ✓' : 'Next Step →';
+
+            const dots = document.getElementById('st-dots');
+            dots.innerHTML = '';
+            calcSteps.forEach((_, i) => {
+                const d = document.createElement('div');
+                d.className = 'st-dot' + (i === idx ? ' active' : '');
+                dots.appendChild(d);
+            });
+        }
+
+        function showTour() {
+            currentStep = 0;
+            renderStep(currentStep);
+            document.getElementById('solar-tour-overlay').style.display = 'flex';
+        }
+
+        function hideTour() {
+            document.getElementById('solar-tour-overlay').style.display = 'none';
+        }
+
+        document.getElementById('start-solar-tour')?.addEventListener('click', showTour);
+        document.getElementById('st-close')?.addEventListener('click', hideTour);
+        document.getElementById('st-prev')?.addEventListener('click', () => { if (currentStep > 0) { currentStep--; renderStep(currentStep); } });
+        document.getElementById('st-next')?.addEventListener('click', () => {
+            if (currentStep < calcSteps.length - 1) { currentStep++; renderStep(currentStep); }
+            else { hideTour(); localStorage.setItem('solar_calc_tour_seen', 'true'); }
+        });
+
+        // Auto-show once for new visitors
+        if (!localStorage.getItem('solar_calc_tour_seen')) {
+            setTimeout(showTour, 1200);
+        }
+    })();
+</script>
 
 <style>
     /* =====================================================================
@@ -1102,6 +1350,10 @@ Solar PV System Designer
                 </h1>
 
                 <p class="solar-hero-description">
+                    <button type="button" id="start-solar-tour" class="solar-tour-hero-btn"
+                        style="float:right;margin-bottom:12px;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#f59e0b;color:#111827;border:0;border-radius:10px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 4px 14px rgba(245,158,11,0.3);"><i
+                            class="fa fa-compass"></i> Take Guided Tour</button>
+
                     Define the project requirements and electrical loads.
                     The engineering pipeline will determine the appropriate
                     system voltage, battery bank, PV array, inverter,
@@ -1191,24 +1443,39 @@ Solar PV System Designer
                 <div class="solar-section-icon">☀</div>
                 <div>
                     <h2 class="solar-card-title" id="calculator-flow-title">How your system is designed</h2>
-                    <p class="solar-card-subtitle">Your loads determine the required power and energy; the calculator then matches compatible active catalogue products.</p>
+                    <p class="solar-card-subtitle">Your loads determine the required power and energy; the calculator
+                        then matches compatible active catalogue products.</p>
                 </div>
             </div>
             <div class="solar-card-body">
                 <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;text-align:center">
-                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>1. Loads</strong><br>Appliances, hours & surge</div>
+                    <div class="solar-help"
+                        style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px">
+                        <strong>1. Loads</strong><br>Appliances, hours & surge
+                    </div>
                     <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
-                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>2. Sizing</strong><br>Power, energy & voltage</div>
+                    <div class="solar-help"
+                        style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px">
+                        <strong>2. Sizing</strong><br>Power, energy & voltage
+                    </div>
                     <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
-                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>3. Product match</strong><br>Battery, panels & inverter</div>
+                    <div class="solar-help"
+                        style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px">
+                        <strong>3. Product match</strong><br>Battery, panels & inverter
+                    </div>
                     <div style="align-self:center;font-size:1.25rem;color:#159a55">→</div>
-                    <div class="solar-help" style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px"><strong>4. Safe proposal</strong><br>Protection, cables & quotation</div>
+                    <div class="solar-help"
+                        style="flex:1;min-width:135px;padding:12px;border:1px solid #dbe7df;border-radius:10px">
+                        <strong>4. Safe proposal</strong><br>Protection, cables & quotation
+                    </div>
                 </div>
             </div>
         </section>
 
 
-        <p class="solar-help" id="appliance-type-note" aria-live="polite"></p><p class="solar-help"><a href="{% url 'earthing_assessment' %}">Need a full industrial/commercial earthing assessment for this solar project? Open the Earthing Design Assessment.</a></p>
+        <p class="solar-help" id="appliance-type-note" aria-live="polite"></p>
+        <p class="solar-help"><a href="{% url 'earthing_assessment' %}">Need a full industrial/commercial earthing
+                assessment for this solar project? Open the Earthing Design Assessment.</a></p>
 
         <!-- ===================================================================
      MAIN FORM
@@ -1421,7 +1688,12 @@ Solar PV System Designer
                                 <span class="solar-required">*</span>
                             </label>
                             {{ design_form.installation_type }}
-                            <div class="solar-help" role="note" title="Residential means homes and small apartments. Industrial / Commercial means shops, offices, workshops and larger business loads."><strong>What does this mean?</strong> Residential is for homes and small apartments. Industrial / Commercial is for shops, offices, workshops and larger business loads; it uses three-phase equipment where appropriate.</div>
+                            <div class="solar-help" role="note"
+                                title="Residential means homes and small apartments. Industrial / Commercial means shops, offices, workshops and larger business loads.">
+                                <strong>What does this mean?</strong> Residential is for homes and small apartments.
+                                Industrial / Commercial is for shops, offices, workshops and larger business loads; it
+                                uses three-phase equipment where appropriate.
+                            </div>
                             {% if design_form.installation_type.errors %}
                             <div class="solar-errors">{{ design_form.installation_type.errors }}</div>
                             {% endif %}
@@ -1441,11 +1713,15 @@ Solar PV System Designer
 
                             {{ design_form.operating_mode }}
                             <details class="solar-help" style="margin-top:10px">
-                                <summary style="cursor:pointer;font-weight:700">What does each system type mean?</summary>
+                                <summary style="cursor:pointer;font-weight:700">What does each system type mean?
+                                </summary>
                                 <ul style="margin:8px 0 0;padding-left:18px">
-                                    <li><strong>Off-grid:</strong> runs independently of public power. Batteries store energy for night-time and outages.</li>
-                                    <li><strong>Hybrid:</strong> combines solar, batteries and grid or generator supply. It can use stored solar energy first and switch source when needed.</li>
-                                    <li><strong>Grid-tied:</strong> works with public electricity and normally has no backup during an outage unless separate backup equipment is included.</li>
+                                    <li><strong>Off-grid:</strong> runs independently of public power. Batteries store
+                                        energy for night-time and outages.</li>
+                                    <li><strong>Hybrid:</strong> combines solar, batteries and grid or generator supply.
+                                        It can use stored solar energy first and switch source when needed.</li>
+                                    <li><strong>Grid-tied:</strong> works with public electricity and normally has no
+                                        backup during an outage unless separate backup equipment is included.</li>
                                 </ul>
                             </details>
 
@@ -3071,28 +3347,28 @@ Solar PV System Designer
     }
 </style>
 <script>
-(function () {
-    function filterAppliances() {
-        const type = document.getElementById("id_installation_type")?.value || "residential";
-        document.querySelectorAll("select[data-appliance-select]").forEach((select) => {
-            Array.from(select.options).forEach((option) => {
-                if (!option.value) return;
-                const allowed = option.dataset.installationType === type;
-                option.hidden = !allowed;
-                option.disabled = !allowed;
-                if (!allowed && option.selected) select.value = "";
+    (function () {
+        function filterAppliances() {
+            const type = document.getElementById("id_installation_type")?.value || "residential";
+            document.querySelectorAll("select[data-appliance-select]").forEach((select) => {
+                Array.from(select.options).forEach((option) => {
+                    if (!option.value) return;
+                    const allowed = option.dataset.installationType === type;
+                    option.hidden = !allowed;
+                    option.disabled = !allowed;
+                    if (!allowed && option.selected) select.value = "";
+                });
             });
+            const note = document.getElementById("appliance-type-note");
+            if (note) note.textContent = type === "industrial"
+                ? "Showing industrial and commercial equipment. Typical wattages are planning values; confirm nameplate ratings for final design."
+                : "Showing household appliances. Typical wattages are planning values; confirm nameplate ratings for final design.";
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("id_installation_type")?.addEventListener("change", filterAppliances);
+            document.addEventListener("formset:added", filterAppliances);
+            filterAppliances();
         });
-        const note = document.getElementById("appliance-type-note");
-        if (note) note.textContent = type === "industrial"
-            ? "Showing industrial and commercial equipment. Typical wattages are planning values; confirm nameplate ratings for final design."
-            : "Showing household appliances. Typical wattages are planning values; confirm nameplate ratings for final design.";
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("id_installation_type")?.addEventListener("change", filterAppliances);
-        document.addEventListener("formset:added", filterAppliances);
-        filterAppliances();
-    });
-})();
+    })();
 </script>
 {% endblock %}

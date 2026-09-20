@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import timedelta
 
 
+from decimal import Decimal
 load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -21,6 +22,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
+
+# Paystack Transaction Fee Configuration (Local NGN)
+# Rule: 1.5% + ₦100, waived for transactions < ₦2,500, capped at ₦2,000
+PAYSTACK_PERCENTAGE_FEE = Decimal(os.getenv("PAYSTACK_PERCENTAGE_FEE", "0.015"))
+PAYSTACK_FIXED_FEE = Decimal(os.getenv("PAYSTACK_FIXED_FEE", "100.00"))
+PAYSTACK_FEE_CAP = Decimal(os.getenv("PAYSTACK_FEE_CAP", "2000.00"))
+PAYSTACK_FEE_WAIVER_THRESHOLD = Decimal(os.getenv("PAYSTACK_FEE_WAIVER_THRESHOLD", "2500.00"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", os.getenv("DEBUG", "true")).strip().lower() in {

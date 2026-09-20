@@ -63,6 +63,9 @@ class Order(models.Model):
     shipping_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     vat_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    amount_before_gateway_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    gateway_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     status = models.CharField(max_length=20,choices=STATUS_CHOICES, default="pending",db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     payment_url = models.URLField(null=True, blank=True)
@@ -118,6 +121,8 @@ class OrderItem(models.Model):
         ("pending", "Pending"),
         ("processing", "Processing"),
         ("paid", "Paid"),
+        ("shipped", "Shipped"),
+        ("delivered", "Delivered"),
         ("cancelled", "Cancelled"),
     ]
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)

@@ -4,7 +4,7 @@ from django.db import models
 from accounts.models import *
 from cloudinary.models import CloudinaryField
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 from django.utils import timezone
 
@@ -251,52 +251,65 @@ class ProductListing(models.Model):
             is_active=True
         ).order_by("priority").first()
     
-    def final_price(self):
+    def base_selling_price(self):
+        """Product price with percentage profit markup before Paystack fee."""
         cost = self.supplier_price
+        if not cost or cost <= Decimal("0.00"):
+            return Decimal("0.00")
+
         rule = self.get_applicable_rule()
-    # ==========================
-    # RULE OVERRIDES EVERYTHING
-    # ==========================
 
+        # ==========================
+        # RULE OVERRIDES EVERYTHING
+        # ==========================
         if rule and rule.is_valid():
-
-            value = Decimal(rule.value)
-
+            value = Decimal(str(rule.value))
             if rule.rule_type == PricingRule.MARKUP_PERCENTAGE:
-                return cost + (
-                    cost * value / 100
-                )
-
+                base = cost + (cost * value / Decimal("100"))
             elif rule.rule_type == PricingRule.MARKUP_FIXED:
-                return cost + value
-
+                base = cost + value
             elif rule.rule_type == PricingRule.DISCOUNT_PERCENTAGE:
-                return cost - (
-                    cost * value / 100
-                )
-
+                base = cost - (cost * value / Decimal("100"))
             elif rule.rule_type == PricingRule.DISCOUNT_FIXED:
-                return cost - value
-
-    # ==========================
-    # CATEGORY MARGIN
-    # ==========================
-        category = self.categories.first()
-        if category and category.profit_percentage:
-
-            margin = category.profit_percentage
-
+                base = cost - value
+            else:
+                base = cost
         else:
+            category = self.categories.first()
+            if category and category.profit_percentage:
+                margin = Decimal(str(category.profit_percentage))
+            else:
+                margin = self.get_tier_margin()
+            base = cost + (cost * margin / Decimal("100"))
 
-            margin = self.get_tier_margin()
-        selling_price = cost + (
-            cost * margin / 100
-        )
-        return selling_price.quantize(
-            Decimal("0.01")
-        )
-        
-        
+        return base.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    def final_price(self):
+        """
+        Selling price with Paystack 1.5% + ₦100 fee built in.
+        Formula:
+          Base = Supplier Price + Percentage Profit
+          Selling Price = (Base + 100) / (1 - 0.015) [capped at ₦2,000 fee max]
+        """
+        base = self.base_selling_price()
+        if base <= Decimal("0.00"):
+            return Decimal("0.00")
+
+        pct = Decimal("0.015")
+        fixed = Decimal("100.00")
+        cap = Decimal("2000.00")
+
+        # Mathematical recovery so merchant recovers base_price:
+        gross_candidate = (base + fixed) / (Decimal("1.00") - pct)
+        fee_candidate = gross_candidate * pct + fixed
+
+        if fee_candidate >= cap:
+            selling_price = base + cap
+        else:
+            selling_price = gross_candidate
+
+        return selling_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     def get_tier_margin(self):
         cost = self.supplier_price
         if cost <= Decimal("50000"):
@@ -304,19 +317,25 @@ class ProductListing(models.Model):
         elif cost <= Decimal("500000"):
             return Decimal("20")
         return Decimal("15")
-    
+
     @property
     def profit_amount(self):
-
         return (
-            self.final_price()
+            self.base_selling_price()
             -
             self.supplier_price
         )
 
     @property
-    def profit_percentage_actual(self):
+    def paystack_fee_amount(self):
+        return (
+            self.final_price()
+            -
+            self.base_selling_price()
+        )
 
+    @property
+    def profit_percentage_actual(self):
         if self.supplier_price == 0:
             return 0
 

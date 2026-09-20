@@ -201,8 +201,12 @@ urlpatterns = [
 
 
     path("webhooks/paystack/", paystack_webhook, name="paystack_webhook"),
+    path("logistics/", include("logistics.urls")),
+    path("vendor/order/<int:item_id>/ship/", mark_shipped, name="mark_shipped"),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Always serve media files locally (DEBUG may be False on dev machine due to env vars).
+# Production should serve these via nginx/caddy instead of Django.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

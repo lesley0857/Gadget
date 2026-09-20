@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<main class="lc-shell">
+
+  <div class="lc-hero">
+    <p class="lc-eyebrow">Tools</p>
+    <h1>Logistics Calculator</h1>
+    <p>Estimate delivery fees from any vendor location to your destination using real distances.</p>
+  </div>
+
+  <div class="lc-grid">
+
+    <!-- INPUT PANEL -->
+    <div class="lc-card">
+      <h2 class="lc-card-title">Calculate Delivery Fee</h2>
+
+      <div class="lc-field">
+        <label for="lc-vendor">Vendor / Origin</label>
+        <select id="lc-vendor">
+          <option value="">— Select a vendor —</option>
+          {% for v in vendors %}
+          <option value="{{ v.id }}" data-lat="{{ v.latitude }}" data-lon="{{ v.longitude }}"
+            data-name="{{ v.store_name }}">
+            {{ v.store_name }} {% if not v.latitude %}(location pending){% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="lc-field">
+        <label>Customer Destination</label>
+        <div class="lc-dest-tabs">
+          <button type="button" class="lc-tab active" data-tab="city">Type City</button>
+          <button type="button" class="lc-tab" data-tab="gps">Use My Location</button>
+        </div>
+
+        <div id="tab-city">
+          <div style="position:relative;">
+            <input type="text" id="lc-city" placeholder="e.g. Enugu" autocomplete="off">
+            <div id="lc-city-drop" class="city-dropdown" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div id="tab-gps" style="display:none;">
+          <button type="button" id="gps-btn" class="lc-gps-btn">
+            <i class="fa fa-map-marker"></i> Detect My Location
+          </button>
+          <p id="gps-status" class="lc-gps-status"></p>
+        </div>
+
+        <input type="hidden" id="lc-clat">
+        <input type="hidden" id="lc-clon">
+      </div>
+
+      <div class="lc-field">
+        <label for="lc-weight">Shipment Weight (kg)</label>
+        <input type="number" id="lc-weight" value="1" min="0.1" step="0.1">
+      </div>
+
+      <button type="button" id="lc-calc-btn" class="lc-submit">
+        <i class="fa fa-calculator"></i> Calculate Fee
+      </button>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div class="lc-card lc-result-card" id="lc-result" style="display:none;">
+      <h2 class="lc-card-title">Fee Breakdown</h2>
+
+      <div class="lc-result-badge" id="lc-total-badge">₦—</div>
+      <p class="lc-result-sub" id="lc-result-sub"></p>
+
+      <table class="lc-breakdown">
+        <tbody>
+          <tr>
+            <td>Rate Applied</td>
+            <td id="br-rate">—</td>
+          </tr>
+          <tr>
+            <td>Distance</td>
+            <td id="br-dist">—</td>
+          </tr>
+          <tr>
+            <td>Base Fee</td>
+            <td id="br-base">—</td>
+          </tr>
+          <tr>
+            <td>Distance Cost</td>
+            <td id="br-dcost">—</td>
+          </tr>
+          <tr>
+            <td>Weight Surcharge</td>
+            <td id="br-wcost">—</td>
+          </tr>
+          <tr>
+            <td>Subtotal</td>
+            <td id="br-sub">—</td>
+          </tr>
+          <tr>
+            <td>Margin (15%)</td>
+            <td id="br-margin">—</td>
+          </tr>
+          <tr class="lc-total-row">
+            <td><strong>Total Fee</strong></td>
+            <td id="br-total"><strong>—</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      {% if rates %}
+      <div class="lc-rate-info">
+        <p class="lc-rate-title">Current Rate Tiers</p>
+        {% for r in rates %}
+        <div class="lc-rate-row">
+          <span>{{ r.label }}</span>
+          <span>₦{{ r.base_fee|floatformat:0 }} base + ₦{{ r.rate_per_km|floatformat:0 }}/km</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="lc-card lc-error-card" id="lc-error" style="display:none;">
+      <i class="fa fa-exclamation-circle fa-2x"></i>
+      <p id="lc-error-msg"></p>
+    </div>
+
+  </div>
+</main>
+
+<style>
+  .lc-shell {
+    max-width: 960px;
+    margin: auto;
+    padding: 40px 20px 80px;
+  }
+
+  .lc-hero {
+    background: linear-gradient(120deg, #135823, #0a3320);
+    color: #fff;
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+  }
+
+  .lc-eyebrow {
+    margin: 0 0 4px;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: #9dc7b6;
+  }
+
+  .lc-hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+  }
+
+  .lc-hero p {
+    margin: 0;
+    opacity: .85;
+  }
+
+  .lc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .lc-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 28px;
+  }
+
+  .lc-card-title {
+    margin: 0 0 22px;
+    font-size: 1.1rem;
+    color: #17221a;
+  }
+
+  .lc-field {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .lc-field label {
+    font-size: .86rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .lc-field input,
+  .lc-field select {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 11px 14px;
+    background: #f9fafb;
+    font: inherit;
+    font-size: .9rem;
+  }
+
+  .lc-field input:focus,
+  .lc-field select:focus {
+    outline: none;
+    border-color: #135823;
+    background: #fff;
+  }
+
+  .lc-dest-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .lc-tab {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    font-size: .84rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #6b7280;
+  }
+
+  .lc-tab.active {
+    background: #135823;
+    color: #fff;
+    border-color: #135823;
+  }
+
+  .lc-gps-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    color: #166534;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: .9rem;
+  }
+
+  .lc-gps-btn:hover {
+    background: #dcfce7;
+  }
+
+  .lc-gps-status {
+    font-size: .83rem;
+    color: #6b7280;
+    margin: 8px 0 0;
+  }
+
+  .lc-submit {
+    width: 100%;
+    padding: 14px;
+    background: #135823;
+    color: #fff;
+    border: 0;
+    border-radius: 12px;
+    font-size: .95rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .lc-submit:hover {
+    background: #0d441b;
+  }
+
+  .lc-submit:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .lc-result-badge {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #135823;
+    margin-bottom: 4px;
+  }
+
+  .lc-result-sub {
+    color: #6b7280;
+    font-size: .88rem;
+    margin: 0 0 18px;
+  }
+
+  .lc-breakdown {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+
+  .lc-breakdown td {
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+
+  .lc-breakdown td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: #17221a;
+  }
+
+  .lc-total-row td {
+    border-top: 2px solid #e5e7eb;
+    border-bottom: none;
+    padding-top: 14px;
+    font-size: 1rem;
+    color: #135823;
+  }
+
+  .lc-rate-info {
+    margin-top: 22px;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 18px;
+  }
+
+  .lc-rate-title {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9ca3af;
+    margin: 0 0 10px;
+  }
+
+  .lc-rate-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .83rem;
+    padding: 6px 0;
+    color: #6b7280;
+    border-bottom: 1px solid #f9fafb;
+  }
+
+  .lc-error-card {
+    text-align: center;
+    color: #991b1b;
+  }
+
+  .lc-error-card i {
+    color: #ef4444;
+    margin-bottom: 10px;
+  }
+
+  .city-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+    z-index: 999;
+  }
+
+  .city-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: #374151;
+  }
+
+  .city-option:hover {
+    background: #f0fdf4;
+  }
+
+  @media(max-width: 700px) {
+    .lc-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lc-hero {
+      padding: 24px 20px;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const money = v => '₦' + Number(v).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    let clat = null, clon = null;
+
+    // Tabs
+    document.querySelectorAll('.lc-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.lc-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-city').style.display = tab.dataset.tab === 'city' ? '' : 'none';
+        document.getElementById('tab-gps').style.display = tab.dataset.tab === 'gps' ? '' : 'none';
+        clat = null; clon = null;
+      });
+    });
+
+    // City autocomplete
+    const cityInput = document.getElementById('lc-city');
+    const cityDrop = document.getElementById('lc-city-drop');
+    let deb;
+    cityInput.addEventListener('input', () => {
+      clearTimeout(deb);
+      clat = null; clon = null;
+      const q = cityInput.value.trim();
+      if (q.length < 2) { cityDrop.style.display = 'none'; return; }
+      deb = setTimeout(async () => {
+        const res = await fetch(`/logistics/api/city-lookup/?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        cityDrop.innerHTML = '';
+        data.results.forEach(r => {
+          const div = document.createElement('div');
+          div.className = 'city-option';
+          div.textContent = r.city;
+          div.addEventListener('click', () => {
+            cityInput.value = r.city;
+            clat = r.lat; clon = r.lon;
+            cityDrop.style.display = 'none';
+          });
+          cityDrop.appendChild(div);
+        });
+        cityDrop.style.display = data.results.length ? 'block' : 'none';
+      }, 280);
+    });
+    document.addEventListener('click', e => { if (!cityInput.contains(e.target)) cityDrop.style.display = 'none'; });
+
+    // GPS
+    document.getElementById('gps-btn').addEventListener('click', () => {
+      const status = document.getElementById('gps-status');
+      status.textContent = 'Detecting…';
+      navigator.geolocation.getCurrentPosition(pos => {
+        clat = pos.coords.latitude; clon = pos.coords.longitude;
+        status.textContent = `✓ Location detected (${clat.toFixed(4)}, ${clon.toFixed(4)})`;
+      }, () => { status.textContent = 'Could not detect location. Please type your city instead.'; });
+    });
+
+    // Calculate
+    document.getElementById('lc-calc-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('lc-calc-btn');
+      const vendorSel = document.getElementById('lc-vendor');
+      const weight = document.getElementById('lc-weight').value;
+      const vendorId = vendorSel.value;
+      const cityName = cityInput.value.trim();
+
+      if (!vendorId) { alert('Please select a vendor.'); return; }
+      if (!clat && !cityName) { alert('Please select your city or use GPS.'); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Calculating…';
+
+      document.getElementById('lc-result').style.display = 'none';
+      document.getElementById('lc-error').style.display = 'none';
+
+      try {
+        const form = new FormData();
+        form.append('vendor_id', vendorId);
+        form.append('weight_kg', weight);
+        if (clat) { form.append('customer_lat', clat); form.append('customer_lon', clon); }
+        else { form.append('city_name', cityName); }
+
+        const res = await fetch('/logistics/api/calculate-fee/', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || '' },
+          body: form,
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) throw new Error(data.error || 'Calculation failed');
+
+        document.getElementById('lc-total-badge').textContent = money(data.total);
+        document.getElementById('lc-result-sub').textContent =
+          `From ${vendorSel.options[vendorSel.selectedIndex].dataset.name || 'vendor'} → ${cityName || 'your location'} · ${data.distance_km} km · ${data.rate_label}`;
+
+        document.getElementById('br-rate').textContent = data.rate_label;
+        document.getElementById('br-dist').textContent = data.distance_km + ' km';
+        document.getElementById('br-base').textContent = money(data.base_fee);
+        document.getElementById('br-dcost').textContent = money(data.distance_cost);
+        document.getElementById('br-wcost').textContent = money(data.weight_cost);
+        document.getElementById('br-sub').textContent = money(data.subtotal);
+        document.getElementById('br-margin').textContent = money(data.margin);
+        document.getElementById('br-total').innerHTML = '<strong>' + money(data.total) + '</strong>';
+
+        document.getElementById('lc-result').style.display = 'block';
+      } catch (e) {
+        document.getElementById('lc-error-msg').textContent = e.message;
+        document.getElementById('lc-error').style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa fa-calculator"></i> Calculate Fee';
+    });
+  })();
+</script>
+{% endblock %}

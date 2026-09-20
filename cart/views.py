@@ -29,6 +29,7 @@ from logistics.models import Shipment, ShipmentUpdate
 from .models import NegotiationRequest
 from django.db.models import Q
 from django.contrib.admin.views.decorators import staff_member_required
+from pricing.services import calculate_checkout_pricing
 
 
 
@@ -362,9 +363,11 @@ def cart_summary(request):
                 shipping += Decimal(str(listing.fixed_shipping_fee or 0))
                 charged_product_ids.add(listing.id)
 
+    pricing = calculate_checkout_pricing(subtotal=subtotal, shipping=shipping)
+
     return JsonResponse({
         "cart_items": lines, "cart_count": len(lines), "subtotal": float(subtotal),
-        "shipping": float(shipping), "total": float(subtotal + shipping),
+        "shipping": float(shipping), "total": float(pricing.total),
     })
 def negotiate_cart(request,negotiation_type="cart"):
 
@@ -388,13 +391,19 @@ def negotiate_cart(request,negotiation_type="cart"):
     profile.first_name = request.POST.get("first_name", profile.first_name)
     profile.last_name = request.POST.get("last_name", profile.last_name)
     profile.phone = request.POST.get("shipping_phone", request.POST.get("phone", profile.phone))
-    profile.address = request.POST.get("shipping_address", profile.address)
-    profile.city = request.POST.get("shipping_city", profile.city)
-    profile.state = request.POST.get("shipping_state", profile.state)
+    profile.address = request.POST.get("shipping_address", request.POST.get("address", profile.address))
+    profile.city = request.POST.get("shipping_city", request.POST.get("city", profile.city))
+    profile.state = request.POST.get("shipping_state", request.POST.get("state", profile.state))
     profile.save()
     if request.POST.get("email"):
         user.email = request.POST["email"]
         user.save(update_fields=["email"])
+
+    shipping_fee_raw = request.POST.get("shipping_fee") or request.POST.get("shipping") or 0
+    try:
+        shipping_fee_val = Decimal(str(shipping_fee_raw))
+    except (TypeError, ValueError, Exception):
+        shipping_fee_val = Decimal("0.00")
 
     if not profile.phone:
         messages.error(
@@ -427,6 +436,9 @@ def negotiate_cart(request,negotiation_type="cart"):
         )
 
     if active_negotiation:
+        if shipping_fee_val > 0:
+            active_negotiation.shipping_fee = shipping_fee_val
+            active_negotiation.save(update_fields=["shipping_fee"])
         messages.warning(
         request,
         (
@@ -443,15 +455,16 @@ def negotiate_cart(request,negotiation_type="cart"):
         "type",
         "cart"
     )
+    full_address = ", ".join(filter(None, [profile.address, profile.city, profile.state]))
     negotiation = NegotiationRequest.objects.create(
         user=user,
         negotiation_type=negotiation_type,
-        customer_name=f"{profile.first_name} {profile.last_name}",
+        customer_name=f"{profile.first_name} {profile.last_name}".strip(),
         customer_email=user.email,
         customer_phone=profile.phone,
-
+        shipping_address=full_address,
+        shipping_fee=shipping_fee_val,
         cart_signature=signature,
-
     )
 
     whatsapp_lines = []
@@ -640,7 +653,11 @@ def pay_negotiation(request, code):
             item.quantity
         )
 
-    total = subtotal + negotiation.shipping_fee
+    shipping = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping
+    )
 
     payment_reference = f"NEG-{uuid.uuid4().hex[:12]}"
 
@@ -653,14 +670,14 @@ def pay_negotiation(request, code):
             "verify_negotiated_payment",
         )
     )
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+    PAYSTACK_SECRET_KEY = getattr(settings, "PAYSTACK_SECRET_KEY", None) or os.getenv("PAYSTACK_SECRET_KEY")
     response = requests.post(
         "https://api.paystack.co/transaction/initialize",
         json={
             "email": negotiation.user.email,
-            "amount": int(total * 100),
+            "amount": pricing.paystack_amount_kobo,
             "reference": payment_reference,
-            "callback_url":callback_url
+            "callback_url": callback_url
         },
         headers={
             "Authorization":
@@ -740,7 +757,7 @@ def verify_negotiated_payment(request):
         return redirect(
             "payment_success"
         )
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+    PAYSTACK_SECRET_KEY = getattr(settings, "PAYSTACK_SECRET_KEY", None) or os.getenv("PAYSTACK_SECRET_KEY")
     response = requests.get(
         f"https://api.paystack.co/transaction/verify/{reference}",
         headers={
@@ -763,19 +780,27 @@ def verify_negotiated_payment(request):
 
         subtotal += item.get_total()
 
-    total = subtotal + negotiation.shipping_fee
+    shipping = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping
+    )
 
     order = Order.objects.create(
         customer=negotiation.user,
-        total_amount=total,
+        total_amount=pricing.total,
+        amount_before_gateway_fee=pricing.net_total,
+        gateway_fee=pricing.gateway_fee,
+        amount_paid=pricing.total,
         email = negotiation.user.email,
         phone = negotiation.customer_phone,
-        shipping_amount=
-            negotiation.shipping_fee,
-        subtotal=subtotal,
+        shipping_amount=pricing.shipping,
+        shipping_fee=pricing.shipping,
+        subtotal=pricing.subtotal,
         reference=reference,
         negotiation=negotiation,
         status="paid",
+        paid_at=timezone.now(),
         created_at=timezone.now(),
         shipping_address=
             negotiation.shipping_address
@@ -872,20 +897,20 @@ def negotiation_detail(request, code):
         i.get_total()
         for i in negotiation.items.all()
     )
-    total = sum(
-        i.get_total()
-        for i in negotiation.items.all()
+    shipping_fee = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping_fee
     )
 
-    total += negotiation.shipping_fee
-    
     return render(
         request,
         "negotiation_detail.html",
         {
             "negotiation": negotiation,
-            "total": total,
-            "subtotal":subtotal
+            "total": pricing.total,
+            "subtotal": subtotal,
+            "shipping": shipping_fee,
         }
     )
 
@@ -895,22 +920,24 @@ def user_negotiation_ready_view(request,code):
         NegotiationRequest,
         code=code
     )
-    total = sum(
-        i.get_total()
-        for i in negotiation.items.all()
-    )
     subtotal = sum(
         i.get_total()
         for i in negotiation.items.all()
     )
-    total += negotiation.shipping_fee
+    shipping_fee = negotiation.shipping_fee or Decimal("0.00")
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping_fee
+    )
     return render(request,"users_negotiation_view.html",
         {
-            'negotiation':negotiation,
-            'subtotal':subtotal,
-            'total':total
+            'negotiation': negotiation,
+            'subtotal': subtotal,
+            'shipping': shipping_fee,
+            'total': pricing.total
         }
     )
+
 
 def quotation_expired(request):
 
@@ -1203,7 +1230,7 @@ def checkout_view(request):
         session_cart = request.session.get("cart", {})
         items = []
         for listing_id, row in session_cart.items():
-            listing = ProductListing.objects.filter(pk=listing_id).first()
+            listing = ProductListing.objects.filter(pk=listing_id).prefetch_related("media").first()
             if listing:
                 items.append(type("GuestCartItem", (), {"product_listing": listing, "quantity": max(1, int(row.get("quantity", 1))), "get_total_price": lambda item: item.product_listing.final_price() * item.quantity})())
         data = build_vendor_checkout(session_cart=session_cart) if items else {"subtotal": 0, "shipping": 0, "total": 0, "requires_negotiation": False}
@@ -1212,31 +1239,63 @@ def checkout_view(request):
     for item in items:
         product = item.product_listing
         item.shipping_fee = product.fixed_shipping_fee or Decimal("0.00")
+        item.fixed_shipping_fee = item.shipping_fee
         item.shipping_type = product.shipping_type
         item.weight = product.weight or Decimal("0.00")
+        item.name = product.name
         item.display_name = product.name
         item.unit_price = product.final_price()
+        item.price = item.unit_price
         item.line_total = item.unit_price * item.quantity
+        item.subtotal = item.line_total
         media_items = list(product.media.all())
         media = next((entry for entry in media_items if entry.is_primary), None) or (media_items[0] if media_items else None)
-        item.media_url = media.file.url if media else ""
+        try:
+            item.media_url = media.file.url if (media and media.file) else ""
+        except (ValueError, Exception):
+            item.media_url = ""
         item.media_type = media.media_type if media else ""
         category_ids.update(product.categories.values_list("id", flat=True))
     related_products = list(ProductListing.objects.filter(
         is_active=True, categories__id__in=category_ids
     ).exclude(id__in=cart_product_ids).prefetch_related("media", "categories").distinct().order_by("-id")[:4])
+    if len(related_products) < 4:
+        existing_ids = cart_product_ids + [p.id for p in related_products]
+        fallback_products = list(ProductListing.objects.filter(
+            is_active=True
+        ).exclude(id__in=existing_ids).prefetch_related("media", "categories").distinct().order_by("-id")[:4 - len(related_products)])
+        related_products.extend(fallback_products)
     for product in related_products:
         media_items = list(product.media.all())
         media = next((entry for entry in media_items if entry.is_primary), None) or (media_items[0] if media_items else None)
-        product.display_media_url = media.file.url if media else ""
+        try:
+            product.display_media_url = media.file.url if (media and media.file) else ""
+        except (ValueError, Exception):
+            product.display_media_url = ""
         product.display_media_type = media.media_type if media else ""
     shipping_details = {}
+    customer_lat = None
+    customer_lon = None
     if request.user.is_authenticated:
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         shipping_details = {"first_name": profile.first_name, "last_name": profile.last_name, "email": request.user.email, "phone": profile.phone, "address": profile.address, "city": profile.city, "state": profile.state}
+        customer_lat = profile.latitude
+        customer_lon = profile.longitude
+
+    # Collect unique vendors in cart for logistics fee calculation
+    from accounts.models import Vendor as VendorModel
+    vendor_ids = [item.product_listing.vendor_id for item in items if hasattr(item.product_listing, "vendor_id")]
+    vendors_in_cart = list(VendorModel.objects.filter(pk__in=set(vendor_ids)))
+
     return render(request, "checkout.html", {
-        "items": items, **data, "paystack_amount": int(data["total"] * 100),
-        "related_products": related_products, "shipping_details": shipping_details,
+        **data,
+        "items": items,
+        "paystack_amount": int(data["total"] * 100),
+        "related_products": related_products,
+        "shipping_details": shipping_details,
+        "customer_lat": customer_lat or "",
+        "customer_lon": customer_lon or "",
+        "has_vendors_with_coords": any(v.latitude for v in vendors_in_cart),
     })
 
 

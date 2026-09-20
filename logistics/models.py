@@ -122,3 +122,64 @@ class ShipmentUpdate(models.Model):
             f"{self.status}"
         )
 
+
+
+class LogisticsRate(models.Model):
+    """
+    Admin-configurable tiered delivery rate.
+    The system picks the most specific active row whose
+    min_km <= distance < max_km (or max_km is None for unlimited).
+    """
+
+    label = models.CharField(
+        max_length=100,
+        help_text="Friendly name, e.g. 'Local (0-20 km)'"
+    )
+
+    min_km = models.PositiveIntegerField(
+        default=0,
+        help_text="Lower bound of distance band (inclusive, km)"
+    )
+
+    max_km = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Upper bound (exclusive, km). Leave blank for unlimited."
+    )
+
+    base_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=500,
+        help_text="Flat fee charged regardless of distance (N)"
+    )
+
+    rate_per_km = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=50,
+        help_text="Additional fee per km (N)"
+    )
+
+    weight_rate_per_kg = models.DecimalField(
+        max_digits=8,
+        decimal_places=4,
+        default=30,
+        help_text="Extra fee per kg above the free weight threshold (N)"
+    )
+
+    free_weight_kg = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=1,
+        help_text="Weight (kg) included in base fee at no extra charge"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["min_km"]
+
+    def __str__(self):
+        upper = str(self.max_km) + " km" if self.max_km else "unlimited"
+        return self.label + " (" + str(self.min_km) + "-" + upper + ")"

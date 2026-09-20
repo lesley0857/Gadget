@@ -1,7 +1,368 @@
-<h2>Become a Vendor</h2>
+{% extends "base.html" %}
+{% block content %}
+<main class="vs-shell">
 
-<form method="POST">
+  <div class="vs-hero">
+    <div class="vs-hero-text">
+      <p class="vs-eyebrow">Remarobe Vendor Portal</p>
+      <h1>Start selling on Remarobe</h1>
+      <p class="vs-sub">Reach thousands of customers across Nigeria. Fill in your store details below to get started —
+        it takes less than 2 minutes.</p>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  {% for msg in messages %}
+  <div class="vs-alert {% if msg.tags == 'error' %}vs-alert-error{% else %}vs-alert-success{% endif %}">
+    <i class="fa fa-{% if msg.tags == 'error' %}times-circle{% else %}check-circle{% endif %}"></i>
+    {{ msg }}
+  </div>
+  {% endfor %}
+
+  <form class="vs-form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
-    <input type="text" name="store_name" placeholder="Store Name" required>
-    <button type="submit">Register</button>
-</form>
+
+    <!-- STORE INFO -->
+    <div class="vs-card">
+      <h2 class="vs-card-title"><span class="vs-step">1</span> Store Information</h2>
+      <div class="vs-grid">
+        <label class="vs-label wide">
+          Store Name <span class="req">*</span>
+          <input type="text" name="store_name" value="{{ post.store_name|default:'' }}"
+            placeholder="e.g. Lesley Electronics" required>
+        </label>
+        <label class="vs-label">
+          Phone Number <span class="req">*</span>
+          <input type="tel" name="phone" value="{{ post.phone|default:'' }}" placeholder="08012345678" required>
+        </label>
+        <label class="vs-label wide">
+          About Your Store
+          <textarea name="description" rows="3"
+            placeholder="Brief description of what you sell...">{{ post.description|default:'' }}</textarea>
+        </label>
+        <label class="vs-label">
+          Store Logo <small>(optional)</small>
+          <input type="file" name="logo" accept="image/*">
+        </label>
+      </div>
+    </div>
+
+    <!-- BUSINESS ADDRESS -->
+    <div class="vs-card">
+      <h2 class="vs-card-title"><span class="vs-step">2</span> Business Address</h2>
+      <p class="vs-hint"><i class="fa fa-info-circle"></i> Your address is used to calculate delivery fees to your
+        customers. It must be accurate.</p>
+
+      <div class="vs-grid">
+        <label class="vs-label wide">
+          Street Address <span class="req">*</span>
+          <input type="text" name="address" id="vendor-address" value="{{ post.address|default:'' }}"
+            placeholder="e.g. 12 Industrial Avenue, Apapa" required>
+        </label>
+        <label class="vs-label" style="position:relative;">
+          City <span class="req">*</span>
+          <input type="text" name="city" id="vendor-city" value="{{ post.city|default:'' }}" placeholder="e.g. Lagos"
+            required autocomplete="off">
+          <div id="city-suggestions" class="city-dropdown" style="display:none;"></div>
+          <span id="city-status" class="city-badge" style="display:none;"></span>
+        </label>
+        <label class="vs-label">
+          State <span class="req">*</span>
+          <select name="state" required>
+            <option value="">— Select State —</option>
+            {% for s in nigerian_states %}
+            <option value="{{ s }}" {% if post.state == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" class="vs-submit">
+      <i class="fa fa-store"></i> Create My Store
+    </button>
+  </form>
+</main>
+
+<style>
+  .vs-shell {
+    max-width: 760px;
+    margin: auto;
+    padding: 40px 20px 80px;
+  }
+
+  .vs-hero {
+    background: linear-gradient(120deg, #135823, #0a3320);
+    color: #fff;
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+  }
+
+  .vs-eyebrow {
+    margin: 0 0 6px;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: #9dc7b6;
+  }
+
+  .vs-hero h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+  }
+
+  .vs-sub {
+    margin: 0;
+    opacity: .85;
+    font-size: .95rem;
+    line-height: 1.5;
+  }
+
+  .vs-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: .9rem;
+  }
+
+  .vs-alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .vs-alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .vs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .vs-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 28px;
+  }
+
+  .vs-card-title {
+    margin: 0 0 20px;
+    font-size: 1.1rem;
+    color: #17221a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .vs-step {
+    background: #135823;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    font-size: .85rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .vs-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .84rem;
+    color: #6b7280;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+  }
+
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .vs-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .vs-label.wide {
+    grid-column: span 2;
+  }
+
+  .req {
+    color: #dc2626;
+  }
+
+  .vs-label input,
+  .vs-label textarea,
+  .vs-label select {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 11px 14px;
+    background: #f9fafb;
+    font: inherit;
+    font-size: .9rem;
+    color: #111827;
+    transition: border-color .2s;
+  }
+
+  .vs-label input:focus,
+  .vs-label textarea:focus,
+  .vs-label select:focus {
+    outline: none;
+    border-color: #135823;
+    background: #fff;
+  }
+
+  .vs-submit {
+    border: 0;
+    background: #135823;
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .vs-submit:hover {
+    background: #0d441b;
+  }
+
+  .city-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+    z-index: 999;
+    margin-top: 2px;
+  }
+
+  .city-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .city-option:hover {
+    background: #f0fdf4;
+    color: #135823;
+  }
+
+  .city-option i {
+    color: #135823;
+  }
+
+  .city-badge {
+    position: absolute;
+    right: 10px;
+    top: 38px;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .city-badge.found {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .city-badge.not-found {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  @media(max-width: 600px) {
+    .vs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .vs-label.wide {
+      grid-column: auto;
+    }
+
+    .vs-hero {
+      padding: 24px 20px;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const cityInput = document.getElementById('vendor-city');
+    const dropdown = document.getElementById('city-suggestions');
+    const badge = document.getElementById('city-status');
+    let debounce;
+
+    cityInput.addEventListener('input', () => {
+      clearTimeout(debounce);
+      const q = cityInput.value.trim();
+      if (q.length < 2) { dropdown.style.display = 'none'; badge.style.display = 'none'; return; }
+      debounce = setTimeout(async () => {
+        try {
+          const res = await fetch(`/logistics/api/city-lookup/?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          if (!data.results.length) {
+            dropdown.style.display = 'none';
+            badge.className = 'city-badge not-found';
+            badge.textContent = '✕ City not in table';
+            badge.style.display = 'block';
+            return;
+          }
+          dropdown.innerHTML = '';
+          data.results.forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'city-option';
+            div.innerHTML = `<i class="fa fa-map-marker"></i> ${r.city}`;
+            div.addEventListener('click', () => {
+              cityInput.value = r.city;
+              dropdown.style.display = 'none';
+              badge.className = 'city-badge found';
+              badge.textContent = '✓ Coordinates found';
+              badge.style.display = 'block';
+            });
+            dropdown.appendChild(div);
+          });
+          dropdown.style.display = 'block';
+        } catch (e) { dropdown.style.display = 'none'; }
+      }, 280);
+    });
+
+    document.addEventListener('click', e => {
+      if (!cityInput.contains(e.target)) dropdown.style.display = 'none';
+    });
+  })();
+</script>
+{% endblock %}

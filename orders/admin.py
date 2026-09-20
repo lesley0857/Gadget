@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 import json
 from django.utils.html import format_html
 from django.urls import path
@@ -8,10 +8,72 @@ from django.utils import timezone
 from datetime import timedelta
 
 from .models import Order, OrderItem
-from wallets.models import Commission
+from wallets.models import Commission, VendorWallet, WalletTransaction
 from logistics.models import Shipment
+from decimal import Decimal
+from django.db import transaction
 
-admin.site.register(OrderItem)
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "order",
+        "product_listing",
+        "vendor",
+        "quantity",
+        "price",
+        "total",
+        "escrow_amount",
+        "commission",
+        "status",
+        "released",
+        "received",
+    ]
+    list_filter = ["status", "released", "received", "vendor"]
+    search_fields = ["order__order_number", "order__reference", "vendor__store_name", "product_listing__name"]
+    actions = ["release_escrow_to_vendor", "mark_as_shipped", "mark_as_delivered"]
+
+    @admin.action(description="Release Escrow to Vendor Wallet for selected items")
+    def release_escrow_to_vendor(self, request, queryset):
+        count = 0
+        total_released = Decimal("0.00")
+        with transaction.atomic():
+            for item in queryset:
+                if not item.released and item.escrow_amount > 0:
+                    wallet, _ = VendorWallet.objects.get_or_create(vendor=item.vendor)
+                    if wallet.escrow_balance >= item.escrow_amount:
+                        wallet.escrow_balance -= item.escrow_amount
+                    else:
+                        wallet.escrow_balance = Decimal("0.00")
+                    wallet.balance += item.escrow_amount
+                    wallet.save(update_fields=["escrow_balance", "balance"])
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        amount=item.escrow_amount,
+                        type="credit",
+                        reference=item.order.reference,
+                        description=f"Escrow released by Admin for Order #{item.order.order_number or item.order.id} ({item.product_listing.name})"
+                    )
+                    item.released = True
+                    item.save(update_fields=["released"])
+                    count += 1
+                    total_released += item.escrow_amount
+        self.message_user(
+            request,
+            f"Successfully released ₦{total_released:,.2f} escrow to vendor wallet for {count} item(s).",
+            messages.SUCCESS
+        )
+
+    @admin.action(description="Mark selected items as Shipped")
+    def mark_as_shipped(self, request, queryset):
+        updated = queryset.update(status="shipped")
+        self.message_user(request, f"Marked {updated} item(s) as Shipped.", messages.SUCCESS)
+
+    @admin.action(description="Mark selected items as Delivered")
+    def mark_as_delivered(self, request, queryset):
+        updated = queryset.update(status="delivered", received=True, delivered_at=timezone.now())
+        self.message_user(request, f"Marked {updated} item(s) as Delivered.", messages.SUCCESS)
 
 # =========================
 # ORDER ITEMS INLINE
@@ -74,7 +136,10 @@ class OrderAdmin(admin.ModelAdmin):
         "id",
         "customer",
         "order_number",
+        "amount_before_gateway_fee",
+        "gateway_fee",
         "total_amount",
+        "amount_paid",
         "negotiation_badge",
         "status",
         "created_at",
@@ -105,6 +170,9 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     readonly_fields = [
+        "amount_before_gateway_fee",
+        "gateway_fee",
+        "amount_paid",
         "locked_data_table",
         "shipment_summary",
         "billing_address",
@@ -187,25 +255,31 @@ class OrderAdmin(admin.ModelAdmin):
         data = obj.locked_data or {}
 
         return format_html("""
-        <table border="1" cellpadding="6" style="border-collapse:collapse;">
+        <table border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">
             <tr>
                 <th>Subtotal</th>
                 <th>Shipping</th>
-                <th>VAT</th>
-                <th>Total</th>
+                <th>Commercial Value (Before Gateway Fee)</th>
+                <th>Gateway Fee Recovered</th>
+                <th>Gross Total Charged</th>
+                <th>Amount Paid</th>
             </tr>
             <tr>
-                <td>₦{}</td>
-                <td>₦{}</td>
-                <td>₦{}</td>
-                <td>₦{}</td>
+                <td>₦{:,.2f}</td>
+                <td>₦{:,.2f}</td>
+                <td>₦{:,.2f}</td>
+                <td>₦{:,.2f}</td>
+                <td>₦{:,.2f}</td>
+                <td>₦{:,.2f}</td>
             </tr>
         </table>
         """,
-        data.get("subtotal", 0),
-        data.get("shipping", 0),
-        data.get("vat", 0),
-        data.get("total", 0)
+        float(data.get("subtotal") or obj.subtotal or 0),
+        float(data.get("shipping") or obj.shipping_amount or obj.shipping_fee or 0),
+        float(data.get("amount_before_gateway_fee") or data.get("net_total") or obj.amount_before_gateway_fee or 0),
+        float(data.get("gateway_fee") or obj.gateway_fee or 0),
+        float(data.get("total") or obj.total_amount or 0),
+        float(obj.amount_paid or 0),
         )
 
     locked_data_table.short_description = "Checkout Summary"

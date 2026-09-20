@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<main class="vd-shell">
+
+  <!-- ── HEADER BAR ──────────────────────────────────── -->
+  <div class="vd-topbar">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      {% if vendor.logo %}
+      <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}"
+        style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 2px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+      {% else %}
+      <div
+        style="width: 56px; height: 56px; border-radius: 12px; background: #135823; color: #fff; display: grid; place-items: center; font-size: 1.4rem;">
+        <i class="fa fa-store"></i>
+      </div>
+      {% endif %}
+      <div>
+        <span class="vd-eyebrow">Vendor Portal</span>
+        <h1 class="vd-title" style="margin: 0;">{{ vendor.store_name }}</h1>
+      </div>
+    </div>
+    <div class="vd-topbar-actions">
+      <a href="{% url 'vendor_update' %}" class="btn-outline"><i class="fa fa-pencil"></i> Edit Store</a>
+    </div>
+  </div>
+
+  <!-- ── COORDINATES WARNING ─────────────────────────── -->
+  {% if vendor.coordinates_pending %}
+  <div class="vd-alert vd-alert-warn">
+    <i class="fa fa-map-marker"></i>
+    <span><strong>Location not resolved.</strong> Update your store address so distance-based shipping fees can be
+      calculated for your products.
+      <a href="{% url 'vendor_update' %}">Update address →</a></span>
+  </div>
+  {% endif %}
+
+  <!-- ── FLASH MESSAGES ──────────────────────────────── -->
+  {% for msg in messages %}
+  <div class="vd-alert {% if msg.tags == 'error' %}vd-alert-error{% else %}vd-alert-success{% endif %}">
+    <i class="fa fa-{% if msg.tags == 'error' %}times-circle{% else %}check-circle{% endif %}"></i>
+    {{ msg }}
+  </div>
+  {% endfor %}
+
+  <!-- ── STATS GRID ──────────────────────────────────── -->
+  <div class="vd-stats">
+    <div class="vd-stat">
+      <span class="vd-stat-label"><i class="fa fa-money"></i> Wallet Balance</span>
+      <span class="vd-stat-value">₦{{ wallet.balance|floatformat:2|intcomma }}</span>
+    </div>
+    <div class="vd-stat">
+      <span class="vd-stat-label"><i class="fa fa-lock"></i> Escrow</span>
+      <span class="vd-stat-value">₦{{ wallet.escrow_balance|floatformat:2|intcomma }}</span>
+    </div>
+    <div class="vd-stat">
+      <span class="vd-stat-label"><i class="fa fa-shopping-bag"></i> Total Orders</span>
+      <span class="vd-stat-value">{{ total_orders }}</span>
+    </div>
+    <div class="vd-stat">
+      <span class="vd-stat-label"><i class="fa fa-bar-chart"></i> Total Sales</span>
+      <span class="vd-stat-value">₦{{ total_sales|floatformat:2|intcomma }}</span>
+    </div>
+    <div class="vd-stat">
+      <span class="vd-stat-label"><i class="fa fa-clock-o"></i> Pending Items</span>
+      <span class="vd-stat-value">{{ pending_items }}</span>
+    </div>
+  </div>
+
+  <!-- ── QUICK LINKS ─────────────────────────────────── -->
+  <div class="vd-links">
+    <a href="{% url 'vendor_update' %}" class="vd-link-card">
+      <i class="fa fa-store"></i> Edit Store Profile
+    </a>
+    <a href="{% url 'logistics_calculator' %}" class="vd-link-card">
+      <i class="fa fa-truck"></i> Logistics Calculator
+    </a>
+  </div>
+
+  <!-- ── RECENT ORDERS ───────────────────────────────── -->
+  <section class="vd-section">
+    <h2 class="vd-section-title">Recent Orders</h2>
+    {% if items %}
+    <div class="vd-table-wrap">
+      <table class="vd-table">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td><a href="{% url 'order_detail' item.order.order_number %}">{{ item.order.order_number }}</a></td>
+            <td>
+              <div class="vd-product-cell">
+                {% with item.product_listing.media.first as m %}
+                {% if m and m.file %}
+                <img src="{{ m.file.url }}" alt="{{ item.product_listing.name }}" class="vd-thumb">
+                {% else %}
+                <div class="vd-thumb-placeholder"><i class="fa fa-bolt"></i></div>
+                {% endif %}
+                {% endwith %}
+                <span>{{ item.product_listing.name|truncatechars:35 }}</span>
+              </div>
+            </td>
+            <td>{{ item.quantity }}</td>
+            <td>₦{{ item.total|floatformat:2|intcomma }}</td>
+            <td><span class="badge badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+            <td>{{ item.order.created_at|date:"d M Y" }}</td>
+            <td>
+              {% if item.status == "pending" or item.status == "paid" %}
+              <a href="{% url 'mark_shipped' item.id %}" class="btn-sm">Ship</a>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="vd-empty">
+      <i class="fa fa-inbox fa-2x"></i>
+      <p>No orders yet. Share your store link to start selling!</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ── ACTIVE PRODUCTS ─────────────────────────────── -->
+  {% if products %}
+  <section class="vd-section">
+    <h2 class="vd-section-title">Your Active Listings</h2>
+    <div class="vd-products-grid">
+      {% for p in products %}
+      <a href="{% url 'product_detail' p.name %}" class="vd-product-card">
+        {% with p.media.first as m %}
+        {% if m %}<img src="{{ m.file.url }}" alt="{{ p.name }}">
+        {% else %}<div class="vd-product-placeholder"><i class="fa fa-bolt"></i></div>{% endif %}
+        {% endwith %}
+        <div class="vd-product-info">
+          <strong>{{ p.name|truncatechars:28 }}</strong>
+          <span>₦{{ p.final_price|floatformat:2|intcomma }}</span>
+          <small>Stock: {{ p.stock }}</small>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+
+<style>
+  .vd-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .vd-thumb {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  .vd-thumb-placeholder {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    color: #135823;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .vd-shell {
+    max-width: 1180px;
+    margin: auto;
+    padding: 40px 20px 80px;
+  }
+
+  .vd-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .vd-eyebrow {
+    display: block;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #135823;
+    margin-bottom: 4px;
+  }
+
+  .vd-title {
+    margin: 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    color: #17221a;
+  }
+
+  .btn-outline {
+    padding: 10px 20px;
+    border: 2px solid #135823;
+    border-radius: 10px;
+    color: #135823;
+    font-weight: 700;
+    font-size: .88rem;
+    text-decoration: none;
+  }
+
+  .btn-outline:hover {
+    background: #135823;
+    color: #fff;
+  }
+
+  .vd-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: .9rem;
+  }
+
+  .vd-alert-warn {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .vd-alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .vd-alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .vd-alert a {
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .vd-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .vd-stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .vd-stat-label {
+    font-size: .78rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .vd-stat-label i {
+    margin-right: 5px;
+  }
+
+  .vd-stat-value {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #17221a;
+  }
+
+  .vd-links {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .vd-link-card {
+    padding: 12px 20px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #135823;
+    font-weight: 700;
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .vd-link-card:hover {
+    background: #f0fdf4;
+    border-color: #135823;
+  }
+
+  .vd-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .vd-section-title {
+    margin: 0 0 20px;
+    font-size: 1.15rem;
+    color: #17221a;
+  }
+
+  .vd-table-wrap {
+    overflow-x: auto;
+  }
+
+  .vd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+
+  .vd-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 700;
+    color: #6b7280;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .vd-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f9fafb;
+    color: #374151;
+  }
+
+  .vd-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .vd-table a {
+    color: #135823;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .badge {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+  }
+
+  .badge-pending {
+    background: #fffbeb;
+    color: #92400e;
+  }
+
+  .badge-processing {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .badge-paid {
+    background: #f0fdf4;
+    color: #166534;
+  }
+
+  .badge-cancelled {
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
+  .badge-delivered {
+    background: #ecfdf5;
+    color: #065f46;
+  }
+
+  .btn-sm {
+    padding: 5px 12px;
+    background: #135823;
+    color: #fff;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .btn-sm:hover {
+    background: #0d441b;
+  }
+
+  .text-muted {
+    color: #9ca3af;
+  }
+
+  .vd-empty {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+  }
+
+  .vd-empty p {
+    margin-top: 12px;
+  }
+
+  .vd-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .vd-product-card {
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .vd-product-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+
+  .vd-product-placeholder {
+    width: 100%;
+    height: 120px;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    color: #135823;
+    font-size: 1.4rem;
+  }
+
+  .vd-product-info {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: .82rem;
+  }
+
+  .vd-product-info strong {
+    color: #17221a;
+  }
+
+  .vd-product-info span {
+    color: #135823;
+    font-weight: 700;
+  }
+
+  .vd-product-info small {
+    color: #9ca3af;
+  }
+
+  @media(max-width:640px) {
+    .vd-shell {
+      padding: 20px 14px;
+    }
+
+    .vd-topbar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}

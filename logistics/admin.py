@@ -1,12 +1,7 @@
 from django.contrib import admin
-from orders.models import Order
-
-# Register your models here.
-from .models import *
-
-from django.contrib import admin
 from django.contrib import messages
-from .models import Shipment
+from orders.models import Order
+from .models import Shipment, ShipmentUpdate, LogisticsRate
 
 
 @admin.register(Shipment)
@@ -104,3 +99,26 @@ class ShipmentAdmin(admin.ModelAdmin):
         "delivery_agent_name",
         "delivery_agent_phone",
     ]
+
+@admin.register(LogisticsRate)
+class LogisticsRateAdmin(admin.ModelAdmin):
+    list_display = [
+        "label",
+        "min_km",
+        "max_km",
+        "base_fee",
+        "rate_per_km",
+        "weight_rate_per_kg",
+        "free_weight_kg",
+        "is_active",
+    ]
+    list_editable = ["is_active"]
+    ordering = ["min_km"]
+    list_filter = ["is_active"]
+
+
+@admin.register(ShipmentUpdate)
+class ShipmentUpdateAdmin(admin.ModelAdmin):
+    list_display = ["shipment", "status", "location", "created_at"]
+    list_filter = ["status"]
+    ordering = ["-created_at"]

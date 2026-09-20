@@ -176,6 +176,19 @@ HEADER SCRIPT
 
         }
 
+        /* =========================
+        MOBILE TOOLS ACCORDION
+        ========================= */
+        const toolsMenu = document.querySelector(".tools-menu");
+        if (toolsMenu) {
+            toolsMenu.querySelector("a").addEventListener("click", function (e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    toolsMenu.classList.toggle("open");
+                }
+            });
+        }
+
     });
 
     // #########  Search  #########
@@ -229,6 +242,18 @@ TOP HEADER
                 Orders
             </a>
 
+            {% if user.is_vendor %}
+            <a href="{% url 'vendor_dashboard' %}" class="vendor-cta">
+                <i class="fa fa-store"></i>
+                Vendor Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'vendor_signup' %}" class="vendor-cta sell-cta">
+                <i class="fa fa-tag"></i>
+                Sell on Remarobe
+            </a>
+            {% endif %}
+
             <a href="{% url 'account_logout' %}">
                 <i class="fa fa-sign-out"></i>
                 Logout
@@ -244,6 +269,11 @@ TOP HEADER
             <a href="{% url 'account_signup' %}">
                 <i class="fa fa-user-plus"></i>
                 Register
+            </a>
+
+            <a href="{% url 'vendor_signup' %}" class="vendor-cta sell-cta">
+                <i class="fa fa-tag"></i>
+                Sell on Remarobe
             </a>
 
             {% endif %}
@@ -274,7 +304,7 @@ MAIN HEADER
                     </span>
 
                     <span class="logo-sub">
-                        Electrical Engineering
+                        Nigeria Limited (Remarobe Nig. Ltd)
                     </span>
 
                 </div>
@@ -377,6 +407,20 @@ NAVIGATION
                 <a href="/">Home</a>
             </li>
 
+            <li class="tools-menu">
+                <a>Tools <i class="fa fa-chevron-down"></i></a>
+                <ul class="tools-dropdown">
+                    <li><a href="{% url 'solar_design' %}">Solar Calculator</a></li>
+                    <li><a href="{% url 'earthing_assessment' %}">Earthing Calculator</a></li>
+                    <li><a href="{% url 'logistics_calculator' %}">Logistics Calculator</a></li>
+                    <li><a href="{% url 'tool_in_progress' %}">Load Calculator <small>In progress</small></a></li>
+                    <li><a href="{% url 'tool_in_progress' %}">Cable Sizing Calculator <small>In progress</small></a>
+                    </li>
+                    <li><a href="{% url 'tool_in_progress' %}">Battery Backup Calculator <small>In progress</small></a>
+                    </li>
+                </ul>
+            </li>
+
             {% for cat in nav_categories %}
 
             <li>
@@ -386,19 +430,6 @@ NAVIGATION
             </li>
 
             {% endfor %}
-
-            <li class="tools-menu">
-                <a>Tools <i class="fa fa-chevron-down"></i></a>
-                <ul class="tools-dropdown">
-                    <li><a href="{% url 'solar_design' %}">Solar Calculator</a></li>
-                    <li><a href="{% url 'earthing_assessment' %}">Earthing Calculator</a></li>
-                    <li><a href="{% url 'tool_in_progress' %}">Load Calculator <small>In progress</small></a></li>
-                    <li><a href="{% url 'tool_in_progress' %}">Cable Sizing Calculator <small>In progress</small></a>
-                    </li>
-                    <li><a href="{% url 'tool_in_progress' %}">Battery Backup Calculator <small>In progress</small></a>
-                    </li>
-                </ul>
-            </li>
 
 
 
@@ -540,6 +571,27 @@ TOP HEADER
     .top-left a:hover,
     .top-right a:hover {
         color: #2A7DB4;
+    }
+
+    .vendor-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 800 !important;
+    }
+
+    .sell-cta {
+        background: #135823;
+        color: #fff !important;
+        padding: 5px 13px;
+        border-radius: 999px;
+        font-size: 12px !important;
+        transition: background .2s;
+    }
+
+    .sell-cta:hover {
+        background: #0d441b !important;
+        color: #fff !important;
     }
 
     /* =========================
@@ -904,6 +956,29 @@ MOBILE
         .main-nav li a:hover {
             background: #F3F4F6;
             color: #2A7DB4 !important;
+        }
+
+        /* TOOLS DROPDOWN — MOBILE (inline accordion) */
+        .tools-menu .tools-dropdown {
+            position: static;
+            box-shadow: none;
+            background: #f9fafb;
+            padding: 0;
+            display: none;
+            width: 100%;
+        }
+
+        .tools-menu.open .tools-dropdown {
+            display: block;
+        }
+
+        .tools-dropdown li {
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .tools-dropdown a {
+            padding: 14px 35px;
+            font-size: 14px;
         }
 
     }

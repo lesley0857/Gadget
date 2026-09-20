@@ -267,47 +267,206 @@ class VendorProfileView(generics.RetrieveAPIView):
 
 
 def vendor_signup(request):
+    if not request.user.is_authenticated:
+        messages.info(request, "Please log in or register before becoming a vendor.")
+        return redirect("account_login")
+
+    # Already a vendor → go to dashboard
+    if hasattr(request.user, "vendor"):
+        return redirect("vendor_dashboard")
+
+    NIGERIAN_STATES = [
+        "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
+        "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti",
+        "Enugu", "FCT", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano",
+        "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger",
+        "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto",
+        "Taraba", "Yobe", "Zamfara",
+    ]
+
     if request.method == "POST":
-        store_name = request.POST.get("store_name")
+        store_name = request.POST.get("store_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        description = request.POST.get("description", "").strip()
+        address = request.POST.get("address", "").strip()
+        city = request.POST.get("city", "").strip()
+        state_name = request.POST.get("state", "").strip()
+        logo = request.FILES.get("logo")
+
+        errors = []
+        if not store_name:
+            errors.append("Store name is required.")
+        if not phone:
+            errors.append("Phone number is required.")
+        if not address:
+            errors.append("Business address is required.")
+        if not city:
+            errors.append("City is required.")
+        if not state_name:
+            errors.append("State is required.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, "vendor_signup.html", {
+                "post": request.POST,
+                "nigerian_states": NIGERIAN_STATES,
+            })
+
+        # Auto-geocode from city / state
+        from logistics.utils import geocode_address
+        lat, lon = geocode_address(address, city, state_name)
+        coordinates_pending = lat is None
+
+        # Resolve or create State FK
+        from locations.models import State as StateModel
+        state_obj = StateModel.objects.filter(name__iexact=state_name).first()
 
         vendor = Vendor.objects.create(
             user=request.user,
             store_name=store_name,
-            state=request.user.state
+            phone=phone,
+            description=description,
+            address=f"{address}, {city}, {state_name}",
+            state=state_obj,
+            latitude=str(lat) if lat else "",
+            longitude=str(lon) if lon else "",
+            coordinates_pending=coordinates_pending,
+            verified=False,
         )
 
-        request.user.is_vendor = True
-        request.user.save()
+        if logo:
+            vendor.logo = logo
+            vendor.save(update_fields=["logo"])
 
+        request.user.is_vendor = True
+        request.user.save(update_fields=["is_vendor"])
+
+        # Notify Admin of new vendor application
+        from django.core.mail import send_mail
+        from django.conf import settings
+        try:
+            send_mail(
+                subject=f"New Vendor Application: {store_name}",
+                message=(
+                    f"A new vendor application has been submitted by {request.user.email} for store '{store_name}'.\n\n"
+                    f"Phone: {phone}\n"
+                    f"Address: {address}, {city}, {state_name}\n\n"
+                    f"Please review and verify this application in the Django Admin portal."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[getattr(settings, "ADMIN_EMAIL", "nwekelesley@gmail.com")],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print("Error notifying admin of vendor application:", e)
+
+        messages.info(
+            request,
+            f"Your vendor application for '{store_name}' has been submitted! Our Admin team will review and verify your account shortly."
+        )
         return redirect("vendor_dashboard")
 
-    return render(request, "vendor_signup.html")
+    return render(request, "vendor_signup.html", {
+        "nigerian_states": NIGERIAN_STATES,
+    })
 
 @login_required
 def vendor_dashboard(request):
+    if not hasattr(request.user, "vendor"):
+        messages.warning(request, "You don't have a vendor account yet.")
+        return redirect("vendor_signup")
+
     vendor = request.user.vendor
 
-    items = OrderItem.objects.filter(vendor=vendor)
+    if not vendor.verified:
+        return render(request, "vendor_pending.html", {"vendor": vendor})
+    items = OrderItem.objects.filter(
+        vendor=vendor
+    ).select_related(
+        "order", "product_listing"
+    ).order_by("-order__created_at")
+
     wallet, _ = VendorWallet.objects.get_or_create(vendor=vendor)
 
-    total_sales = items.aggregate(total=sum("total"))["total"] or 0
+    from django.db.models import Sum
+    agg = items.aggregate(
+        total_sales=Sum("total"),
+        total_orders=Sum("quantity"),
+    )
+    total_sales = agg["total_sales"] or 0
     total_orders = items.count()
+    pending_items = items.filter(status="pending").count()
 
-    return render(request, "accounts/vendor_dashboard.html", {
-        "items": items,
+    products = ProductListing.objects.filter(
+        vendor=vendor,
+        is_active=True,
+    ).order_by("-created_at")[:10]
+
+    return render(request, "vendor_dashboard.html", {
+        "vendor": vendor,
+        "items": items[:20],
         "total_sales": total_sales,
+        "total_orders": total_orders,
+        "pending_items": pending_items,
         "wallet": wallet,
-        "total_orders": total_orders})
+        "products": products,
+    })
 
+
+@login_required
 def vendor_update(request):
+    if not hasattr(request.user, "vendor"):
+        return redirect("vendor_signup")
+
     vendor = request.user.vendor
 
+    NIGERIAN_STATES = [
+        "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
+        "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti",
+        "Enugu", "FCT", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano",
+        "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger",
+        "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto",
+        "Taraba", "Yobe", "Zamfara",
+    ]
+
     if request.method == "POST":
-        vendor.store_name = request.POST.get("store_name")
+        vendor.store_name = request.POST.get("store_name", vendor.store_name).strip()
+        vendor.phone = request.POST.get("phone", vendor.phone or "").strip()
+        vendor.description = request.POST.get("description", "").strip()
+
+        city = request.POST.get("city", "").strip()
+        state_name = request.POST.get("state", "").strip()
+        address = request.POST.get("address", "").strip()
+
+        if address or city or state_name:
+            vendor.address = f"{address}, {city}, {state_name}".strip(", ")
+
+            from logistics.utils import geocode_address
+            lat, lon = geocode_address(address, city, state_name)
+            if lat:
+                vendor.latitude = str(lat)
+                vendor.longitude = str(lon)
+                vendor.coordinates_pending = False
+            else:
+                vendor.coordinates_pending = True
+
+            from locations.models import State as StateModel
+            state_obj = StateModel.objects.filter(name__iexact=state_name).first()
+            if state_obj:
+                vendor.state = state_obj
+
+        if request.FILES.get("logo"):
+            vendor.logo = request.FILES["logo"]
+
         vendor.save()
+        messages.success(request, "Store profile updated successfully.")
         return redirect("vendor_dashboard")
 
-    return render(request, "vendor_update.html", {"vendor": vendor})
+    return render(request, "vendor_update.html", {
+        "vendor": vendor,
+        "nigerian_states": NIGERIAN_STATES,
+    })
 
 def vendor_delete(request):
     vendor = request.user.vendor

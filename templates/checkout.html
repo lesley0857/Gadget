@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load humanize static %}
 {% block content %}
 <main class="checkout-shell">
     <section class="checkout-hero">
@@ -23,6 +23,12 @@
                     state<input name="shipping_state" value="{{ shipping_details.state }}" required></label><label
                     class="wide">Shipping phone<input name="shipping_phone" value="{{ shipping_details.phone }}"
                         required></label></div>
+
+            <!-- Hidden coordinates and fee inputs updated by the Location Picker in Order Summary -->
+            <input type="hidden" name="customer_lat" id="form-customer-lat" value="{{ customer_lat }}">
+            <input type="hidden" name="customer_lon" id="form-customer-lon" value="{{ customer_lon }}">
+            <input type="hidden" name="shipping_fee" id="form-shipping-fee" class="shipping-fee-input"
+                value="{{ shipping|default:'0' }}">
         </form>
         <aside class="checkout-card order-card">
             <div class="card-heading">
@@ -39,48 +45,121 @@
                         <source src="{{ item.media_url }}">
                     </video>
                     {% else %}
-                    <img src="{{ item.file.url }}" alt="{{ item.name }}">
+                    <img src="{{ item.media_url }}" alt="{{ item.display_name|default:item.name|default:'Product' }}"
+                        onerror="this.onerror=null;this.src='{% static 'img/hotdeal.png' %}';">
                     {% endif %}
-                    {% else%}
-                    <div class="product-placeholder"><i class="fa fa-bolt"></i></div>
+                    {% else %}
+                    <img src="{% static 'img/hotdeal.png' %}"
+                        alt="{{ item.display_name|default:item.name|default:'Product' }}">
                     {% endif %}
                     <div class="line-info">
-                        <strong>{{ item.name }}</strong><span>Quantity: {{ item.quantity }} ·
-                            {{ item.weight }} kg each</span><small>
-                            Unit price: ₦{{item.price|floatformat:2|intcomma}}
-                        </small>{% if item.fixed_shipping_fee > 0%}
-                        <small>Product shipping: ₦{{ item.shipping_fee|floatformat:2|intcomma }} (charged once)
-                        </small>{% elif item.shipping_type == "negotiation" %}<small>Product shipping: Quote
-                            required</small>{% endif %}
-                    </div><strong class="line-total">₦{{item.subtotal|floatformat:2|intcomma }}</strong>
+                        <strong>{{ item.display_name|default:item.name|default:'Product' }}</strong>
+                        <span>Quantity: {{ item.quantity }} · {{ item.weight|default:'0' }} kg each</span>
+                        <small>Unit price: ₦{{ item.unit_price|default:item.price|floatformat:2|intcomma }}</small>
+                        {% if item.shipping_fee and item.shipping_fee > 0 %}
+                        <small>Product shipping: ₦{{ item.shipping_fee|floatformat:2|intcomma }} (charged once)</small>
+                        {% elif item.shipping_type == "negotiation" %}
+                        <small>Product shipping: Quote required</small>
+                        {% endif %}
+                    </div>
+                    <strong class="line-total">
+                        ₦{{ item.line_total|default:item.subtotal|floatformat:2|intcomma}}
+                    </strong>
                 </article>{% empty %}<p class="empty-order">
                     Your cart is empty.</p>{% endfor %}</div>{% if requires_negotiation %}<div class="notice"><i
                     class="fa fa-info-circle"></i> Delivery requires a quote. Submit your request and our team will
                 confirm pricing.</div>{% elif requires_shipping %}<label class="shipping-select">Delivery option<select
                     id="global-shipping-select" name="shipping_option">{% for opt in shipping_options %}<option
                         value="{{ opt.id }}" data-fee="{{ opt.fee }}">
-                        {{ opt.provider }} — {{ opt.name }} (₦{{opt.fee|floatformat:2|intcomma }})
+                        {{ opt.provider }} — {{ opt.name }} (₦{{ opt.fee|floatformat:2|intcomma }})
                     </option>{% empty %}<option value="">Shipping calculated at
-                        checkout</option>{% endfor %}</select></label>{% endif %}<div class="totals">
+                        checkout</option>{% endfor %}</select></label>{% endif %}
+
+            <!-- LOCATION PICKER FOR DELIVERY FEE (INSIDE ORDER SUMMARY) -->
+            <div class="location-picker order-summary-lp" id="location-picker-section">
+                <div class="lp-header">
+                    <div>
+                        <h3 class="lp-title"><i class="fa fa-map-marker"></i> Delivery Location</h3>
+                        <p class="lp-hint">Select destination or detect GPS to calculate exact delivery fee.</p>
+                    </div>
+                    <span class="lp-badge">Live Quote</span>
+                </div>
+
+                <div class="lp-tabs">
+                    <button type="button" class="lp-tab active" data-tab="city-tab"><i class="fa fa-keyboard-o"></i>
+                        Type City</button>
+                    <button type="button" class="lp-tab" data-tab="gps-tab"><i class="fa fa-crosshairs"></i> Use
+                        GPS</button>
+                </div>
+
+                <div id="city-tab" style="position:relative;">
+                    <input type="text" id="lp-city-input" placeholder="e.g. Satellite Town, Lagos, Abuja…"
+                        autocomplete="off">
+                    <div id="lp-city-drop" class="lp-dropdown" style="display:none;"></div>
+                </div>
+
+                <div id="gps-tab" style="display:none;">
+                    <button type="button" id="lp-gps-btn" class="lp-gps-btn">
+                        <i class="fa fa-crosshairs"></i> Detect My Location
+                    </button>
+                    <p id="lp-gps-status" class="lp-gps-hint"></p>
+                </div>
+
+                <input type="hidden" id="lp-lat" value="{{ customer_lat }}">
+                <input type="hidden" id="lp-lon" value="{{ customer_lon }}">
+                <input type="hidden" id="lp-shipping-fee" class="shipping-fee-input" value="{{ shipping|default:'0' }}">
+
+                <!-- LIVE FEE RESULT -->
+                <div id="lp-fee-result" class="lp-fee-box" style="display:none;">
+                    <div class="lp-fee-row">
+                        <span>Distance</span><span id="lp-dist">—</span>
+                    </div>
+                    <div class="lp-fee-row">
+                        <span>Delivery Fee</span><strong id="lp-fee">—</strong>
+                    </div>
+                    <div class="lp-fee-detail" id="lp-fee-detail"></div>
+                </div>
+                <div id="lp-fee-error" class="lp-fee-error" style="display:none;"></div>
+            </div>
+
+            <div class="totals">
                 <div><span>Subtotal</span><strong>₦{{ subtotal|floatformat:2|intcomma }}</strong></div>
                 <div><span>Shipping</span><strong id="total_shipping">₦{{ shipping|floatformat:2|intcomma }}</strong>
                 </div>
                 <div class="grand"><span>Total</span><strong id="total_amount">₦{{ total|floatformat:2|intcomma
                         }}</strong></div>
             </div>
-            {% if requires_negotiation %}
-            <form method="post" action="{% url 'negotiate_cart' %}">{% csrf_token%}
-                <button class="primary-action">Request delivery quote</button>
-            </form>{% elif shipping > 0 %}<button type="button" id="pay-btn" class="primary-action">Pay securely with
-                Paystack</button>
-            <form method="post" action="{% url 'negotiate_cart' %}">{% csrf_token %}<button
-                    class="secondary-action">Negotiate delivery instead</button>
-            </form>{% else %}<div class="notice"><i class="fa fa-info-circle"></i>
-                Delivery is free. Request a delivery confirmation to continue.
+            <div class="checkout-actions-group" style="margin-top: 18px;">
+                {% if requires_negotiation %}
+                <div class="notice" style="margin-bottom: 12px;"><i class="fa fa-info-circle"></i> Delivery requires a
+                    quote or online calculation. Enter your location above to calculate delivery fee or request a quote
+                    below.</div>
+                {% endif %}
+                <div class="notice free-delivery-notice"
+                    style="{% if shipping and shipping > 0 %}display: none;{% else %}display: flex;{% endif %}">
+                    <i class="fa fa-info-circle" style="margin-top: 2px; color: #d97706; flex-shrink: 0;"></i>
+                    <span>Please select or detect your location above to calculate delivery fee before proceeding to
+                        payment.</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button type="button" id="pay-btn" class="primary-action"
+                        style="{% if not shipping or shipping <= 0 %}display: none;{% endif %}">
+                        <i class="fa fa-lock" style="margin-right: 6px;"></i> Pay securely with Paystack
+                    </button>
+                    <form method="post" action="{% url 'negotiate_cart' %}" class="negotiate-checkout-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="shipping_fee" class="shipping-fee-input"
+                            value="{{ shipping|default:'0' }}">
+                        <button type="submit" class="secondary-action" style="width: 100%;">
+                            {% if requires_negotiation %}
+                            Request delivery quote
+                            {% else %}
+                            Negotiate delivery instead
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
             </div>
-            <form method="post" action="{% url 'negotiate_cart' %}">{% csrf_token %}<button
-                    class="primary-action">Confirm free delivery</button>
-            </form>{% endif %}
         </aside>
     </div>
     {% if related_products %}<section class="related">
@@ -96,15 +175,16 @@
                     <source src="{{ product.display_media_url }}">
                 </video>
                 {% else %}
-                <img src="{{ product.display_media_url }}" alt="{{ product.name }}">
-                {% endif %} {% else%}
-                <div class="product-placeholder"><i class="fa fa-bolt"></i></div>
+                <img src="{{ product.display_media_url }}" alt="{{ product.name }}"
+                    onerror="this.onerror=null;this.src='{% static 'img/hotdeal.png' %}';">
+                {% endif %} {% else %}
+                <img src="{% static 'img/hotdeal.png' %}" alt="{{ product.name }}">
                 {% endif %}
                 <div><small>{% for category in product.categories.all %}{{ category.name }}{% if not forloop.last %} ·
-                        {% endif%}
+                        {% endif %}
                         {% endfor %}
                     </small><strong>{{ product.name }}</strong><span>
-                        ₦{{product.final_price|floatformat:2|intcomma }}</span></div>
+                        ₦{{ product.final_price|floatformat:2|intcomma }}</span></div>
             </a>{% endfor %}
         </div>
     </section>{% endif %}
@@ -265,6 +345,20 @@
         font-size: .85rem
     }
 
+    .free-delivery-notice {
+        margin: 0 0 14px;
+        padding: 12px 14px;
+        background: #fefce8;
+        border: 1px solid #fef08a;
+        border-radius: 10px;
+        color: #854d0e;
+        font-size: .85rem;
+        line-height: 1.45;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
     .shipping-select {
         margin: 18px 0
     }
@@ -407,6 +501,444 @@
             white-space: nowrap
         }
     }
+
+    /* ── LOCATION PICKER (IN ORDER SUMMARY) ── */
+    .location-picker {
+        margin: 18px 0 14px;
+        padding: 18px;
+        background: #f8faf8;
+        border: 1px solid #dbe5db;
+        border-radius: 16px;
+    }
+
+    .order-summary-lp {
+        box-shadow: 0 4px 16px rgba(19, 88, 35, .04);
+    }
+
+    .lp-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .lp-badge {
+        font-size: .7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        background: #e8f5e9;
+        color: #135823;
+        border: 1px solid #c8e6c9;
+        border-radius: 999px;
+        padding: 4px 10px;
+        white-space: nowrap;
+    }
+
+    .lp-title {
+        font-size: 1rem;
+        margin: 0 0 4px;
+        color: #17221a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .lp-hint {
+        font-size: .82rem;
+        color: #526356;
+        margin: 0;
+    }
+
+    .lp-tabs {
+        display: flex;
+        gap: 8px;
+        margin: 14px 0 12px;
+    }
+
+    .lp-tab {
+        padding: 6px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 999px;
+        background: #f9fafb;
+        font-size: .82rem;
+        font-weight: 700;
+        cursor: pointer;
+        color: #6b7280;
+    }
+
+    .lp-tab.active {
+        background: #135823;
+        color: #fff;
+        border-color: #135823;
+    }
+
+    #lp-city-input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d6ddd6;
+        border-radius: 10px;
+        padding: 11px 14px;
+        background: #fbfcfb;
+        font: inherit;
+    }
+
+    .lp-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+        z-index: 999;
+        margin-top: 2px;
+    }
+
+    .lp-option {
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: .88rem;
+        color: #374151;
+    }
+
+    .lp-option:hover {
+        background: #f0fdf4;
+        color: #135823;
+    }
+
+    .lp-gps-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        color: #166534;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: .88rem;
+    }
+
+    .lp-gps-hint {
+        font-size: .8rem;
+        color: #6b7280;
+        margin: 8px 0 0;
+    }
+
+    .lp-fee-box {
+        margin-top: 14px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 14px 18px;
+    }
+
+    .lp-fee-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .9rem;
+        padding: 5px 0;
+        color: #374151;
+    }
+
+    .lp-fee-row strong {
+        color: #135823;
+        font-size: 1rem;
+    }
+
+    .lp-fee-detail {
+        margin-top: 8px;
+        font-size: .78rem;
+        color: #6b7280;
+        border-top: 1px solid #d1fae5;
+        padding-top: 8px;
+    }
+
+    .lp-fee-error {
+        margin-top: 12px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: #991b1b;
+        font-size: .85rem;
+    }
 </style>
-<script>const subtotal = Number('{{ subtotal|default:"0" }}'), baseShipping = Number('{{ shipping|default:"0" }}'), vendorToHubTotal = Number('{{ vendor_to_hub_total|default:"0" }}'); function money(value) { return '₦' + Number(value).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } function updateTotals() { const select = document.getElementById('global-shipping-select'); const shipping = select ? (Number(select.options[select.selectedIndex]?.dataset.fee || 0) + vendorToHubTotal) : baseShipping; document.getElementById('total_shipping').textContent = money(shipping); document.getElementById('total_amount').textContent = money(subtotal + shipping) } document.getElementById('global-shipping-select')?.addEventListener('change', updateTotals); updateTotals(); document.getElementById('pay-btn')?.addEventListener('click', async function () { const btn = this, form = document.getElementById('checkout-form'); if (!form.reportValidity()) return; btn.disabled = true; btn.textContent = 'Processing…'; try { const res = await fetch('/pay/', { method: 'POST', headers: { 'X-CSRFToken': document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] }, body: new FormData(form) }), data = await res.json(); if (data.payment_url) location.href = data.payment_url; else throw Error(data.error || 'Payment failed') } catch (error) { alert(error.message); btn.disabled = false; btn.textContent = 'Pay securely with Paystack' } });</script>
+<script>
+    const subtotal = Number('{{ subtotal|default:"0" }}'),
+        baseShipping = Number('{{ shipping|default:"0" }}'),
+        vendorToHubTotal = Number('{{ vendor_to_hub_total|default:"0" }}');
+    let logisticsFee = 0;
+    let clat = '{{ customer_lat }}' || null;
+    let clon = '{{ customer_lon }}' || null;
+
+    function money(value) {
+        return '₦' + Number(value).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateGrossPayable(net) {
+        if (net <= 0) return 0;
+        const pct = 0.015;
+        const fixed = 100.00;
+        const cap = 2000.00;
+        const waiverThreshold = 2500.00;
+        const oneMinusPct = 1.0 - pct;
+        const netWaiverBoundary = waiverThreshold * oneMinusPct;
+
+        let gross;
+        if (net < netWaiverBoundary) {
+            gross = net / oneMinusPct;
+        } else {
+            const grossCandidate = (net + fixed) / oneMinusPct;
+            const feeCandidate = grossCandidate * pct + fixed;
+            if (cap && feeCandidate >= cap) {
+                gross = net + cap;
+            } else {
+                gross = grossCandidate;
+            }
+        }
+        return Math.round((gross + Number.EPSILON) * 100) / 100;
+    }
+
+    function updateTotals(extraFee) {
+        const select = document.getElementById('global-shipping-select');
+        let shipping = select
+            ? (Number(select.options[select.selectedIndex]?.dataset.fee || 0) + vendorToHubTotal)
+            : baseShipping;
+        shipping += (extraFee !== undefined ? extraFee : logisticsFee);
+        document.getElementById('total_shipping').textContent = money(shipping);
+        const total = subtotal + shipping;
+        document.getElementById('total_amount').textContent = money(total);
+
+        // Sync shipping fee to all hidden inputs in negotiation forms
+        document.querySelectorAll('.shipping-fee-input').forEach(input => {
+            input.value = shipping;
+        });
+
+        const freeNotice = document.querySelector('.free-delivery-notice');
+        if (freeNotice) {
+            freeNotice.style.display = shipping > 0 ? 'none' : 'flex';
+        }
+
+        const payBtn = document.getElementById('pay-btn');
+        if (payBtn) {
+            payBtn.style.display = shipping > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Sync form inputs before negotiation submit
+    document.querySelectorAll('.negotiate-checkout-form').forEach(negForm => {
+        negForm.addEventListener('submit', function (e) {
+            const checkoutForm = document.getElementById('checkout-form');
+            if (checkoutForm) {
+                const fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'state', 'shipping_address', 'shipping_city', 'shipping_state', 'shipping_phone'];
+                fields.forEach(fieldName => {
+                    const source = checkoutForm.querySelector(`[name="${fieldName}"]`);
+                    if (source && source.value) {
+                        let hidden = negForm.querySelector(`input[name="${fieldName}"]`);
+                        if (!hidden) {
+                            hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.name = fieldName;
+                            negForm.appendChild(hidden);
+                        }
+                        hidden.value = source.value;
+                    }
+                });
+            }
+        });
+    });
+
+    document.getElementById('global-shipping-select')?.addEventListener('change', () => updateTotals());
+    updateTotals(0);
+
+    // ── LOCATION PICKER ──
+    (() => {
+        function setCoords(lat, lon) {
+            clat = lat;
+            clon = lon;
+            const lpLat = document.getElementById('lp-lat'); if (lpLat) lpLat.value = lat || '';
+            const lpLon = document.getElementById('lp-lon'); if (lpLon) lpLon.value = lon || '';
+            const fLat = document.getElementById('form-customer-lat'); if (fLat) fLat.value = lat || '';
+            const fLon = document.getElementById('form-customer-lon'); if (fLon) fLon.value = lon || '';
+        }
+
+        // Tabs
+        document.querySelectorAll('.lp-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.lp-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('city-tab').style.display = tab.dataset.tab === 'city-tab' ? '' : 'none';
+                document.getElementById('gps-tab').style.display = tab.dataset.tab === 'gps-tab' ? '' : 'none';
+            });
+        });
+
+        // City autocomplete
+        const cityInput = document.getElementById('lp-city-input');
+        const cityDrop = document.getElementById('lp-city-drop');
+        let deb;
+
+        if (cityInput) {
+            cityInput.addEventListener('input', () => {
+                clearTimeout(deb);
+                setCoords(null, null);
+                const q = cityInput.value.trim();
+                if (q.length < 2) { cityDrop.style.display = 'none'; return; }
+                deb = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`/logistics/api/city-lookup/?q=${encodeURIComponent(q)}`);
+                        const data = await res.json();
+                        cityDrop.innerHTML = '';
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(r => {
+                                const div = document.createElement('div');
+                                div.className = 'lp-option';
+                                div.innerHTML = `<i class="fa fa-map-marker" style="color:#135823;margin-right:6px;"></i>${r.city}`;
+                                div.addEventListener('click', () => {
+                                    cityInput.value = r.city;
+                                    setCoords(r.lat, r.lon);
+                                    cityDrop.style.display = 'none';
+                                    fetchLogisticsFee(clat, clon, null);
+                                });
+                                cityDrop.appendChild(div);
+                            });
+                            cityDrop.style.display = 'block';
+                        } else {
+                            cityDrop.style.display = 'none';
+                        }
+                    } catch (e) {
+                        cityDrop.style.display = 'none';
+                    }
+                }, 280);
+            });
+
+            cityInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cityDrop.style.display = 'none';
+                    const q = cityInput.value.trim();
+                    if (q) fetchLogisticsFee(null, null, q);
+                }
+            });
+
+            cityInput.addEventListener('change', () => {
+                if (!clat && cityInput.value.trim()) {
+                    fetchLogisticsFee(null, null, cityInput.value.trim());
+                }
+            });
+
+            document.addEventListener('click', e => { if (!cityInput.contains(e.target)) cityDrop.style.display = 'none'; });
+        }
+
+        // Also watch shipping city fields in contact form
+        const shippingCityInput = document.querySelector('input[name="shipping_city"]') || document.querySelector('input[name="city"]');
+        if (shippingCityInput) {
+            shippingCityInput.addEventListener('change', () => {
+                const val = shippingCityInput.value.trim();
+                if (val && !clat) {
+                    if (cityInput && !cityInput.value) cityInput.value = val;
+                    fetchLogisticsFee(null, null, val);
+                }
+            });
+        }
+
+        // GPS
+        const gpsBtn = document.getElementById('lp-gps-btn');
+        if (gpsBtn) {
+            gpsBtn.addEventListener('click', () => {
+                const status = document.getElementById('lp-gps-status');
+                status.textContent = 'Detecting your location…';
+                navigator.geolocation.getCurrentPosition(pos => {
+                    setCoords(pos.coords.latitude, pos.coords.longitude);
+                    status.textContent = `✓ Location detected`;
+                    fetchLogisticsFee(clat, clon, null);
+                }, () => { status.textContent = '✗ Could not detect. Please type your city.'; });
+            });
+        }
+
+        // Auto-trigger if customer has saved coords
+        if (clat && clon && clat !== '' && clon !== '') {
+            fetchLogisticsFee(clat, clon, null);
+        }
+
+        async function fetchLogisticsFee(lat, lon, cityName) {
+            const feeBox = document.getElementById('lp-fee-result');
+            const errBox = document.getElementById('lp-fee-error');
+            const csrfToken = document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || '';
+
+            const form = new FormData();
+            if (lat && lon) { form.append('customer_lat', lat); form.append('customer_lon', lon); }
+            else if (cityName) { form.append('city_name', cityName); }
+            else return;
+
+            try {
+                const res = await fetch('/logistics/api/calculate-fee/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: form,
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) throw new Error(data.error || 'Error');
+
+                logisticsFee = data.total;
+                updateTotals(logisticsFee);
+
+                document.getElementById('lp-dist').textContent = data.distance_km + ' km';
+                document.getElementById('lp-fee').textContent = money(data.total);
+                document.getElementById('lp-fee-detail').innerHTML =
+                    `Base ₦${Number(data.base_fee).toLocaleString()} + Distance ₦${Number(data.distance_cost).toLocaleString()} + Weight ₦${Number(data.weight_cost).toLocaleString()} + Margin ₦${Number(data.margin).toLocaleString()}`;
+
+                feeBox.style.display = 'block';
+                errBox.style.display = 'none';
+            } catch (e) {
+                errBox.textContent = e.message || 'Could not calculate logistics fee.';
+                errBox.style.display = 'block';
+                feeBox.style.display = 'none';
+            }
+        }
+    })();
+
+    document.getElementById('pay-btn')?.addEventListener('click', async function () {
+        const btn = this, form = document.getElementById('checkout-form');
+        if (!form.reportValidity()) return;
+        btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing…';
+        try {
+            const formData = new FormData(form);
+
+            // Compute exact current shipping and total at time of click
+            const select = document.getElementById('global-shipping-select');
+            let currentShipping = select
+                ? (Number(select.options[select.selectedIndex]?.dataset?.fee || 0) + vendorToHubTotal)
+                : baseShipping;
+            // Check exact text content in #total_amount currently seen on screen by user
+            let confirmedTotal = subtotal + currentShipping;
+            const displayedTotalEl = document.getElementById('total_amount');
+            if (displayedTotalEl) {
+                const parsed = Number(displayedTotalEl.textContent.replace(/[^0-9.-]+/g, ''));
+                if (parsed > 0) confirmedTotal = parsed;
+            }
+
+            const latVal = clat || document.getElementById('form-customer-lat')?.value || '';
+            const lonVal = clon || document.getElementById('form-customer-lon')?.value || '';
+            formData.set('customer_lat', latVal);
+            formData.set('customer_lon', lonVal);
+            formData.set('shipping_fee', currentShipping.toFixed(2));
+            formData.set('checkout_total', confirmedTotal.toFixed(2));
+
+            const res = await fetch('/pay/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] },
+                body: formData
+            }), data = await res.json();
+            if (data.payment_url) location.href = data.payment_url;
+            else throw Error(data.error || 'Payment failed')
+        } catch (error) {
+            alert(error.message); btn.disabled = false; btn.innerHTML = '<i class="fa fa-lock" style="margin-right: 6px;"></i> Pay securely with Paystack';
+        }
+    });
+</script>
 {% endblock %}

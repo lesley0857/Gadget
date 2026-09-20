@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>REMAROBE ELECTRICAL ENGINEERING</title>
+    <title>Remarobe Nigeria Limited — Electrical Engineering</title>
     <link rel="icon" type="image/png" href="{% static 'logo/Remarobelogo.png' %}">
     <!-- Google font -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
@@ -2675,10 +2675,28 @@ PERFORMANCE
             font-size: 20px;
         }
 
-        .cookie-banner-copy { flex: 1; }
-        .cookie-banner-copy strong { display: block; font-size: 16px; }
-        .cookie-banner-copy p { margin: 3px 0 0; color: rgba(255,255,255,.82); font-size: 13px; line-height: 1.45; }
-        .cookie-banner-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+        .cookie-banner-copy {
+            flex: 1;
+        }
+
+        .cookie-banner-copy strong {
+            display: block;
+            font-size: 16px;
+        }
+
+        .cookie-banner-copy p {
+            margin: 3px 0 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .cookie-banner-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
 
         .cookie-btn {
             border: 1px solid transparent;
@@ -2690,19 +2708,46 @@ PERFORMANCE
             transition: transform .2s ease, background .2s ease;
         }
 
-        .cookie-btn:hover { transform: translateY(-2px); }
-        .cookie-btn-primary { color: #35101c; background: #f6c968; }
-        .cookie-btn-secondary { color: #fff; border-color: rgba(255,255,255,.42); background: rgba(255,255,255,.09); }
+        .cookie-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .cookie-btn-primary {
+            color: #35101c;
+            background: #f6c968;
+        }
+
+        .cookie-btn-secondary {
+            color: #fff;
+            border-color: rgba(255, 255, 255, .42);
+            background: rgba(255, 255, 255, .09);
+        }
 
         @keyframes cookieBannerIn {
-            from { opacity: 0; transform: translate(-50%, 16px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
+            from {
+                opacity: 0;
+                transform: translate(-50%, 16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
         }
 
         @media (max-width: 620px) {
-            .cookie-banner { align-items: flex-start; }
-            .cookie-banner-actions { width: 100%; justify-content: stretch; }
-            .cookie-btn { flex: 1; }
+            .cookie-banner {
+                align-items: flex-start;
+            }
+
+            .cookie-banner-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .cookie-btn {
+                flex: 1;
+            }
         }
 
 
@@ -3489,7 +3534,19 @@ CART SIDEBAR
             margin-bottom: 10px;
         }
 
-        .cart-item-shipping{font-size:12px;color:#6b7280;margin-top:4px}.cart-item-shipping{font-size:12px;color:#6b7280;margin-top:4px}.cart-item-price {
+        .cart-item-shipping {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px
+        }
+
+        .cart-item-shipping {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px
+        }
+
+        .cart-item-price {
 
             color: #2A7DB4;
 
@@ -3828,7 +3885,12 @@ CART SIDEBAR
             <!-- FOOTER -->
             <div class="cart-bottom">
 
-                <div class="cart-summary"><span>Subtotal</span><strong>₦<span class="cart-subtotal">0.00</span></strong></div><div class="cart-summary"><span>Shipping</span><strong>₦<span class="cart-shipping">0.00</span></strong></div><div class="cart-summary cart-grand"><span>Total</span><strong>₦<span class="cart-total">0.00</span></strong></div>
+                <div class="cart-summary"><span>Subtotal</span><strong>₦<span class="cart-subtotal">0.00</span></strong>
+                </div>
+                <div class="cart-summary"><span>Shipping</span><strong>₦<span class="cart-shipping">0.00</span></strong>
+                </div>
+                <div class="cart-summary cart-grand"><span>Total</span><strong>₦<span
+                            class="cart-total">0.00</span></strong></div>
                 <a href="#" id="negotiate-btn" class="checkout-link btn">
                     Negotiate
                 </a>
@@ -4301,6 +4363,95 @@ SOLAR PROMO BANNER
 
     </div>
 
+
+    <!-- =============================================
+     ANIMATED ELECTRICAL PRODUCTS WATERMARK
+     ============================================= -->
+    <div id="site-watermark" aria-hidden="true">
+        <span class="wm-word wm-active">Solar Batteries</span>
+        <span class="wm-word">Safe Compressors</span>
+        <span class="wm-word">Dispensers</span>
+        <span class="wm-word">Valves</span>
+        <span class="wm-word">Solar Inverters</span>
+        <span class="wm-word">Remarobe Nig. Ltd</span>
+    </div>
+    <style>
+        #site-watermark {
+            position: fixed;
+            bottom: 30px;
+            right: -30px;
+            transform: rotate(-35deg);
+            transform-origin: bottom right;
+            z-index: 9999;
+            pointer-events: none;
+            user-select: none;
+            font-size: clamp(18px, 3vw, 32px);
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.055;
+            color: #2A7DB4;
+            white-space: nowrap;
+            line-height: 1;
+            overflow: hidden;
+            height: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+
+        html[data-theme="night"] #site-watermark {
+            color: #60b8e8;
+            opacity: 0.07;
+        }
+
+        .wm-word {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.7s ease;
+        }
+
+        .wm-word.wm-active {
+            opacity: 1;
+        }
+    </style>
+    <script>
+        (function () {
+            const words = document.querySelectorAll('.wm-word');
+            if (!words.length) return;
+            let current = 0;
+            let lastScrollY = window.scrollY;
+            let ticking = false;
+
+            function showWord(idx) {
+                words[current].classList.remove('wm-active');
+                current = (idx + words.length) % words.length;
+                words[current].classList.add('wm-active');
+            }
+
+            let scrollDir = 1;
+            let scrollAccum = 0;
+            const STEP = 180; // px of scroll per word change
+
+            window.addEventListener('scroll', function () {
+                const dy = window.scrollY - lastScrollY;
+                scrollAccum += Math.abs(dy);
+                scrollDir = dy >= 0 ? 1 : -1;
+                lastScrollY = window.scrollY;
+
+                if (!ticking) {
+                    ticking = true;
+                    requestAnimationFrame(function () {
+                        if (scrollAccum >= STEP) {
+                            const steps = Math.floor(scrollAccum / STEP);
+                            scrollAccum = scrollAccum % STEP;
+                            showWord(current + scrollDir * steps);
+                        }
+                        ticking = false;
+                    });
+                }
+            }, { passive: true });
+        })();
+    </script>
 
 </body>
 <script>

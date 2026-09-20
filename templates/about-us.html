@@ -1,15 +1,392 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-.about-remarobe{--ink:#132c42;--blue:#17698b;--line:#d9e3e9;color:var(--ink);background:#fff}.about-remarobe *{box-sizing:border-box}.about-remarobe .wrap{max-width:1180px;margin:auto;padding:0 24px}.about-hero{padding:92px 0;background:linear-gradient(120deg,rgba(11,35,53,.94),rgba(18,75,95,.87)),linear-gradient(45deg,#17324d,#347d7e);color:#fff}.about-hero-grid,.about-intro{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;align-items:center}.eyebrow,.section-label{font-size:.8rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#94d6e7}.about-hero h1{font-size:clamp(2.25rem,5vw,4.25rem);line-height:1.06;margin:14px 0 20px}.about-hero p{font-size:1.1rem;line-height:1.7;color:#dbeaf0}.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.about-btn{display:inline-block;padding:13px 20px;border:1px solid #fff;border-radius:5px;color:#fff;font-weight:700}.about-btn.primary{background:#fff;color:#17324d}.technical-panel{min-height:300px;border:1px solid rgba(255,255,255,.35);background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(255,255,255,.08) 39px 40px),repeating-linear-gradient(0deg,transparent 0 38px,rgba(255,255,255,.08) 39px 40px);padding:30px;display:flex;align-items:end}.technical-panel strong{font-size:1.25rem}.about-section{padding:80px 0}.about-section.alt{background:#f5f8fa}.section-label{color:#17698b}.section-title{font-size:clamp(1.8rem,3vw,2.7rem);margin:10px 0 18px;line-height:1.18}.lead,.about-copy p{font-size:1.05rem;line-height:1.8;color:#49606e}.intro-visual{min-height:340px;background:linear-gradient(140deg,#dcecf0,#8db9c4);border-left:6px solid #17698b;padding:28px;display:flex;align-items:end}.intro-visual span{font-weight:800;font-size:1.35rem}.service-grid,.experience-grid,.reason-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.service-card,.experience-card,.reason-card{background:#fff;border:1px solid var(--line);padding:26px}.service-card i{font-size:1.5rem;color:#17698b}.service-card h3,.experience-card h3,.reason-card h3{margin:14px 0 9px;font-size:1.2rem}.service-card p,.experience-card p,.reason-card p{margin:0;color:#526875;line-height:1.65}.journey{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-top:26px}.journey span{flex:1;min-width:145px;padding:16px;background:#f2f7f8;border-left:3px solid #17698b;font-weight:700}.cta{background:#132c42;color:#fff;padding:60px}.cta h2{font-size:2.25rem;margin:0 0 14px}.cta p{color:#d9e7ed;font-size:1.05rem}.about-remarobe a{text-decoration:none}@media(max-width:800px){.about-hero-grid,.about-intro{grid-template-columns:1fr;gap:28px}.service-grid,.experience-grid{grid-template-columns:1fr}.reason-grid{grid-template-columns:repeat(2,1fr)}.about-hero{padding:64px 0}.about-section{padding:56px 0}}@media(max-width:480px){.reason-grid{grid-template-columns:1fr}.wrap{padding:0 18px!important}.cta{padding:35px 24px}}
+    .about-remarobe {
+        --ink: #132c42;
+        --blue: #17698b;
+        --line: #d9e3e9;
+        color: var(--ink);
+        background: #fff
+    }
+
+    .about-remarobe * {
+        box-sizing: border-box
+    }
+
+    .about-remarobe .wrap {
+        max-width: 1180px;
+        margin: auto;
+        padding: 0 24px
+    }
+
+    .about-hero {
+        padding: 92px 0;
+        background: linear-gradient(120deg, rgba(11, 35, 53, .94), rgba(18, 75, 95, .87)), linear-gradient(45deg, #17324d, #347d7e);
+        color: #fff
+    }
+
+    .about-hero-grid,
+    .about-intro {
+        display: grid;
+        grid-template-columns: 1.2fr .8fr;
+        gap: 56px;
+        align-items: center
+    }
+
+    .eyebrow,
+    .section-label {
+        font-size: .8rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+        color: #94d6e7
+    }
+
+    .about-hero h1 {
+        font-size: clamp(2.25rem, 5vw, 4.25rem);
+        line-height: 1.06;
+        margin: 14px 0 20px
+    }
+
+    .about-hero p {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: #dbeaf0
+    }
+
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 30px
+    }
+
+    .about-btn {
+        display: inline-block;
+        padding: 13px 20px;
+        border: 1px solid #fff;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: 700
+    }
+
+    .about-btn.primary {
+        background: #fff;
+        color: #17324d
+    }
+
+    .technical-panel {
+        min-height: 300px;
+        border: 1px solid rgba(255, 255, 255, .35);
+        background: repeating-linear-gradient(90deg, transparent 0 38px, rgba(255, 255, 255, .08) 39px 40px), repeating-linear-gradient(0deg, transparent 0 38px, rgba(255, 255, 255, .08) 39px 40px);
+        padding: 30px;
+        display: flex;
+        align-items: end
+    }
+
+    .technical-panel strong {
+        font-size: 1.25rem
+    }
+
+    .about-section {
+        padding: 80px 0
+    }
+
+    .about-section.alt {
+        background: #f5f8fa
+    }
+
+    .section-label {
+        color: #17698b
+    }
+
+    .section-title {
+        font-size: clamp(1.8rem, 3vw, 2.7rem);
+        margin: 10px 0 18px;
+        line-height: 1.18
+    }
+
+    .lead,
+    .about-copy p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #49606e
+    }
+
+    .intro-visual {
+        min-height: 340px;
+        background: linear-gradient(140deg, #dcecf0, #8db9c4);
+        border-left: 6px solid #17698b;
+        padding: 28px;
+        display: flex;
+        align-items: end
+    }
+
+    .intro-visual span {
+        font-weight: 800;
+        font-size: 1.35rem
+    }
+
+    .service-grid,
+    .experience-grid,
+    .reason-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px
+    }
+
+    .service-card,
+    .experience-card,
+    .reason-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        padding: 26px
+    }
+
+    .service-card i {
+        font-size: 1.5rem;
+        color: #17698b
+    }
+
+    .service-card h3,
+    .experience-card h3,
+    .reason-card h3 {
+        margin: 14px 0 9px;
+        font-size: 1.2rem
+    }
+
+    .service-card p,
+    .experience-card p,
+    .reason-card p {
+        margin: 0;
+        color: #526875;
+        line-height: 1.65
+    }
+
+    .journey {
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 26px
+    }
+
+    .journey span {
+        flex: 1;
+        min-width: 145px;
+        padding: 16px;
+        background: #f2f7f8;
+        border-left: 3px solid #17698b;
+        font-weight: 700
+    }
+
+    .cta {
+        background: #132c42;
+        color: #fff;
+        padding: 60px
+    }
+
+    .cta h2 {
+        font-size: 2.25rem;
+        margin: 0 0 14px
+    }
+
+    .cta p {
+        color: #d9e7ed;
+        font-size: 1.05rem
+    }
+
+    .about-remarobe a {
+        text-decoration: none
+    }
+
+    @media(max-width:800px) {
+
+        .about-hero-grid,
+        .about-intro {
+            grid-template-columns: 1fr;
+            gap: 28px
+        }
+
+        .service-grid,
+        .experience-grid {
+            grid-template-columns: 1fr
+        }
+
+        .reason-grid {
+            grid-template-columns: repeat(2, 1fr)
+        }
+
+        .about-hero {
+            padding: 64px 0
+        }
+
+        .about-section {
+            padding: 56px 0
+        }
+    }
+
+    @media(max-width:480px) {
+        .reason-grid {
+            grid-template-columns: 1fr
+        }
+
+        .wrap {
+            padding: 0 18px !important
+        }
+
+        .cta {
+            padding: 35px 24px
+        }
+    }
 </style>
 <main class="about-remarobe">
-<section class="about-hero"><div class="wrap about-hero-grid"><div><div class="eyebrow">REMAROBE Electrical Engineering</div><h1>Engineering Electrical &amp; Energy Solutions for Real-World Projects</h1><p>REMAROBE supports homeowners, businesses and industrial teams with electrical engineering, solar energy, technical services and product supply.</p><div class="btn-row"><a class="about-btn primary" href="{% url 'services' %}">Our Services</a><a class="about-btn" href="https://wa.me/2348100911189" target="_blank" rel="noopener">Contact Us</a></div></div><div class="technical-panel"><div><div class="eyebrow">Engineering • Supply • Installation</div><strong>Practical technical support from project requirement to commissioning.</strong></div></div></div></section>
-<section class="about-section"><div class="wrap about-intro"><div class="about-copy"><div class="section-label">About REMAROBE</div><h2 class="section-title">Electrical, industrial and energy work supported by practical technical service.</h2><p>REMAROBE Electrical Engineering combines engineering services, technical product selection, solar solutions and digital tools. Our approach is straightforward: understand the requirement, select suitable equipment, prepare a clear proposal and support implementation.</p><p>We work across electrical installations, industrial power and control systems, earthing and protection, solar PV and energy storage, as well as relevant industrial technical support.</p></div><div class="intro-visual"><span>Electrical systems<br>Industrial support<br>Solar &amp; storage</span></div></div></section>
-<section class="about-section alt"><div class="wrap"><div class="section-label">What we do</div><h2 class="section-title">Engineering services connected to the equipment you need.</h2><div class="service-grid">{% for service in services %}<article class="service-card"><i class="{{ service.icon|default:'fa fa-wrench' }}"></i><h3>{{ service.title }}</h3><p>{{ service.short_description|truncatewords:24 }}</p><p style="margin-top:14px"><a href="{% url 'service_detail' service.slug %}" style="color:#17698b;font-weight:700">Learn more →</a></p></article>{% empty %}<article class="service-card"><i class="fa fa-bolt"></i><h3>Electrical Engineering &amp; Installation</h3><p>Installation, wiring, maintenance, repairs and drawing interpretation for practical electrical systems.</p></article><article class="service-card"><i class="fa fa-cogs"></i><h3>Industrial Electrical Systems</h3><p>Distribution, control-panel construction, wiring, retrofits, upgrades and technical repairs.</p></article><article class="service-card"><i class="fa fa-sun-o"></i><h3>Solar Energy Systems</h3><p>Load assessment, PV design, installation, inverter and battery systems, commissioning and support.</p></article>{% endfor %}<article class="service-card"><i class="fa fa-plug"></i><h3>Industrial Wiring</h3><p>Industrial power wiring, distribution upgrades, containment and site electrical installation.</p></article><article class="service-card"><i class="fa fa-pencil-square-o"></i><h3>Electrical Engineering Design</h3><p>Practical electrical design, load studies, protection coordination and project documentation.</p></article><article class="service-card"><i class="fa fa-shopping-basket"></i><h3>Electrical Procurement</h3><p>Technical sourcing and supply of approved electrical materials and equipment.</p></article><article class="service-card"><i class="fa fa-sliders"></i><h3>Control Panel Construction</h3><p>Control-panel fabrication, wiring, testing, retrofit and commissioning support.</p></article></div></div></section>
-<section class="about-section"><div class="wrap"><div class="section-label">Selected project &amp; technical experience</div><h2 class="section-title">Capability for industrial and energy-related work.</h2><div class="experience-grid"><article class="experience-card"><h3>Industrial electrical work</h3><p>Electrical installation, distribution support, control-panel work, repairs and protection-related services for industrial environments.</p></article><article class="experience-card"><h3>CNG &amp; pipeline technical support</h3><p>Relevant technical capability around CNG, PRMS and industrial installations, with electrical and instrumentation support where applicable.</p></article><article class="experience-card"><h3>Integrity &amp; protection support</h3><p>Earthing assessment, corrosion-related support and composite-wrap assistance for hydrocarbon pipe leakages where appropriate.</p></article></div></div></section>
-<section class="about-section alt"><div class="wrap"><div class="section-label">Solar &amp; digital engineering</div><h2 class="section-title">Use the Solar Calculator to start with the real electrical requirement.</h2><p class="lead">REMAROBE is building digital engineering tools that help customers assess their needs before selecting equipment. The calculator supports a clearer path from load information to an engineering-led proposal.</p><div class="journey"><span>1. Load Assessment</span><span>2. System Calculation</span><span>3. Product Selection</span><span>4. Quotation</span><span>5. Supply</span><span>6. Installation</span></div><div class="btn-row"><a class="about-btn primary" style="background:#17698b;color:#fff;border-color:#17698b" href="{% url 'solar_design' %}">Open Solar Calculator</a></div></div></section>
-<section class="about-section"><div class="wrap"><div class="section-label">Why choose REMAROBE</div><div class="reason-grid"><article class="reason-card"><h3>Practical engineering experience</h3><p>Clear technical thinking for site and equipment decisions.</p></article><article class="reason-card"><h3>Technical product selection</h3><p>Products can be matched to actual operating needs.</p></article><article class="reason-card"><h3>Electrical &amp; solar capability</h3><p>Support across power, protection, solar and storage.</p></article><article class="reason-card"><h3>Installation &amp; commissioning</h3><p>Engineering support through implementation.</p></article><article class="reason-card"><h3>Industrial project support</h3><p>Capability for industrial electrical and technical work.</p></article><article class="reason-card"><h3>Customer-focused service</h3><p>Direct communication and practical next steps.</p></article></div></div></section>
-<section class="about-section alt"><div class="wrap"><div class="cta"><h2>Have an Electrical, Industrial or Solar Project?</h2><p>Talk to REMAROBE about your project requirements and the equipment or technical support you need.</p><div class="btn-row"><a class="about-btn primary" href="{% url 'services' %}">Request a Quote</a><a class="about-btn" href="https://wa.me/2348100911189" target="_blank" rel="noopener">Contact REMAROBE</a></div></div></div></section>
+    <section class="about-hero">
+        <div class="wrap about-hero-grid">
+            <div>
+                <div class="eyebrow">REMAROBE Electrical Engineering</div>
+                <h1>Engineering Electrical &amp; Energy Solutions for Real-World Projects</h1>
+                <p>REMAROBE supports homeowners, businesses and industrial teams with electrical engineering, solar
+                    energy, technical services and product supply.</p>
+                <div class="btn-row"><a class="about-btn primary" href="{% url 'services' %}">Our Services</a><a
+                        class="about-btn" href="https://wa.me/2348100911189" target="_blank" rel="noopener">Contact
+                        Us</a></div>
+            </div>
+            <div class="technical-panel">
+                <div>
+                    <div class="eyebrow">Engineering • Supply • Installation</div><strong>Practical technical support
+                        from project requirement to commissioning.</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="about-section">
+        <div class="wrap about-intro">
+            <div class="about-copy">
+                <div class="section-label">About REMAROBE</div>
+                <h2 class="section-title">Electrical, industrial and energy work supported by practical technical
+                    service.</h2>
+                <p>REMAROBE Electrical Engineering combines engineering services, technical product selection, solar
+                    solutions and digital tools. Our approach is straightforward: understand the requirement, select
+                    suitable equipment, prepare a clear proposal and support implementation.</p>
+                <p>We work across electrical installations, industrial power and control systems, earthing and
+                    protection, solar PV and energy storage, as well as relevant industrial technical support.</p>
+            </div>
+            <div class="intro-visual"><span>Electrical systems<br>Industrial support<br>Solar &amp; storage</span></div>
+        </div>
+    </section>
+    <section class="about-section alt">
+        <div class="wrap">
+            <div class="section-label">What we do</div>
+            <h2 class="section-title">Engineering services connected to the equipment you need.</h2>
+            <div class="service-grid">{% for service in services %}<article class="service-card"><i
+                        class="{{ service.icon|default:'fa fa-wrench' }}"></i>
+                    <h3>{{ service.title }}</h3>
+                    <p>{{ service.short_description|truncatewords:24 }}</p>
+                    <p style="margin-top:14px"><a href="{% url 'service_detail' service.slug %}"
+                            style="color:#17698b;font-weight:700">Learn more →</a></p>
+                </article>{% empty %}<article class="service-card"><i class="fa fa-bolt"></i>
+                    <h3>Electrical Engineering &amp; Installation</h3>
+                    <p>Installation, wiring, maintenance, repairs and drawing interpretation for practical electrical
+                        systems.</p>
+                </article>
+                <article class="service-card"><i class="fa fa-cogs"></i>
+                    <h3>Industrial Electrical Systems</h3>
+                    <p>Distribution, control-panel construction, wiring, retrofits, upgrades and technical repairs.</p>
+                </article>
+                <article class="service-card"><i class="fa fa-sun-o"></i>
+                    <h3>Solar Energy Systems</h3>
+                    <p>Load assessment, PV design, installation, inverter and battery systems, commissioning and
+                        support.</p>
+                </article>{% endfor %}
+                <article class="service-card"><i class="fa fa-pencil-square-o"></i>
+                    <h3>Electrical Engineering Design</h3>
+                    <p>Practical electrical design, load studies, protection coordination and project documentation.</p>
+                </article>
+                <article class="service-card"><i class="fa fa-shopping-basket"></i>
+                    <h3>Electrical Procurement</h3>
+                    <p>Technical sourcing and supply of approved electrical materials and equipment.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="about-section">
+        <div class="wrap">
+            <div class="section-label">Selected project &amp; technical experience</div>
+            <h2 class="section-title">Capability for industrial and energy-related work.</h2>
+            <div class="experience-grid">
+                <article class="experience-card">
+                    <h3>Industrial electrical work</h3>
+                    <p>Electrical installation, distribution support, control-panel work, repairs and protection-related
+                        services for industrial environments.</p>
+                </article>
+                <article class="experience-card">
+                    <h3>CNG &amp; pipeline technical support</h3>
+                    <p>Relevant technical capability around CNG, PRMS and industrial installations, with electrical and
+                        instrumentation support where applicable.</p>
+                </article>
+                <article class="experience-card">
+                    <h3>Integrity &amp; protection support</h3>
+                    <p>Earthing assessment, corrosion-related support and composite-wrap assistance for hydrocarbon pipe
+                        leakages where appropriate.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="about-section alt">
+        <div class="wrap">
+            <div class="section-label">Solar &amp; digital engineering</div>
+            <h2 class="section-title">Use the Solar Calculator to start with the real electrical requirement.</h2>
+            <p class="lead">REMAROBE is building digital engineering tools that help customers assess their needs before
+                selecting equipment. The calculator supports a clearer path from load information to an engineering-led
+                proposal.</p>
+            <div class="journey"><span>1. Load Assessment</span><span>2. System Calculation</span><span>3. Product
+                    Selection</span><span>4. Quotation</span><span>5. Supply</span><span>6. Installation</span></div>
+            <div class="btn-row"><a class="about-btn primary" style="background:#17698b;color:#fff;border-color:#17698b"
+                    href="{% url 'solar_design' %}">Open Solar Calculator</a></div>
+        </div>
+    </section>
+    <section class="about-section">
+        <div class="wrap">
+            <div class="section-label">Why choose REMAROBE</div>
+            <div class="reason-grid">
+                <article class="reason-card">
+                    <h3>Practical engineering experience</h3>
+                    <p>Clear technical thinking for site and equipment decisions.</p>
+                </article>
+                <article class="reason-card">
+                    <h3>Technical product selection</h3>
+                    <p>Products can be matched to actual operating needs.</p>
+                </article>
+                <article class="reason-card">
+                    <h3>Electrical &amp; solar capability</h3>
+                    <p>Support across power, protection, solar and storage.</p>
+                </article>
+                <article class="reason-card">
+                    <h3>Installation &amp; commissioning</h3>
+                    <p>Engineering support through implementation.</p>
+                </article>
+                <article class="reason-card">
+                    <h3>Industrial project support</h3>
+                    <p>Capability for industrial electrical and technical work.</p>
+                </article>
+                <article class="reason-card">
+                    <h3>Customer-focused service</h3>
+                    <p>Direct communication and practical next steps.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="about-section alt">
+        <div class="wrap">
+            <div class="cta">
+                <h2 style="color: rgb(240, 245, 245);">Have an Electrical, Industrial or Solar Project?</h2>
+                <p>Talk to REMAROBE about your project requirements and the equipment or technical support you need.</p>
+                <div class="btn-row"><a class="about-btn primary" href="{% url 'services' %}">Request a Quote</a><a
+                        class="about-btn" href="https://wa.me/2348100911189" target="_blank" rel="noopener">Contact
+                        REMAROBE</a></div>
+            </div>
+        </div>
+    </section>
 </main>
 {% endblock %}

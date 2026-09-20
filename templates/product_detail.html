@@ -76,18 +76,27 @@
                 {{ product_listing.name }}
             </div>
 
-            <div class="vendor-name">
-                Sold By:
-                <strong>
-                    {{ product_listing.vendor.store_name }}
-                </strong>
-
-                {% if product_listing.vendor.verified %}
-                <span class="verified-badge">
-                    ✔ Verified Supplier
-                </span>
+            <div class="vendor-name" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                {% if product_listing.vendor.logo %}
+                <img src="{{ product_listing.vendor.logo.url }}" alt="{{ product_listing.vendor.store_name }}"
+                    style="width: 34px; height: 34px; object-fit: cover; border-radius: 50%; border: 1px solid #e5e7eb;">
+                {% else %}
+                <div
+                    style="width: 34px; height: 34px; border-radius: 50%; background: #135823; color: #fff; display: grid; place-items: center; font-size: 14px;">
+                    <i class="fa fa-store"></i>
+                </div>
                 {% endif %}
-
+                <div>
+                    Sold By:
+                    <strong>
+                        {{ product_listing.vendor.store_name }}
+                    </strong>
+                    {% if product_listing.vendor.verified %}
+                    <span class="verified-badge">
+                        ✔ Verified Supplier
+                    </span>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="price">
@@ -486,15 +495,15 @@
             },
             body: "quantity=1"
         })
-        .then(response => response.json().then(data => ({ response, data })))
-        .then(({ response, data }) => {
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || "Unable to add this product to your cart.");
-            }
-            window.location.href = "{% url 'checkout' %}";
-        })
-        .catch(error => alert(error.message))
-        .finally(() => { button.disabled = false; });
+            .then(response => response.json().then(data => ({ response, data })))
+            .then(({ response, data }) => {
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || "Unable to add this product to your cart.");
+                }
+                window.location.href = "{% url 'checkout' %}";
+            })
+            .catch(error => alert(error.message))
+            .finally(() => { button.disabled = false; });
     });
 
     function getCSRFToken() {

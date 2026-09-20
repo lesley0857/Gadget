@@ -59,6 +59,11 @@ body {
   font-family: 'Montserrat', sans-serif;
   font-weight: 400;
   color: #333;
+  background-color: #fbfdfb;
+  background-image: url("../img/electrical-pattern.svg");
+  background-repeat: repeat;
+  background-size: 320px 320px;
+  background-attachment: fixed;
 }
 
 h1,
@@ -2256,7 +2261,45 @@ textarea.input {
     margin-top: 10px;
   }
 }
+
 /* REMAROBE project-wide dark preference */
 @media (prefers-color-scheme: dark) {
- :root{color-scheme:dark} body,.body-wrapper,.checkout-area,.services-page,.categories-section{background:#171316!important;color:#f5ecef} .card,.service-card,.your-order,input,select,textarea,table{background:#261f23!important;color:#f5ecef!important;border-color:#4d4046!important} p,.text-muted{color:#d2c4ca!important} h1,h2,h3,h4,th,td{color:#fff4f7!important}
+  :root {
+    color-scheme: dark
+  }
+
+  body,
+  .body-wrapper,
+  .checkout-area,
+  .services-page,
+  .categories-section {
+    background: #171316 !important;
+    color: #f5ecef
+  }
+
+  .card,
+  .service-card,
+  .your-order,
+  input,
+  select,
+  textarea,
+  table {
+    background: #261f23 !important;
+    color: #f5ecef !important;
+    border-color: #4d4046 !important
+  }
+
+  p,
+  .text-muted {
+    color: #d2c4ca !important
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  th,
+  td {
+    color: #fff4f7 !important
+  }
 }

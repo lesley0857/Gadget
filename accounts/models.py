@@ -23,7 +23,13 @@ class Vendor(models.Model):
     latitude = models.CharField(max_length=50, null=True, blank=True)
     longitude = models.CharField(max_length=50, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
-    
+    description = models.TextField(blank=True, null=True)
+    logo = models.ImageField(upload_to="vendor_logos/", blank=True, null=True)
+    coordinates_pending = models.BooleanField(
+        default=True,
+        help_text="True until lat/lon have been resolved from address"
+    )
+
     def __str__(self):
         return self.store_name
 

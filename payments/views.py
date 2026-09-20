@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
 from django.http import Http404
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.urls import reverse
 from orders.models import *
 from django.http import JsonResponse
@@ -24,6 +24,7 @@ from datetime import timedelta
 from django.db import transaction
 from wallets.models import VendorWallet, WalletTransaction, Commission
 from accounts.models import Vendor, User
+from pricing.services import calculate_checkout_pricing
 
 from decimal import Decimal
 
@@ -67,7 +68,7 @@ def initiate_payment(request):
         for listing_id, row in request.session.get("cart", {}).items():
             listing = ProductListing.objects.filter(pk=listing_id).first()
             if listing:
-                CartItem.objects.create(guest_cart, listing, max(1, int(row.get("quantity", 1))))
+                CartItem.objects.create(cart=guest_cart, product_listing=listing, quantity=max(1, int(row.get("quantity", 1))))
 
     required_fields = [
 
@@ -122,26 +123,78 @@ def initiate_payment(request):
     )
 
     # =====================================
-    # REBUILD CHECKOUT FRESH
+    # REBUILD CHECKOUT FRESH & CALCULATE SHIPPING
     # =====================================
 
     checkout = build_vendor_checkout(user)
-    # Delivery is calculated server-side using mandatory destination state.
-    # Configure these values per business policy without trusting the browser.
+
+    from logistics.utils import estimate_cart_shipping_fee, resolve_city_coords
+    from accounts.models import Vendor
+
+    cart = Cart.objects.filter(user=user).first()
+    vendors_in_cart = []
+    total_weight = 0.0
+    if cart:
+        vendor_ids = cart.items.values_list("product_listing__vendor", flat=True).distinct()
+        vendors_in_cart = list(Vendor.objects.filter(pk__in=vendor_ids))
+        for ci in cart.items.select_related("product_listing"):
+            total_weight += float(ci.product_listing.weight or 0) * ci.quantity
+
+    clat = None
+    clon = None
+    post_lat = request.POST.get("customer_lat")
+    post_lon = request.POST.get("customer_lon")
+    post_city = request.POST.get("shipping_city") or request.POST.get("city") or request.POST.get("shipping_state") or request.POST.get("state")
+
+    if post_lat and post_lon:
+        try:
+            clat = float(post_lat)
+            clon = float(post_lon)
+        except (ValueError, TypeError):
+            pass
+
+    if (clat is None or clon is None) and post_city:
+        coords = resolve_city_coords(post_city)
+        if coords:
+            clat, clon = coords
+
+    base_shipping = Decimal(str(checkout.get("shipping", "0.00")))
+    logistics_fee = Decimal("0.00")
+    if vendors_in_cart and clat is not None and clon is not None:
+        fee_data = estimate_cart_shipping_fee(vendors_in_cart, clat, clon, total_weight)
+        logistics_fee = Decimal(str(fee_data.get("total", "0.00")))
+    elif request.POST.get("shipping_fee"):
+        try:
+            passed_fee = Decimal(str(request.POST.get("shipping_fee", "0")))
+            if passed_fee > base_shipping:
+                logistics_fee = passed_fee - base_shipping
+            elif passed_fee > 0 and base_shipping == 0:
+                logistics_fee = passed_fee
+        except (ValueError, Exception):
+            pass
+
     local_state = os.getenv("REMAROBE_LOCAL_DELIVERY_STATE", "Lagos").strip().lower()
     destination_state = request.POST.get("shipping_state", "").strip().lower()
-    if destination_state and destination_state != local_state:
-        checkout["shipping"] += Decimal(os.getenv("REMAROBE_OUT_OF_STATE_DELIVERY_FEE", "0"))
-        checkout["total"] = checkout["subtotal"] + checkout["shipping"]
+    if destination_state and destination_state != local_state and logistics_fee == 0 and base_shipping == 0:
+        base_shipping += Decimal(os.getenv("REMAROBE_OUT_OF_STATE_DELIVERY_FEE", "0"))
 
-    shipping_fee = Decimal(
-        str(checkout["shipping"])
-    )
+    # Shipping fee combines product fixed fee + logistics distance fee
+    shipping_fee = base_shipping + logistics_fee
+
+    # If shipping_fee was confirmed on checkout page by customer, honor it
+    post_shipping = request.POST.get("shipping_fee")
+    if post_shipping:
+        try:
+            passed_shipping = Decimal(str(post_shipping)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            if passed_shipping >= Decimal("0.00"):
+                shipping_fee = passed_shipping
+        except (ValueError, TypeError):
+            pass
 
     requires_shipping = checkout.get(
         "requires_shipping",
         False
-    )
+    ) or (shipping_fee > 0)
 
     requires_shipping_negotiation = (
         checkout.get(
@@ -154,16 +207,22 @@ def initiate_payment(request):
         str(checkout["subtotal"])
     )
 
-
-    # =====================================
-    # FINAL TOTAL
-    # =====================================
-
-    total = (
-        subtotal
-        +
-        shipping_fee
+    pricing = calculate_checkout_pricing(
+        subtotal=subtotal,
+        shipping=shipping_fee
     )
+
+    # CRITICAL: Always ensure payment amount sent to Paystack matches the checkout total confirmed by the user at click
+    post_checkout_total = request.POST.get("checkout_total")
+    if post_checkout_total:
+        try:
+            confirmed_total = Decimal(str(post_checkout_total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            if confirmed_total > Decimal("0.00"):
+                pricing.total = confirmed_total
+                pricing.net_total = confirmed_total
+                pricing.paystack_amount_kobo = int(confirmed_total * 100)
+        except (ValueError, TypeError):
+            pass
 
     reference = str(
         uuid.uuid4()
@@ -174,13 +233,14 @@ def initiate_payment(request):
     # =====================================
 
     locked_snapshot = serialize_decimals({
-
-    **checkout,
-
-    "subtotal": subtotal,
-
-    "shipping": shipping_fee,
-    "total": total,
+        **checkout,
+        "subtotal": pricing.subtotal,
+        "shipping": pricing.shipping,
+        "net_total": pricing.net_total,
+        "amount_before_gateway_fee": pricing.net_total,
+        "gateway_fee": pricing.gateway_fee,
+        "total": pricing.total,
+        "paystack_amount": pricing.paystack_amount_kobo,
     })
     
     request.session[
@@ -194,56 +254,41 @@ def initiate_payment(request):
     # =====================================
 
     order = Order.objects.create(
-
         customer=user,
-
         reference=reference,
         negotiation=None,
-        total_amount=total,
-
-        subtotal=subtotal,
-
-        shipping_amount=shipping_fee,
-
-        shipping_fee=shipping_fee,
-
+        subtotal=pricing.subtotal,
+        shipping_amount=pricing.shipping,
+        shipping_fee=pricing.shipping,
+        amount_before_gateway_fee=pricing.net_total,
+        gateway_fee=pricing.gateway_fee,
+        total_amount=pricing.total,
         status="processing",
-
         first_name=request.POST.get(
             "first_name"
         ),
-
         last_name=request.POST.get(
             "last_name"
         ),
-
         email=request.POST.get(
             "email"
         ),
-
         phone=request.POST.get(
             "phone"
         ),
-
         billing_address=request.POST.get(
             "address"
         ),
-
         shipping_address=(
-
             request.POST.get(
                 "shipping_address"
             )
-
             or
-
             request.POST.get(
                 "address"
             )
         ),
-
         locked_data=locked_snapshot,
-
         requires_shipping_negotiation=(
             requires_shipping_negotiation
         ),
@@ -350,7 +395,7 @@ def initiate_payment(request):
                 request.POST.get("email"),
 
             "amount":
-                int(total * 100),
+                pricing.paystack_amount_kobo,
 
             "reference":
                 reference,
@@ -421,7 +466,7 @@ def resume_payment(request, reference):
     if order.status != "processing":
         return redirect("checkout")
 
-    amount = int(float(order.total_amount or 0) * 100)
+    amount = int(Decimal(str(order.total_amount or 0)) * 100)
 
     if amount <= 0:
         return JsonResponse({"error": "Invalid payment amount"}, status=400)
@@ -523,45 +568,59 @@ def verify_payment(request):
         )
 
     order.status = "paid"
-
     order.paid_at = timezone.now()
-
+    order.amount_paid = order.total_amount
     order.save()
+
+    # Credit vendor escrow and update order items
+    for item in order.items.select_related("vendor", "product_listing"):
+        item.status = "paid"
+        item.save(update_fields=["status"])
+
+        if item.vendor:
+            wallet, _ = VendorWallet.objects.get_or_create(vendor=item.vendor)
+            wallet.escrow_balance += item.escrow_amount
+            wallet.save(update_fields=["escrow_balance"])
+
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                amount=item.escrow_amount,
+                type="credit",
+                reference=order.reference,
+                description=f"Escrow hold for Order #{order.order_number or order.id} - {item.product_listing.name}"
+            )
+
+            Commission.objects.get_or_create(
+                order=order,
+                order_item=item,
+                vendor=item.vendor,
+                defaults={
+                    "product_commission": item.commission,
+                    "shipping_commission": Decimal("0.00"),
+                    "total_commission": item.commission,
+                }
+            )
 
     data = order.locked_data
 
     if not order.requires_shipping_negotiation:
-
-        
-        if data.get(
-            "requires_shipping"
-        ):
-
+        if data and data.get("requires_shipping"):
             Shipment.objects.create(
-
                 order=order,
-
-                tracking_id=str(
-                    uuid.uuid4()
-                ),
+                tracking_id=str(uuid.uuid4()),
                 provider="Remarobe Logistics",
-            
-                delivery_address=order.shipping_address,
+                delivery_address=order.shipping_address or "",
                 status="created",
             )
 
-    cart = Cart.objects.get(user=order.customer)
+    cart = Cart.objects.filter(user=order.customer).first()
+    if cart:
+        cart.items.all().delete()
+        cart.status = "active"
+        cart.save()
     request.session["cart"] = {}
     request.session.modified = True
 
-    cart.items.all().delete()
-
-    cart.status = "active"
-
-    cart.save()
-
-    return redirect(
-        "payment_success"
-    )
+    return redirect("payment_success")
 
 

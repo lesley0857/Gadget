@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="vu-shell">
+
+  <div class="vu-hero">
+    <p class="vu-eyebrow">Vendor Portal</p>
+    <h1>Update Store Profile</h1>
+    <p>Keep your information accurate to ensure delivery fees are calculated correctly for your customers.</p>
+  </div>
+
+  {% for msg in messages %}
+  <div class="vu-alert {% if msg.tags == 'error' %}vu-alert-error{% else %}vu-alert-success{% endif %}">
+    <i class="fa fa-{% if msg.tags == 'error' %}times-circle{% else %}check-circle{% endif %}"></i>
+    {{ msg }}
+  </div>
+  {% endfor %}
+
+  <form class="vu-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- STORE INFO -->
+    <div class="vu-card">
+      <h2 class="vu-section-title"><span class="vu-step">1</span> Store Details</h2>
+      <div class="vu-grid">
+        <label class="vu-label wide">
+          Store Name
+          <input type="text" name="store_name" value="{{ vendor.store_name }}" required>
+        </label>
+        <label class="vu-label">
+          Phone Number
+          <input type="tel" name="phone" value="{{ vendor.phone|default:'' }}" placeholder="08012345678">
+        </label>
+        <label class="vu-label wide">
+          About Your Store
+          <textarea name="description" rows="3">{{ vendor.description|default:'' }}</textarea>
+        </label>
+        <label class="vu-label">
+          Store Logo
+          {% if vendor.logo %}
+          <div class="vu-logo-preview">
+            <img src="{{ vendor.logo.url }}" alt="Current logo">
+            <small>Current logo — upload new to replace</small>
+          </div>
+          {% endif %}
+          <input type="file" name="logo" accept="image/*">
+        </label>
+      </div>
+    </div>
+
+    <!-- ADDRESS -->
+    <div class="vu-card">
+      <h2 class="vu-section-title"><span class="vu-step">2</span> Business Address</h2>
+      {% if vendor.coordinates_pending %}
+      <div class="vu-warn">
+        <i class="fa fa-exclamation-triangle"></i>
+        Your location hasn't been resolved yet. Updating your address below will fix this.
+      </div>
+      {% endif %}
+      <p class="vu-hint">Leave address fields blank to keep your existing address unchanged.</p>
+      <div class="vu-grid">
+        <label class="vu-label wide">
+          Street Address
+          <input type="text" name="address" placeholder="e.g. 12 Industrial Avenue, Apapa"
+            value="{{ vendor.address|default:''|truncatechars:80 }}">
+        </label>
+        <label class="vu-label" style="position:relative;">
+          City
+          <input type="text" name="city" id="update-city" placeholder="e.g. Lagos" autocomplete="off">
+          <div id="ucity-suggestions" class="city-dropdown" style="display:none;"></div>
+          <span id="ucity-status" class="city-badge" style="display:none;"></span>
+        </label>
+        <label class="vu-label">
+          State
+          <select name="state">
+            <option value="">— Keep current state —</option>
+            {% for s in nigerian_states %}
+            <option value="{{ s }}" {% if vendor.state and vendor.state.name == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="vu-actions">
+      <a href="{% url 'vendor_dashboard' %}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Save Changes</button>
+    </div>
+  </form>
+</main>
+
+<style>
+  .vu-shell {
+    max-width: 760px;
+    margin: auto;
+    padding: 40px 20px 80px;
+  }
+
+  .vu-hero {
+    background: linear-gradient(120deg, #135823, #0a3320);
+    color: #fff;
+    border-radius: 20px;
+    padding: 32px 36px;
+    margin-bottom: 26px;
+  }
+
+  .vu-eyebrow {
+    margin: 0 0 4px;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: #9dc7b6;
+  }
+
+  .vu-hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+  }
+
+  .vu-hero p {
+    margin: 0;
+    opacity: .85;
+    font-size: .9rem;
+  }
+
+  .vu-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: .9rem;
+  }
+
+  .vu-alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .vu-alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .vu-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .vu-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 28px;
+  }
+
+  .vu-section-title {
+    margin: 0 0 20px;
+    font-size: 1.1rem;
+    color: #17221a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .vu-step {
+    background: #135823;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    font-size: .85rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .vu-warn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    color: #92400e;
+    font-size: .85rem;
+    margin-bottom: 16px;
+  }
+
+  .vu-hint {
+    color: #9ca3af;
+    font-size: .83rem;
+    margin: 0 0 16px;
+  }
+
+  .vu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .vu-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .vu-label.wide {
+    grid-column: span 2;
+  }
+
+  .vu-label input,
+  .vu-label textarea,
+  .vu-label select {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 11px 14px;
+    background: #f9fafb;
+    font: inherit;
+    font-size: .9rem;
+  }
+
+  .vu-label input:focus,
+  .vu-label textarea:focus,
+  .vu-label select:focus {
+    outline: none;
+    border-color: #135823;
+    background: #fff;
+  }
+
+  .vu-logo-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .vu-logo-preview img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .vu-logo-preview small {
+    color: #6b7280;
+    font-size: .8rem;
+  }
+
+  .city-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+    z-index: 999;
+  }
+
+  .city-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: #374151;
+  }
+
+  .city-option:hover {
+    background: #f0fdf4;
+  }
+
+  .city-badge {
+    position: absolute;
+    right: 10px;
+    top: 38px;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .city-badge.found {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .city-badge.not-found {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .vu-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
+  }
+
+  .btn-primary {
+    padding: 13px 28px;
+    background: #135823;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: .95rem;
+  }
+
+  .btn-primary:hover {
+    background: #0d441b;
+  }
+
+  .btn-secondary {
+    padding: 13px 28px;
+    background: #fff;
+    color: #135823;
+    border: 2px solid #135823;
+    border-radius: 10px;
+    font-weight: 800;
+    text-decoration: none;
+    font-size: .95rem;
+  }
+
+  @media(max-width: 600px) {
+    .vu-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .vu-label.wide {
+      grid-column: auto;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const cityInput = document.getElementById('update-city');
+    const dropdown = document.getElementById('ucity-suggestions');
+    const badge = document.getElementById('ucity-status');
+    let debounce;
+    cityInput.addEventListener('input', () => {
+      clearTimeout(debounce);
+      const q = cityInput.value.trim();
+      if (q.length < 2) { dropdown.style.display = 'none'; return; }
+      debounce = setTimeout(async () => {
+        const res = await fetch(`/logistics/api/city-lookup/?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (!data.results.length) { dropdown.style.display = 'none'; badge.className = 'city-badge not-found'; badge.textContent = '✕ Not found'; badge.style.display = 'block'; return; }
+        dropdown.innerHTML = '';
+        data.results.forEach(r => {
+          const div = document.createElement('div');
+          div.className = 'city-option';
+          div.textContent = r.city;
+          div.addEventListener('click', () => {
+            cityInput.value = r.city;
+            dropdown.style.display = 'none';
+            badge.className = 'city-badge found'; badge.textContent = '✓ Found'; badge.style.display = 'block';
+          });
+          dropdown.appendChild(div);
+        });
+        dropdown.style.display = 'block';
+      }, 280);
+    });
+    document.addEventListener('click', e => { if (!cityInput.contains(e.target)) dropdown.style.display = 'none'; });
+  })();
+</script>
+{% endblock %}

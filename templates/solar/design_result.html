@@ -63,6 +63,9 @@
             </div>
 
             <div class="result-actions">
+                <button type="button" class="result-btn" id="start-result-tour"
+                    style="background:#f59e0b;color:#111827;border:0;font-weight:700;"><i class="bi bi-compass"></i>
+                    Guided Tour</button>
 
                 <a href="{% url 'solar_design' %}" class="result-btn result-btn-secondary">
                     <i class="bi bi-arrow-left"></i>
@@ -74,12 +77,15 @@
                     Print
                 </button>
 
-                <a class="result-btn" href="{% url 'earthing_assessment' %}?solar_design={{ design.id }}" title="Open the industrial/commercial earthing assessment for this solar project">
+                <a class="result-btn" href="{% url 'earthing_assessment' %}?solar_design={{ design.id }}"
+                    title="Open the industrial/commercial earthing assessment for this solar project">
                     <i class="bi bi-lightning-charge"></i>
                     Earthing Details
                 </a>
-                <a class="result-btn" href="{% url 'request_maintenance' design.id %}" title="Request solar maintenance"><i class="bi bi-tools"></i> Maintenance</a>
-                <button type="button" class="result-btn result-btn-whatsapp" id="whatsapp-negotiation-btn" title="Send this solar result for negotiation on WhatsApp">
+                <a class="result-btn" href="{% url 'request_maintenance' design.id %}"
+                    title="Request solar maintenance"><i class="bi bi-tools"></i> Maintenance</a>
+                <button type="button" class="result-btn result-btn-whatsapp" id="whatsapp-negotiation-btn"
+                    title="Send this solar result for negotiation on WhatsApp">
                     <i class="bi bi-whatsapp"></i>
                     Negotiate on WhatsApp
                 </button>
@@ -90,14 +96,18 @@
 
         {% with generator=inverter.solar_generator_option %}
         {% if generator %}
-        <section class="design-status {% if generator.available is False %}status-warning{% else %}status-ready{% endif %}" aria-label="Solar generator option">
+        <section
+            class="design-status {% if generator.available is False %}status-warning{% else %}status-ready{% endif %}"
+            aria-label="Solar generator option">
             <div class="status-icon"><i class="bi bi-battery-charging"></i></div>
             <div class="status-content">
                 <strong>All-in-one solar generator option</strong>
                 {% if generator.available is False %}
                 <span>{{ generator.note }}</span>
                 {% else %}
-                <span>{{ generator.brand }} {{ generator.name }} — {{ generator.battery_capacity_kwh }} kWh storage, {{ generator.inverter_rated_power }} W inverter{% if generator.price %}, ₦{{ generator.price|floatformat:2 }}{% endif %}. {{ generator.note }}</span>
+                <span>{{ generator.brand }} {{ generator.name }} — {{ generator.battery_capacity_kwh }} kWh storage, {{
+                    generator.inverter_rated_power }} W inverter{% if generator.price %}, ₦{{
+                    generator.price|floatformat:2 }}{% endif %}. {{ generator.note }}</span>
                 {% endif %}
             </div>
         </section>
@@ -2512,8 +2522,20 @@ PRICING
                 #f8fbff 100%);
     }
 
-    .pricing-data-status { margin: 0 0 16px; color: var(--solar-muted); font-size: .9rem; }
-    .pricing-data-status.is-warning { padding: 12px 14px; border-left: 4px solid var(--solar-warning); background: #fff8e8; color: #704b00; border-radius: 6px; }
+    .pricing-data-status {
+        margin: 0 0 16px;
+        color: var(--solar-muted);
+        font-size: .9rem;
+    }
+
+    .pricing-data-status.is-warning {
+        padding: 12px 14px;
+        border-left: 4px solid var(--solar-warning);
+        background: #fff8e8;
+        color: #704b00;
+        border-radius: 6px;
+    }
+
     .pricing-grid {
         width: min(760px, 100%);
         margin-left: auto;
@@ -7487,7 +7509,7 @@ PRINT
                 renderProtection();
 
                 renderResultDataStatus();
-            renderBOQ();
+                renderBOQ();
 
                 renderPricing();
 
@@ -8031,6 +8053,7 @@ PRINT
     }
 
     @media (max-width: 640px) {
+
         .section-header h2,
         .component-comparison-section .section-heading h2 {
             font-size: 1.45rem !important;
@@ -8429,5 +8452,255 @@ PRINT
         }
     }
 </style>
+
+
+<!-- SOLAR RESULT ONBOARDING TOUR MODAL -->
+<style>
+    .st-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: stFadeIn .25s ease;
+    }
+
+    .st-modal {
+        background: #ffffff;
+        border-radius: 24px;
+        max-width: 520px;
+        width: 100%;
+        padding: 32px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .st-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .st-badge {
+        background: #fef3c7;
+        color: #d97706;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .st-close {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        color: #94a3b8;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .st-close:hover {
+        color: #1e293b;
+    }
+
+    .st-body {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .st-icon {
+        width: 64px;
+        height: 64px;
+        background: #fef3c7;
+        color: #d97706;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.8rem;
+        margin: 0 auto 16px;
+    }
+
+    .st-body h3 {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .st-body p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .st-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 20px;
+    }
+
+    .st-dots {
+        display: flex;
+        gap: 6px;
+    }
+
+    .st-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        transition: background .2s;
+    }
+
+    .st-dot.active {
+        background: #d97706;
+        width: 20px;
+        border-radius: 999px;
+    }
+
+    .st-btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        border: none;
+    }
+
+    .st-btn-pri {
+        background: #d97706;
+        color: #fff;
+    }
+
+    .st-btn-pri:hover {
+        background: #b45309;
+    }
+
+    .st-btn-sec {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .st-btn-sec:hover {
+        background: #e2e8f0;
+    }
+
+    @keyframes stFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<div id="solar-res-tour-overlay" class="st-overlay" style="display:none;">
+    <div class="st-modal">
+        <div class="st-header">
+            <span class="st-badge" id="st-res-badge">Step 1 of 4</span>
+            <button type="button" class="st-close" id="st-res-close">&times;</button>
+        </div>
+        <div class="st-body">
+            <div class="st-icon" id="st-res-icon"><i class="bi bi-sun-fill"></i></div>
+            <h3 id="st-res-title">1. System Sizing Summary</h3>
+            <p id="st-res-desc">View your calculated solar array size (kWp), inverter capacity (kVA), battery bank
+                storage (kWh), and system readiness status.</p>
+        </div>
+        <div class="st-footer">
+            <button type="button" class="st-btn st-btn-sec" id="st-res-prev">Previous</button>
+            <div class="st-dots" id="st-res-dots"></div>
+            <button type="button" class="st-btn st-btn-pri" id="st-res-next">Next Step →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const resSteps = [
+            {
+                badge: "Step 1 of 4",
+                icon: "<i class='bi bi-sun-fill'></i>",
+                title: "1. System Sizing Summary",
+                desc: "Overview of your calculated solar PV array (kWp), inverter rating (kVA), and battery storage (kWh) optimized for your electrical demand."
+            },
+            {
+                badge: "Step 2 of 4",
+                icon: "<i class='bi bi-list-check'></i>",
+                title: "2. Bill of Quantities (BOQ)",
+                desc: "Complete itemized specification of matched Remarobe Catalogue products including solar panels, inverter, lithium/gel batteries, cables, and breakers."
+            },
+            {
+                badge: "Step 3 of 4",
+                icon: "<i class='bi bi-shield-check'></i>",
+                title: "3. Earthing & Maintenance",
+                desc: "Access the integrated Earthing Assessment module or schedule periodic solar system maintenance directly for this project."
+            },
+            {
+                badge: "Step 4 of 4",
+                icon: "<i class='bi bi-whatsapp'></i>",
+                title: "4. Print PDF & WhatsApp Negotiation",
+                desc: "Export an official PDF engineering proposal or negotiate bulk component pricing directly with Remarobe technical engineers on WhatsApp."
+            }
+        ];
+
+        let resStep = 0;
+
+        function renderResStep(idx) {
+            const s = resSteps[idx];
+            document.getElementById('st-res-badge').textContent = s.badge;
+            document.getElementById('st-res-icon').innerHTML = s.icon;
+            document.getElementById('st-res-title').textContent = s.title;
+            document.getElementById('st-res-desc').textContent = s.desc;
+            document.getElementById('st-res-prev').style.visibility = idx === 0 ? 'hidden' : 'visible';
+            document.getElementById('st-res-next').textContent = idx === resSteps.length - 1 ? 'Finish Tour ✓' : 'Next Step →';
+
+            const dots = document.getElementById('st-res-dots');
+            dots.innerHTML = '';
+            resSteps.forEach((_, i) => {
+                const d = document.createElement('div');
+                d.className = 'st-dot' + (i === idx ? ' active' : '');
+                dots.appendChild(d);
+            });
+        }
+
+        function showResTour() {
+            resStep = 0;
+            renderResStep(resStep);
+            document.getElementById('solar-res-tour-overlay').style.display = 'flex';
+        }
+
+        function hideResTour() {
+            document.getElementById('solar-res-tour-overlay').style.display = 'none';
+        }
+
+        document.getElementById('start-result-tour')?.addEventListener('click', showResTour);
+        document.getElementById('st-res-close')?.addEventListener('click', hideResTour);
+        document.getElementById('st-res-prev')?.addEventListener('click', () => { if (resStep > 0) { resStep--; renderResStep(resStep); } });
+        document.getElementById('st-res-next')?.addEventListener('click', () => {
+            if (resStep < resSteps.length - 1) { resStep++; renderResStep(resStep); }
+            else { hideResTour(); localStorage.setItem('solar_res_tour_seen', 'true'); }
+        });
+
+        if (!localStorage.getItem('solar_res_tour_seen')) {
+            setTimeout(showResTour, 1200);
+        }
+    })();
+</script>
 
 {% endblock %}
