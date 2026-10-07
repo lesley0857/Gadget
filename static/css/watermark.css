@@ -1,0 +1,100 @@
+body {
+    isolation: isolate;
+}
+
+/*
+ * watermark.css
+ * Remarobe Nigeria Limited — Electrical & Solar Background Watermark
+ *
+ * Usage:
+ *   Add the <div class="electrical-watermark"></div> element as the
+ *   first child of <body> in base.html. The SVG tile is referenced via
+ *   the Django static tag rendered into this stylesheet's data URI, OR
+ *   via the background-image URL set inline on the element itself.
+ *
+ *   This file handles all layout/visibility/behaviour rules so that
+ *   child templates do not need to repeat any watermark CSS.
+ */
+
+/* ─────────────────────────────────────────────────────────────
+   Core overlay element
+   ───────────────────────────────────────────────────────────── */
+.electrical-watermark {
+    /* Fixed to the full viewport — never scrolls */
+    position: fixed;
+    inset: 0;
+    /* top:0 right:0 bottom:0 left:0 */
+
+    /* Push behind all page content */
+    z-index: -1;
+
+    /* Never intercept clicks, hovers, or touch events */
+    pointer-events: none;
+
+    /* Subtle opacity — adjust between 0.03 and 0.05 to taste */
+    opacity: 0.04;
+
+    /* The SVG tile is set here as a CSS custom property override
+       so templates can swap the image without touching this file.
+       The actual background-image URL is set via the inline style
+       attribute in base.html using {% static %} (see base.html).    */
+    background-repeat: repeat;
+    background-size: 520px 520px;
+    /* matches the SVG viewBox width/height */
+    background-position: center top;
+
+    /* Desaturate completely so colour pages aren't tinted */
+    filter: grayscale(100%);
+
+    /* Smooth fade-in on first load (optional, non-intrusive) */
+    animation: watermark-fadein 1.2s ease both;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive tile scaling
+   Smaller tiles on mobile to avoid oversized icons
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .electrical-watermark {
+        background-size: 320px 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .electrical-watermark {
+        background-size: 240px 240px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Fade-in keyframes
+   ───────────────────────────────────────────────────────────── */
+@keyframes watermark-fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.04;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Dark-mode variant (auto, via prefers-color-scheme)
+   Slightly higher opacity on dark backgrounds for readability
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    .electrical-watermark {
+        opacity: 0.055;
+    }
+
+    @keyframes watermark-fadein {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 0.055;
+        }
+    }
+}

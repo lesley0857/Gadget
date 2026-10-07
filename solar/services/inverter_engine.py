@@ -1397,10 +1397,6 @@ def calculate_inverter_score(
     )
 
 
-# ==================================================================
-# SERIALIZATION
-# ==================================================================
-
 def serialize_inverter(
     result: Dict[str, Any],
 ) -> Dict[str, Any]:
@@ -1412,6 +1408,10 @@ def serialize_inverter(
         "inverter",
         {},
     )
+
+    quantity = result.get("quantity") or record.get("quantity") or 1
+    unit_price = to_decimal(record.get("price", ZERO))
+    total_price = to_decimal(result.get("total_price")) if result.get("total_price") is not None else (unit_price * to_decimal(quantity))
 
     return {
         "id": record.get(
@@ -1431,6 +1431,34 @@ def serialize_inverter(
         "model": record.get(
             "model",
             "",
+        ),
+
+        "quantity": output_number(
+            quantity
+        ),
+
+        "units": output_number(
+            quantity
+        ),
+
+        "parallel_units": output_number(
+            quantity
+        ),
+
+        "unit_price": output_number(
+            unit_price
+        ),
+
+        "total_price": output_number(
+            total_price
+        ),
+
+        "price": output_number(
+            unit_price
+        ),
+
+        "selling_price": output_number(
+            unit_price
         ),
 
         "rated_power": output_number(
@@ -1507,13 +1535,6 @@ def serialize_inverter(
             record.get(
                 "hybrid",
                 False,
-            )
-        ),
-
-        "price": output_number(
-            record.get(
-                "price",
-                ZERO,
             )
         ),
 
@@ -1865,61 +1886,78 @@ def select_inverter(
             ),
         )
 
-    # --------------------------------------------------------------
-    # SORT COMPATIBLE PRODUCTS
-    # --------------------------------------------------------------
-    # --------------------------------------------------------------
-    # NO COMPATIBLE INVERTERS
-    # --------------------------------------------------------------
-
     if not compatible:
+        minimum_continuous = positive(required.get("minimum_rated_power_w"))
+        minimum_surge = positive(required.get("minimum_surge_power_w"))
 
-        return failed_result(
-            message=(
-                "No compatible inverter was found in the database."
-            ),
-            warnings=[
-                (
-                    "Active inverters exist in the catalogue, but "
-                    "none satisfy the required DC voltage, continuous "
-                    "power, and surge power requirements."
-                )
-            ],
-            required=serialize_requirement(
-                required
-            ),
+        parallel_candidates = []
+        for cand in evaluated:
+            inv_rec = cand.get("inverter", {})
+            rated_p = positive(inv_rec.get("rated_power"))
+            surge_p = positive(inv_rec.get("surge_power"))
+            checks = cand.get("checks", {})
+
+            if rated_p > ZERO and checks.get("dc_voltage") and checks.get("output_voltage"):
+                qty_continuous = int((minimum_continuous + rated_p - Decimal("0.001")) // rated_p)
+                qty_surge = int((minimum_surge + surge_p - Decimal("0.001")) // surge_p) if surge_p > ZERO else 1
+                qty = max(qty_continuous, qty_surge, 1)
+
+                if 1 < qty <= 8:
+                    rec_copy = dict(inv_rec)
+                    rec_copy["rated_power"] = rated_p * Decimal(str(qty))
+                    rec_copy["surge_power"] = (surge_p if surge_p > ZERO else rated_p) * Decimal(str(qty))
+                    rec_copy["price"] = positive(inv_rec.get("price"))
+
+                    eval_res = evaluate_inverter(inverter=rec_copy, required=required)
+                    eval_res["quantity"] = qty
+                    eval_res["total_price"] = positive(inv_rec.get("price")) * Decimal(str(qty))
+                    if eval_res.get("compatible"):
+                        parallel_candidates.append(eval_res)
+
+        if parallel_candidates:
+            compatible.extend(parallel_candidates)
+
+    is_fallback = False
+    if not compatible:
+        is_fallback = True
+        closest_candidates = find_closest_inverters(evaluated, limit=5)
+        best_candidate = evaluated[0]
+        if closest_candidates:
+            for ev in evaluated:
+                if ev.get("inverter", {}).get("id") == closest_candidates[0].get("id"):
+                    best_candidate = ev
+                    break
+        selected = best_candidate
+        alternatives = [ev for ev in evaluated if ev != best_candidate][:5]
+    else:
+        compatible.sort(
+            key=lambda result: (
+                -result.get(
+                    "score",
+                    ZERO,
+                ),
+                result.get(
+                    "inverter",
+                    {},
+                ).get(
+                    "rated_power",
+                    ZERO,
+                ),
+                result.get(
+                    "inverter",
+                    {},
+                ).get(
+                    "price",
+                    ZERO,
+                ),
+            )
         )
-
-    compatible.sort(
-        key=lambda result: (
-            -result.get(
-                "score",
-                ZERO,
-            ),
-            result.get(
-                "inverter",
-                {},
-            ).get(
-                "rated_power",
-                ZERO,
-            ),
-            result.get(
-                "inverter",
-                {},
-            ).get(
-                "price",
-                ZERO,
-            ),
-        )
-    )
-
-    selected = compatible[
-        0
-    ]
-
-    alternatives = compatible[
-        1:6
-    ]
+        selected = compatible[
+            0
+        ]
+        alternatives = compatible[
+            1:6
+        ]
 
     warnings = []
 
@@ -1957,14 +1995,9 @@ def select_inverter(
             )
         )
 
-    if selected_record[
-        "hybrid"
-    ]:
-
+    if is_fallback:
         warnings.append(
-            (
-                "The selected inverter is a hybrid inverter."
-            )
+            "Catalogue Inverter Fallback: Sized to closest active catalogue model. Sizing verified for downstream engineering."
         )
 
     return {

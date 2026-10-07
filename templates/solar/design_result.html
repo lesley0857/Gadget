@@ -43,7 +43,7 @@
                         {% endif %}
 
                         {% if design.project_location %}
-                        <span>
+                        <span data-project-location>
                             <i class="bi bi-geo-alt"></i>
                             {{ design.project_location }}
                         </span>
@@ -234,7 +234,7 @@
                 <div class="kpi-content">
 
                     <span class="kpi-label">
-                        PV Array
+                        Solar Panel
                     </span>
 
                     <strong id="kpi-pv-power" class="kpi-value">
@@ -334,7 +334,10 @@
                 <div class="kpi-content">
 
                     <span class="kpi-label">
-                        Estimated Project Cost
+                        Estimated Project Cost.
+                        <hr>
+                        <small>Price Build up is based on estimated transportation and installation price.
+                        </small>
                     </span>
 
                     <strong id="kpi-grand-total" class="kpi-value kpi-price-value">
@@ -358,6 +361,17 @@
                     <h2>Required vs Selected Components</h2>
                     <p>Each selected component is compared with the calculated minimum requirement.</p>
                 </div>
+                {% if inverter.solar_generator_option and inverter.solar_generator_option.available is not False %}
+                <div class="alert alert-success d-flex align-items-center mt-3 mb-0 p-3 rounded border border-success"
+                    style="background:#eaf7ef; color:#0f5132;">
+                    <i class="bi bi-battery-charging fs-4 me-3 text-success"></i>
+                    <div>
+                        <strong>All-in-One Solar Generator Selected:</strong> This design specifies an integrated solar
+                        power generator combining Inverter, Lithium Battery Storage, and MPPT Charge Controller into a
+                        single all-in-one unit.
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div id="component-comparisons" class="component-comparison-grid"></div>
@@ -705,26 +719,6 @@
                 </div>
 
             </div>
-
-
-            <div id="load-risk" class="load-risk">
-                <div class="risk-icon">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-
-                <div>
-                    <strong>
-                        Starting Load Assessment
-                    </strong>
-
-                    <span id="load-risk-text">
-                        Assessment unavailable.
-                    </span>
-                </div>
-            </div>
-
-
-            <p class="pricing-data-status" id="boq-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -735,7 +729,7 @@
                             <th>Appliance</th>
                             <th>Type</th>
                             <th>Qty</th>
-                            <th>Power</th>
+                            <th>Appliance Wattage</th>
                             <th>Hours</th>
                             <th>Daily Energy</th>
                         </tr>
@@ -849,11 +843,11 @@
                 <div>
 
                     <span class="section-eyebrow">
-                        PV ARRAY
+                        SOLAR PANEL
                     </span>
 
                     <h2>
-                        Solar Array Design
+                        Solar Panel Design
                     </h2>
 
                     <p>
@@ -1095,7 +1089,7 @@
             </div>
 
 
-            <p class="pricing-data-status" id="boq-status" role="status"></p>
+            <p class="pricing-data-status" id="cable-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -1121,6 +1115,16 @@
 
                 </table>
 
+            </div>
+
+            <div class="boq-total mt-3"
+                style="display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;">
+                <span style="font-weight: 700; color: #475569; font-size: 0.95rem;">
+                    <i class="bi bi-diagram-3-fill text-primary me-2"></i>Total Cable Cost
+                </span>
+                <strong id="cable-total-cost" style="font-size: 1.15rem; color: #16a34a; font-weight: 800;">
+                    —
+                </strong>
             </div>
 
         </section>
@@ -1164,7 +1168,7 @@
              BOQ
         ========================================================== -->
 
-        <section class="result-section">
+        <section class="result-section boq-section">
 
             <div class="section-header">
 
@@ -1185,9 +1189,6 @@
                 </div>
 
             </div>
-
-
-            <p class="pricing-data-status" id="boq-status" role="status"></p>
             <div class="table-wrapper">
 
                 <table class="result-table">
@@ -1195,12 +1196,11 @@
                     <thead>
 
                         <tr>
-                            <th>Item</th>
-                            <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Unit</th>
-                            <th>Unit Price</th>
-                            <th>Total</th>
+                            <th>Component</th>
+                            <th>Specification</th>
+                            <th>Qty</th>
+                            <th>Unit Price (₦)</th>
+                            <th>Total (₦)</th>
                         </tr>
 
                     </thead>
@@ -1250,63 +1250,61 @@
                 </div>
 
             </div>
-
-
-            <p class="pricing-data-status" id="pricing-status" role="status"></p>
-            <div class="pricing-grid">
-
-                <div class="pricing-row">
-                    <span>Material Cost</span>
-                    <strong id="price-material">—</strong>
+            <div class="solar-delivery-picker" data-quote-url="{% url 'solar_shipping_quote' design.id %}">
+                <label for="solar-delivery-address"><strong>Delivery address</strong></label>
+                <div class="solar-delivery-controls">
+                    <input id="solar-delivery-address" type="text" list="solar-delivery-addresses"
+                        value="{{ design.project_location|default:'' }}"
+                        placeholder="Enter or select your city / delivery address" autocomplete="street-address">
+                    <datalist id="solar-delivery-addresses"></datalist>
+                    <button type="button" id="solar-update-delivery" class="btn btn-primary">Update transport &
+                        total</button>
                 </div>
-
-                <div class="pricing-row">
-                    <span>Labour Cost</span>
-                    <strong id="price-labour">—</strong>
-                </div>
-
-                <div class="pricing-row">
-                    <span>Transport Cost</span>
-                    <strong id="price-transport">—</strong>
-                </div>
-
-                <div class="pricing-row">
-                    <span>Subtotal</span>
-                    <strong id="price-subtotal">—</strong>
-                </div>
-
-                <div class="pricing-row">
-                    <span>Installation</span>
-                    <strong id="price-installation">—</strong>
-                </div>
-
-                <!-- <div class="pricing-row">
-                    <span>Profit</span>
-                    <strong id="price-profit">—</strong>
-                </div> -->
-
-                <div class="pricing-row">
-                    <span>Discount</span>
-                    <strong id="price-discount">—</strong>
-                </div>
-
-                <div class="pricing-row">
-                    <span>VAT / Tax</span>
-                    <strong id="price-vat">—</strong>
-                </div>
-
-                <div class="pricing-grand-total">
-
-                    <span>
-                        Grand Total
-                    </span>
-
-                    <strong id="price-grand-total">
-                        —
-                    </strong>
-
-                </div>
-
+                <small id="solar-delivery-status" role="status">Select a city from the suggestions or enter an address
+                    including your city.</small>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped result-table pricing-table mb-0"
+                    style="background:#fff; border-radius:12px; overflow:hidden;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50%;">Cost Category</th>
+                            <th style="width: 50%; text-align: right;">Amount (₦)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="animation: fadeInUp 0.4s ease both;">
+                            <td>
+                                <strong><i class="bi bi-box-seam text-primary me-2"></i>Materials Cost</strong>
+                                <div class="text-muted small">Sum of selected solar panels, batteries, inverters &
+                                    components</div>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <strong id="price-material" class="text-success fs-5">—</strong>
+                            </td>
+                        </tr>
+                        <tr style="animation: fadeInUp 0.5s ease both 0.1s;">
+                            <td>
+                                <strong><i class="bi bi-truck text-primary me-2"></i>Transport Cost</strong>
+                                <div class="text-muted small">Selected vendor distance to customer project location,
+                                    priced with checkout logistics rates</div>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <strong id="price-transport" class="text-success fs-5">—</strong>
+                            </td>
+                        </tr>
+                        <tr style="animation: fadeInUp 0.6s ease both 0.2s;">
+                            <td>
+                                <strong><i class="bi bi-tools text-primary me-2"></i>Installation Cost</strong>
+                                <div class="text-muted small">Skilled electrical & solar installation labour rates in
+                                    Nigeria</div>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <strong id="price-installation" class="text-success fs-5">—</strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
         </section>
@@ -1346,33 +1344,41 @@
              WARNINGS
         ========================================================== -->
 
-        <section class="result-section">
-
-            <div class="section-header">
-
-                <div>
-
-                    <span class="section-eyebrow">
-                        ENGINEERING REVIEW
-                    </span>
-
-                    <h2>
-                        Warnings & Review Items
+        <section class="result-section" style="padding:0; overflow:hidden;">
+            <div class="accordion" id="warningsAccordion">
+                <div class="accordion-item" style="border:none; border-radius:15px; background:transparent;">
+                    <h2 class="accordion-header" id="headingWarnings">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseWarnings" aria-expanded="false" aria-controls="collapseWarnings"
+                            style="background:#fffaf0; color:#8a6100; font-weight:800; font-size:1.1rem; border-radius:15px; padding:20px; box-shadow:none;">
+                            ⚠️ Engineering Warnings (<span id="warnings-count">0</span>)
+                        </button>
                     </h2>
+                    <div id="collapseWarnings" class="accordion-collapse collapse" aria-labelledby="headingWarnings"
+                        data-bs-parent="#warningsAccordion">
+                        <div class="accordion-body" style="padding:25px; background:#fff;">
+                            <p class="pricing-data-status" id="boq-status" role="status"></p>
+                            <p class="pricing-data-status" id="pricing-status" role="status"></p>
+                            <div id="load-risk" class="load-risk">
+                                <div class="risk-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
 
-                    <p>
-                        Items reported by the engineering and validation engines.
-                    </p>
+                                <div>
+                                    <strong>
+                                        Starting Load Assessment
+                                    </strong>
 
+                                    <span id="load-risk-text">
+                                        Assessment unavailable.
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="warnings-container" class="warnings-container"></div>
+                        </div>
+                    </div>
                 </div>
-
             </div>
-
-
-            <div id="warnings-container" class="warnings-container">
-
-            </div>
-
         </section>
 
 
@@ -2304,6 +2310,34 @@ TABLES
         border-radius: 13px;
     }
 
+    .boq-section .result-table thead th {
+        color: #fff;
+        background: linear-gradient(115deg, #087f5b, #0d6efd 58%, #6f42c1);
+    }
+
+    .boq-section .result-table tbody tr:nth-child(odd) {
+        background: #f0fdfa;
+    }
+
+    .boq-section .result-table tbody tr:nth-child(even) {
+        background: #f5f8ff;
+    }
+
+    .boq-section .result-table tbody tr:hover {
+        background: #e0f2fe;
+        transform: translateY(-1px);
+    }
+
+    .boq-section .result-table tbody tr {
+        transition: background-color .2s ease, transform .2s ease;
+    }
+
+    .boq-section .result-table .badge {
+        color: #075985;
+        background: #cffafe !important;
+        padding: .45rem .65rem;
+    }
+
     .result-table {
         width: 100%;
 
@@ -2514,6 +2548,45 @@ BOQ
     /* ============================================================
 PRICING
 ============================================================ */
+
+    .solar-delivery-picker {
+        margin: 0 0 20px;
+        padding: 16px;
+        border: 1px solid #dbe5ef;
+        border-radius: 14px;
+        background: #f8fbff;
+    }
+
+    .solar-delivery-picker label {
+        display: block;
+        margin-bottom: 8px;
+        color: #17324d;
+    }
+
+    .solar-delivery-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+    .solar-delivery-controls input {
+        flex: 1;
+        min-width: 0;
+        padding: 11px 13px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+    }
+
+    #solar-delivery-status {
+        display: block;
+        margin-top: 8px;
+        color: #64748b;
+    }
+
+    @media (max-width: 640px) {
+        .solar-delivery-controls {
+            flex-direction: column;
+        }
+    }
 
     .pricing-section {
         background:
@@ -5560,166 +5633,52 @@ PRINT
 
 
         function renderLoadTable(rows) {
-
-            const body =
-                byId("load-table-body");
-
-            if (!body) {
-                return;
-            }
+            const body = byId("load-table-body");
+            if (!body) return;
 
             if (!rows.length) {
-
-                body.innerHTML =
-                    `
+                body.innerHTML = `
                 <tr>
-                    <td
-                        colspan="6"
-                        class="table-empty"
-                    >
+                    <td colspan="6" class="table-empty">
                         No load rows available.
                     </td>
                 </tr>
                 `;
-
                 return;
             }
 
+            body.innerHTML = rows.map((row, index) => {
+                const appliance = text(first(row, ["appliance", "name", "load_name"], "Unnamed Load"), "Unnamed Load");
+                const type = text(first(row, ["load_type", "type", "category"], "—"));
+                const quantity = number(first(row, ["quantity", "qty"], 0));
+                const power = number(first(row, ["wattage_w", "wattage", "power_w", "power", "watts"], 0)) || (quantity > 0 ? number(first(row, ["connected_power_w", "connected_load_w"], 0)) / quantity : 0);
+                const hours = number(first(row, ["hours", "hours_per_day"], 0));
+                const energy = number(first(row, ["daily_energy_wh", "energy_wh", "daily_energy"], quantity * power * hours));
+                const animDelay = (index * 0.05) + 's';
 
-            body.innerHTML =
-                rows.map(row => {
-
-                    const appliance =
-                        text(
-                            first(
-                                row,
-                                [
-                                    "appliance",
-                                    "name",
-                                    "load_name"
-                                ],
-                                "Unnamed Load"
-                            ),
-                            "Unnamed Load"
-                        );
-
-                    const type =
-                        text(
-                            first(
-                                row,
-                                [
-                                    "load_type",
-                                    "type",
-                                    "category"
-                                ],
-                                "—"
-                            )
-                        );
-
-                    const quantity =
-                        number(
-                            first(
-                                row,
-                                [
-                                    "quantity",
-                                    "qty"
-                                ],
-                                0
-                            )
-                        );
-
-                    const power =
-                        number(
-                            first(
-                                row,
-                                [
-                                    "power_w",
-                                    "power",
-                                    "watts"
-                                ],
-                                0
-                            )
-                        );
-
-                    const hours =
-                        number(
-                            first(
-                                row,
-                                [
-                                    "hours",
-                                    "hours_per_day"
-                                ],
-                                0
-                            )
-                        );
-
-                    const energy =
-                        number(
-                            first(
-                                row,
-                                [
-                                    "daily_energy_wh",
-                                    "energy_wh",
-                                    "daily_energy"
-                                ],
-                                quantity *
-                                power *
-                                hours
-                            )
-                        );
-
-
-                    return `
-                    <tr>
-
+                return `
+                    <tr style="animation: fadeInUp 0.4s ease both ${animDelay};">
                         <td>
-                            <strong>
-                                ${escapeHTML(
-                        appliance
-                    )}
-                            </strong>
+                            <strong>${escapeHTML(appliance)}</strong>
                         </td>
-
                         <td>
-                            <span class="data-badge">
-                                ${escapeHTML(
-                        type
-                    )}
-                            </span>
+                            <span class="data-badge">${escapeHTML(type)}</span>
                         </td>
-
                         <td>
-                            ${formatNumber(
-                        quantity,
-                        0
-                    )}
+                            ${formatNumber(quantity, 0)}
                         </td>
-
                         <td>
-                            ${formatNumber(
-                        power,
-                        0
-                    )} W
+                            <strong>${formatNumber(power, 0)} W</strong>
                         </td>
-
                         <td>
-                            ${formatNumber(
-                        hours,
-                        1
-                    )} h
+                            ${formatNumber(hours, 1)} h
                         </td>
-
                         <td>
-                            ${formatNumber(
-                        energy,
-                        0
-                    )} Wh
+                            ${formatNumber(energy, 0)} Wh
                         </td>
-
                     </tr>
                 `;
-
-                }).join("");
+            }).join("");
         }
 
         function comparisonValue(value, unit = "", decimals = 0) {
@@ -5749,440 +5708,208 @@ PRINT
             unit = "",
             decimals = 0
         ) {
+            // Highlight Nigerian units (W, KVA, KWH, A)
+            let styledUnit = unit;
+            if (["W", "KVA", "KWH", "A"].includes(unit.toUpperCase())) {
+                styledUnit = `<strong class="text-primary">${unit.toUpperCase()}</strong>`;
+            }
+
+            // A helper to construct the HTML safely but allowing the raw unit HTML
+            const reqVal = hasValue(required)
+                ? (typeof required === "string" && Number.isNaN(Number(required)) ? escapeHTML(required) : `${escapeHTML(formatNumber(required, decimals))} ${styledUnit}`)
+                : "—";
+            const selVal = hasValue(selectedValue)
+                ? (typeof selectedValue === "string" && Number.isNaN(Number(selectedValue)) ? escapeHTML(selectedValue) : `${escapeHTML(formatNumber(selectedValue, decimals))} ${styledUnit}`)
+                : "—";
+
             return `
-        <tr>
-            <td>${escapeHTML(label)}</td>
-            <td>${comparisonValue(required, unit, decimals)}</td>
-            <td>${comparisonValue(selectedValue, unit, decimals)}</td>
+        <tr style="animation: fadeInUp 0.6s ease both;">
+            <td class="fw-bold">${escapeHTML(label)}</td>
+            <td>${reqVal}</td>
+            <td>${selVal}</td>
         </tr>
     `;
         }
 
-
-        function comparisonCard(title, rows) {
-
-            if (!rows.length) {
+        function comparisonCard(title, rows, selectedName = "", isAvailable = true) {
+            if (!rows || !rows.length) {
                 return "";
             }
 
+            const headerBadge = isAvailable
+                ? (selectedName ? `<span class=\"badge bg-light text-dark fw-bold px-3 py-2 fs-6 shadow-sm border\"><i class=\"bi bi-check-circle-fill text-success me-1\"></i>${escapeHTML(selectedName)}</span>` : "")
+                : `<span class=\"badge bg-warning text-dark fw-bold px-3 py-2 fs-6 shadow-sm border border-warning\"><i class=\"bi bi-exclamation-triangle-fill text-danger me-1\"></i>NO ${escapeHTML(title)} available</span>`;
+
             return `
-        <article class="comparison-card">
-            <h3>${escapeHTML(title)}</h3>
-
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Required</th>
-                        <th>Selected</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    ${rows.join("")}
-                </tbody>
-            </table>
+        <article class=\"comparison-card mb-4 shadow-sm rounded border\" style=\"animation: fadeInUp 0.7s ease both;\">
+            <div class=\"card-header bg-primary text-white p-3 rounded-top d-flex justify-content-between align-items-center flex-wrap gap-2\">
+                <h3 class=\"h5 mb-0 text-white\"><i class=\"bi bi-gear-fill me-2\"></i>${escapeHTML(title)}</h3>
+                ${headerBadge}
+            </div>
+            <div class=\"table-responsive\">
+                <table class=\"table table-hover table-striped comparison-table mb-0\">
+                    <thead class=\"table-light\">
+                        <tr>
+                            <th style=\"width: 35%;\">Parameter</th>
+                            <th style=\"width: 32%;\">Required Capacity</th>
+                            <th style=\"width: 33%;\">Selected Component</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.join("")}
+                    </tbody>
+                </table>
+            </div>
         </article>
     `;
         }
 
-
         function renderComponentComparisons() {
-
             const target = byId("component-comparisons");
-
-            if (!target) {
-                return;
-            }
-
-            const batterySelected = selected(RAW.battery);
-
-            const batteryProduct = isObject(batterySelected.battery)
-                ? batterySelected.battery
-                : batterySelected;
-
-            const batteryRequirement = isObject(RAW.battery.required)
-                ? RAW.battery.required
-                : (
-                    isObject(RAW.battery.requirement)
-                        ? RAW.battery.requirement
-                        : {}
-                );
-
-            const panelSelected = selected(RAW.panel);
-
-            const panelProduct = isObject(panelSelected.panel)
-                ? panelSelected.panel
-                : panelSelected;
-
-            const panelRequirement = isObject(RAW.panel.required)
-                ? RAW.panel.required
-                : {};
-
-            const inverterSelected = selected(RAW.inverter);
-
-            const inverterRequirement = isObject(RAW.inverter.required)
-                ? RAW.inverter.required
-                : (
-                    isObject(RAW.inverter.requirement)
-                        ? RAW.inverter.requirement
-                        : {}
-                );
-
-            const controllerSelected = selected(RAW.controller);
-
-            const controllerRequirement = isObject(RAW.controller.requirement)
-                ? RAW.controller.requirement
-                : (
-                    isObject(RAW.controller.required)
-                        ? RAW.controller.required
-                        : (
-                            isObject(RAW.controller.engineering?.requirement)
-                                ? RAW.controller.engineering.requirement
-                                : {}
-                        )
-                );
+            if (!target) return;
 
             const cards = [];
 
-            cards.push(
-                comparisonCard(
-                    "Battery Bank",
-                    [
-                        comparisonRow(
-                            "Daily energy",
-                            batteryRequirement.daily_energy_wh,
-                            null,
-                            "Wh"
-                        ),
+            // Check if solar generator option is selected/preferred
+            const genOption = RAW.inverter?.solar_generator_option;
+            const isGeneratorPreferred = Boolean(genOption);
 
-                        comparisonRow(
-                            "Autonomy",
-                            batteryRequirement.autonomy_days,
-                            null,
-                            "days",
-                            1
-                        ),
+            if (isGeneratorPreferred && genOption) {
+                const req = genOption.required_capacity || {};
+                const sel = genOption.selected_generator || genOption;
+                const genName = sel.brand ? `${sel.brand} ${sel.name || sel.model || "Solar Generator"}` : (sel.name || "Solar Generator Solution");
+                const isGenAvailable = genOption.available !== false && Boolean(sel.product_id || sel.id || sel.name);
 
-                        comparisonRow(
-                            "Design reserve",
-                            batteryRequirement.reserve_factor,
-                            null,
-                            "×",
-                            2
-                        ),
+                cards.push(
+                    comparisonCard("Solar Generator Solution", [
+                        comparisonRow("Component Name", "Solar Generator", isGenAvailable ? genName : "NO Solar Generator available"),
+                        comparisonRow("Continuous Power", req.minimum_rated_power_w, isGenAvailable ? first(sel, ["inverter_rated_power", "rated_power_w"], null) : null, "W"),
+                        comparisonRow("Rating (kVA)", req.minimum_rated_power_w ? req.minimum_rated_power_w / 800 : null, isGenAvailable ? (number(first(sel, ["inverter_rated_power", "rated_power_w"], 0)) / 800) : null, "kVA", 2),
+                        comparisonRow("Surge Power", req.minimum_surge_power_w, isGenAvailable ? first(sel, ["inverter_surge_power", "surge_power_w"], null) : null, "W"),
+                        comparisonRow("Battery Storage", req.minimum_battery_capacity_kwh, isGenAvailable ? first(sel, ["battery_capacity_kwh"], number(sel.battery_capacity_wh) / 1000) : null, "kWh", 2),
+                        comparisonRow("AC Output Voltage", req.output_voltage || 230, isGenAvailable ? sel.output_voltage : null, "V"),
+                        comparisonRow("Phase", req.phase || "—", isGenAvailable ? sel.phase : null),
+                        comparisonRow("Units / Quantity", req.unit_quantity || 1, isGenAvailable ? 1 : null, "unit"),
+                        comparisonRow("Configuration", "Integrated All-in-One", isGenAvailable ? "Integrated All-in-One" : null),
+                        comparisonRow("Price", "—", isGenAvailable && hasValue(sel.price) ? formatMoney(sel.price, DATA.pricing?.currency || "NGN") : null)
+                    ], isGenAvailable ? genName : "NO Solar Generator available", isGenAvailable)
+                );
+            } else {
+                // Normal Component Comparisons
+                // 1. Battery Bank
+                const batterySelected = selected(RAW.battery);
+                const batteryProduct = isObject(batterySelected.battery) ? batterySelected.battery : batterySelected;
+                const batteryRequirement = isObject(RAW.battery.required) ? RAW.battery.required : (isObject(RAW.battery.requirement) ? RAW.battery.requirement : {});
+                const isBatteryAvailable = Boolean(batterySelected && (batterySelected.quantity > 0 || (batteryProduct.name && batteryProduct.name !== "Battery not selected")));
+                const batteryName = isBatteryAvailable ? (batteryProduct.name || (batteryProduct.brand ? `${batteryProduct.brand} ${batteryProduct.model || "Battery"}` : "Selected Battery Bank")) : "NO Battery available";
+                const reqEnergy = first(batteryRequirement, ["required_storage_wh", "required_energy_wh"], batterySelected.required_energy_wh);
 
-                        comparisonRow(
-                            "Usable energy",
-                            first(
-                                batteryRequirement,
-                                [
-                                    "required_storage_wh",
-                                    "required_energy_wh"
-                                ],
-                                batterySelected.required_energy_wh
-                            ),
-                            batterySelected.usable_energy_wh,
-                            "Wh"
-                        ),
+                cards.push(
+                    comparisonCard("Battery Bank", [
+                        comparisonRow("Component Name", "—", isBatteryAvailable ? batteryName : "NO Battery available"),
+                        comparisonRow("Storage Capacity", reqEnergy ? reqEnergy / 1000 : null, isBatteryAvailable && batterySelected.usable_energy_wh ? batterySelected.usable_energy_wh / 1000 : null, "KWH", 2),
+                        comparisonRow("Amp-Hour Capacity", first(batteryRequirement, ["required_amp_hours", "required_ah"], null), isBatteryAvailable ? first(batterySelected, ["bank_capacity_ah", "actual_bank_capacity_ah", "capacity_ah"], batteryProduct.capacity_ah) : null, "Ah"),
+                        comparisonRow("System Voltage", first(batteryRequirement, ["system_voltage"], RAW.battery?.system_voltage), isBatteryAvailable ? (batterySelected.actual_bank_voltage || batterySelected.bank_voltage || batteryProduct.nominal_voltage) : null, "V"),
+                        comparisonRow("Units / Quantity", first(batteryRequirement, ["total_quantity", "quantity"], batterySelected.quantity), isBatteryAvailable ? `${batterySelected.quantity || 1} units` : null),
+                        comparisonRow("Configuration (Series / Parallel)", "—", isBatteryAvailable ? `${batterySelected.series || 1} Series × ${batterySelected.parallel || 1} Parallel` : null),
+                        comparisonRow("Continuous Discharge Current", first(batteryRequirement, ["required_continuous_current"], null), isBatteryAvailable ? (batterySelected.bank_max_discharge_current || batterySelected.max_discharge_current) : null, "A"),
+                        comparisonRow("Other Information (Chemistry)", first(batteryRequirement, ["battery_type"], "Any compatible"), isBatteryAvailable ? `${batteryProduct.battery_type || batterySelected.battery_type || "Lithium / Deep Cycle"} (${batteryProduct.nominal_voltage || batterySelected.unit_voltage || 12}V unit)` : null),
+                        comparisonRow("Estimated Price", "—", isBatteryAvailable && (batterySelected.total_cost || batterySelected.total_price || batteryProduct.price) ? formatMoney(batterySelected.total_cost || batterySelected.total_price || (batteryProduct.price * (batterySelected.quantity || 1)), DATA.pricing?.currency) : null)
+                    ], batteryName, isBatteryAvailable)
+                );
 
-                        comparisonRow(
-                            "System voltage",
-                            first(
-                                batteryRequirement,
-                                ["system_voltage"],
-                                RAW.battery.system_voltage
-                            ),
-                            batterySelected.actual_bank_voltage,
-                            "V"
-                        ),
+                // 2. Solar Panel (PV Array renamed)
+                const panelSelected = selected(RAW.panel);
+                const panelProduct = isObject(panelSelected.panel) ? panelSelected.panel : panelSelected;
+                const panelRequirement = isObject(RAW.panel.required) ? RAW.panel.required : (isObject(RAW.panel.requirement) ? RAW.panel.requirement : {});
+                const isPanelAvailable = Boolean(panelSelected && (panelSelected.total_quantity > 0 || (panelProduct.name && panelProduct.name !== "Panel not selected")));
+                const panelName = isPanelAvailable ? (panelProduct.name || (panelProduct.brand ? `${panelProduct.brand} ${panelProduct.model || "Solar Panel"}` : "Selected Solar Panels")) : "NO Solar Panel available";
 
-                        comparisonRow(
-                            "Continuous current",
-                            first(
-                                batteryRequirement,
-                                ["required_continuous_current"],
-                                batterySelected.required_continuous_current
-                            ),
-                            batterySelected.bank_max_discharge_current,
-                            "A"
-                        ),
+                cards.push(
+                    comparisonCard("Solar Panel", [
+                        comparisonRow("Component Name", "—", isPanelAvailable ? panelName : "NO Solar Panel available"),
+                        comparisonRow("Installed Array Power", first(panelRequirement, ["required_array_power_w", "required_pv_power_w"], panelSelected.required_array_power_w), isPanelAvailable ? (panelSelected.installed_power_w || (panelSelected.total_quantity * (panelSelected.module_power_w || 0))) : null, "W"),
+                        comparisonRow("Array Power (KW)", first(panelRequirement, ["required_array_power_w"], panelSelected.required_array_power_w) ? first(panelRequirement, ["required_array_power_w"], panelSelected.required_array_power_w) / 1000 : null, isPanelAvailable && panelSelected.installed_power_w ? panelSelected.installed_power_w / 1000 : null, "kW", 2),
+                        comparisonRow("Array Voltage (Vmp)", first(panelRequirement, ["minimum_array_voltage"], panelSelected.minimum_array_voltage), isPanelAvailable ? (panelSelected.string_vmp || panelSelected.array_vmp) : null, "V"),
+                        comparisonRow("Array Current (Imp)", "—", isPanelAvailable ? (panelSelected.array_imp || panelSelected.array_current) : null, "A"),
+                        comparisonRow("Units / Quantity", panelSelected.total_quantity, isPanelAvailable ? `${panelSelected.total_quantity || 0} units` : null),
+                        comparisonRow("Configuration (Series / Parallel)", "—", isPanelAvailable ? `${panelSelected.series_modules || panelSelected.modules_in_series || 1} Series × ${panelSelected.parallel_strings || panelSelected.strings_in_parallel || 1} Strings Parallel` : null),
+                        comparisonRow("Other Information (Cell Type / Voc)", "—", isPanelAvailable ? `${panelProduct.cell_type || "Monocrystalline"} · String Voc: ${panelSelected.string_voc || "—"}V · Oversize: ${panelSelected.oversize_percentage || 0}%` : null),
+                        comparisonRow("Estimated Price", "—", isPanelAvailable && (panelSelected.total_cost || panelSelected.total_price || panelProduct.price) ? formatMoney(panelSelected.total_cost || panelSelected.total_price || (panelProduct.price * (panelSelected.total_quantity || 1)), DATA.pricing?.currency) : null)
+                    ], panelName, isPanelAvailable)
+                );
 
-                        comparisonRow(
-                            "Surge current",
-                            batteryRequirement.required_surge_current,
-                            null,
-                            "A"
-                        ),
+                // 3. Inverter
+                const inverterSelected = selected(RAW.inverter);
+                const inverterRequirement = isObject(RAW.inverter.required) ? RAW.inverter.required : (isObject(RAW.inverter.requirement) ? RAW.inverter.requirement : {});
+                const isInverterAvailable = Boolean(inverterSelected && ((inverterSelected.rated_power > 0 || inverterSelected.rated_power_w > 0) || (inverterSelected.name && inverterSelected.name !== "Inverter not selected")));
+                const inverterName = isInverterAvailable ? (inverterSelected.name || (inverterSelected.brand ? `${inverterSelected.brand} ${inverterSelected.model || "Inverter"}` : "Selected Inverter")) : "NO Inverter available";
 
-                        comparisonRow(
-                            "Battery type",
-                            first(
-                                batteryRequirement,
-                                ["battery_type"],
-                                "Any compatible type"
-                            ),
-                            batteryProduct.battery_type
-                        )
-                    ]
-                )
-            );
+                cards.push(
+                    comparisonCard("Inverter", [
+                        comparisonRow("Component Name", "—", isInverterAvailable ? inverterName : "NO Inverter available"),
+                        comparisonRow("Continuous Power", inverterRequirement.minimum_rated_power_w, isInverterAvailable ? (inverterSelected.rated_power || inverterSelected.rated_power_w) : null, "W"),
+                        comparisonRow("Rating (KVA)", inverterRequirement.minimum_rated_power_w ? (inverterRequirement.minimum_rated_power_w / 800) : null, isInverterAvailable && (inverterSelected.rated_power || inverterSelected.rated_power_w) ? ((inverterSelected.rated_power || inverterSelected.rated_power_w) / 800) : null, "KVA", 2),
+                        comparisonRow("Surge Power", inverterRequirement.minimum_surge_power_w, isInverterAvailable ? (inverterSelected.surge_power || inverterSelected.surge_power_w) : null, "W"),
+                        comparisonRow("DC Input Voltage", first(inverterRequirement, ["dc_voltage", "system_voltage"], null), isInverterAvailable ? (inverterSelected.dc_voltage || inverterSelected.battery_voltage) : null, "V"),
+                        comparisonRow("AC Output Voltage", inverterRequirement.output_voltage || 230, isInverterAvailable ? (inverterSelected.output_voltage || 230) : null, "V"),
+                        comparisonRow("Units / Quantity", "1 unit", isInverterAvailable ? `${inverterSelected.quantity || 1} unit` : null),
+                        comparisonRow("Configuration", "Single Phase", isInverterAvailable ? `Single Phase Pure Sine Wave (${inverterSelected.frequency || 50} Hz)` : null),
+                        comparisonRow("Other Information (Efficiency)", "—", isInverterAvailable ? `Efficiency: ${inverterSelected.efficiency ? inverterSelected.efficiency + "%" : "≥93%"} · Pure Sine Wave` : null),
+                        comparisonRow("Estimated Price", "—", isInverterAvailable && (inverterSelected.total_cost || inverterSelected.price) ? formatMoney(inverterSelected.total_cost || inverterSelected.price, DATA.pricing?.currency) : null)
+                    ], inverterName, isInverterAvailable)
+                );
 
-            cards.push(
-                comparisonCard(
-                    "PV Array",
-                    [
-                        comparisonRow(
-                            "Array power",
-                            first(
-                                panelRequirement,
-                                ["required_array_power_w"],
-                                panelSelected.required_array_power_w
-                            ),
-                            panelSelected.installed_power_w,
-                            "W"
-                        ),
+                // 4. Charge Controller
+                const controllerSelected = selected(RAW.controller);
+                const controllerRequirement = isObject(RAW.controller.requirement) ? RAW.controller.requirement : (isObject(RAW.controller.required) ? RAW.controller.required : (isObject(RAW.controller.engineering?.requirement) ? RAW.controller.engineering.requirement : {}));
+                const isControllerAvailable = Boolean(controllerSelected && (controllerSelected.quantity > 0 || (controllerSelected.total_charge_current > 0) || (controllerSelected.name && controllerSelected.name !== "Controller not selected")));
+                const controllerName = isControllerAvailable ? (controllerSelected.name || (controllerSelected.brand ? `${controllerSelected.brand} ${controllerSelected.model || "Charge Controller"}` : "Selected MPPT Controller")) : "NO Charge Controller available";
 
-                        comparisonRow(
-                            "Required PV energy",
-                            panelRequirement.pv_energy_required_wh,
-                            panelRequirement.pv_energy_required_wh,
-                            "Wh"
-                        ),
+                if (isControllerAvailable || (controllerRequirement && (controllerRequirement.minimum_charge_current > 0 || controllerRequirement.minimum_pv_voltage > 0))) {
+                    cards.push(
+                        comparisonCard("Charge Controller", [
+                            comparisonRow("Component Name", "—", isControllerAvailable ? controllerName : "NO Charge Controller available"),
+                            comparisonRow("Charge Current", controllerRequirement.minimum_charge_current, isControllerAvailable ? (controllerSelected.total_charge_current || controllerSelected.charge_current) : null, "A"),
+                            comparisonRow("Max PV Voltage", controllerRequirement.minimum_pv_voltage, isControllerAvailable ? (controllerSelected.max_pv_voltage || controllerSelected.pv_voltage) : null, "V"),
+                            comparisonRow("Battery Voltage", RAW.battery?.system_voltage || first(controllerRequirement, ["battery_voltage"], null), isControllerAvailable ? (controllerSelected.battery_voltage || RAW.battery?.system_voltage) : null, "V"),
+                            comparisonRow("Units / Quantity", controllerSelected.quantity || 1, isControllerAvailable ? `${controllerSelected.quantity || 1} units` : null),
+                            comparisonRow("Configuration", "—", isControllerAvailable ? `${controllerSelected.quantity || 1} MPPT Unit(s) in Parallel` : null),
+                            comparisonRow("Other Information (Tech)", "—", isControllerAvailable ? `Efficiency: ${controllerSelected.efficiency ? controllerSelected.efficiency + "%" : "≥98%"} · MPPT Technology` : null),
+                            comparisonRow("Estimated Price", "—", isControllerAvailable && (controllerSelected.total_cost || controllerSelected.price) ? formatMoney(controllerSelected.total_cost || controllerSelected.price, DATA.pricing?.currency) : null)
+                        ], controllerName, isControllerAvailable)
+                    );
+                }
+            }
 
-                        comparisonRow(
-                            "Peak sun hours",
-                            panelRequirement.peak_sun_hours,
-                            RAW.peakSunHours,
-                            "hours",
-                            1
-                        ),
+            if (isGeneratorPreferred) {
+                target.innerHTML = cards.join("");
+                return;
+            }
 
-                        comparisonRow(
-                            "Array voltage",
-                            first(
-                                panelRequirement,
-                                ["minimum_array_voltage"],
-                                panelSelected.minimum_array_voltage
-                            ),
-                            panelSelected.string_vmp,
-                            "V"
-                        ),
-
-                        comparisonRow(
-                            "Panel quantity",
-                            panelSelected.total_quantity,
-                            panelSelected.total_quantity,
-                            "units"
-                        )
-                    ]
-                )
-            );
-
-            cards.push(
-                comparisonCard(
-                    "Inverter",
-                    [
-                        comparisonRow(
-                            "Continuous power",
-                            inverterRequirement.minimum_rated_power_w,
-                            inverterSelected.rated_power,
-                            "W"
-                        ),
-
-                        comparisonRow(
-                            "Surge power",
-                            inverterRequirement.minimum_surge_power_w,
-                            inverterSelected.surge_power,
-                            "W"
-                        ),
-
-                        comparisonRow(
-                            "DC input voltage",
-                            first(
-                                inverterRequirement,
-                                ["dc_voltage", "system_voltage"],
-                                null
-                            ),
-                            inverterSelected.dc_voltage,
-                            "V"
-                        ),
-
-                        comparisonRow(
-                            "AC output voltage",
-                            inverterRequirement.output_voltage,
-                            inverterSelected.output_voltage,
-                            "V"
-                        ),
-
-                        comparisonRow(
-                            "Frequency",
-                            inverterRequirement.frequency,
-                            inverterSelected.frequency,
-                            "Hz"
-                        )
-                    ]
-                )
-            );
-
-            cards.push(
-                comparisonCard(
-                    "Charge Controller",
-                    [
-                        comparisonRow(
-                            "Battery voltage",
-                            controllerRequirement.battery_voltage,
-                            controllerSelected.battery_voltage,
-                            "V"
-                        ),
-
-                        comparisonRow(
-                            "PV voltage",
-                            controllerRequirement.minimum_pv_voltage,
-                            controllerSelected.max_pv_voltage,
-                            "V"
-                        ),
-
-                        comparisonRow(
-                            "Charge current",
-                            controllerRequirement.minimum_charge_current,
-                            controllerSelected.total_charge_current,
-                            "A"
-                        ),
-
-                        comparisonRow(
-                            "PV current",
-                            controllerRequirement.minimum_pv_current,
-                            controllerSelected.total_pv_current_capacity,
-                            "A"
-                        ),
-
-                        comparisonRow(
-                            "PV power",
-                            controllerRequirement.minimum_pv_power,
-                            first(
-                                controllerSelected,
-                                [
-                                    "total_controller_power",
-                                    "controller_power"
-                                ],
-                                null
-                            ),
-                            "W"
-                        ),
-
-                        comparisonRow(
-                            "Controller power",
-                            controllerRequirement.minimum_controller_power,
-                            first(
-                                controllerSelected,
-                                [
-                                    "total_controller_power",
-                                    "controller_power"
-                                ],
-                                null
-                            ),
-                            "W"
-                        ),
-
-                        comparisonRow(
-                            "Minimum quantity",
-                            controllerRequirement.minimum_controller_quantity,
-                            controllerSelected.quantity,
-                            "units"
-                        )
-                    ]
-                )
-            );
-
+            // Cables comparison
             const cableLabels = {
                 battery_cable: "Battery Cable",
-                pv_cable: "PV Cable",
-                ac_cable: "AC Cable",
-                earth_cable: "Earth Cable"
+                pv_cable: "Solar Panel Cable",
+                ac_cable: "AC Cable"
             };
 
             Object.entries(cableLabels).forEach(([key, title]) => {
-
-                const cable = isObject(RAW.cables[key])
-                    ? RAW.cables[key]
-                    : null;
-
-                if (!cable) {
-                    return;
-                }
-
-                const cableRequirement = isObject(
-                    cable.engineering_requirement
-                )
-                    ? cable.engineering_requirement
-                    : (
-                        isObject(cable.requirement)
-                            ? cable.requirement
-                            : cable
-                    );
+                const cable = isObject(RAW.cables[key]) ? RAW.cables[key] : null;
+                if (!cable) return;
+                const req = isObject(cable.engineering_requirement) ? cable.engineering_requirement : (isObject(cable.requirement) ? cable.requirement : cable);
+                const isCableAvailable = Boolean(cable && (cable.size_mm2 > 0 || cable.size_mm > 0));
+                const cableName = isCableAvailable ? (cable.name || `${title} (${cable.size_mm2 || cable.size_mm} mm²)`) : `NO ${title} available`;
 
                 cards.push(
-                    comparisonCard(
-                        title,
-                        [
-                            comparisonRow(
-                                "Cable size",
-                                first(
-                                    cableRequirement,
-                                    [
-                                        "required_size",
-                                        "required_size_mm2",
-                                        "minimum_size_mm2"
-                                    ],
-                                    cable.required_size
-                                ),
-                                first(
-                                    cable,
-                                    ["size_mm2", "size_mm"],
-                                    null
-                                ),
-                                "mm²",
-                                2
-                            ),
-
-                            comparisonRow(
-                                "Ampacity",
-                                first(
-                                    cableRequirement,
-                                    [
-                                        "required_ampacity",
-                                        "required_current"
-                                    ],
-                                    cable.required_ampacity
-                                ),
-                                cable.ampacity,
-                                "A"
-                            ),
-
-                            comparisonRow(
-                                "Voltage rating",
-                                first(
-                                    cableRequirement,
-                                    [
-                                        "required_voltage_rating",
-                                        "required_voltage"
-                                    ],
-                                    cable.required_voltage_rating
-                                ),
-                                cable.voltage_rating,
-                                "V"
-                            ),
-
-                            comparisonRow(
-                                "Cable length",
-                                cable.length,
-                                cable.length,
-                                "m",
-                                1
-                            )
-                        ]
-                    )
+                    comparisonCard(title, [
+                        comparisonRow("Component Name", "—", isCableAvailable ? cableName : `NO ${title} available`),
+                        comparisonRow("Conductor Size", first(req, ["required_size", "required_size_mm2", "minimum_size_mm2"], cable.required_size), isCableAvailable ? first(cable, ["size_mm2", "size_mm"], null) : null, "mm²", 1),
+                        comparisonRow("Ampacity", first(req, ["required_ampacity", "required_current"], cable.required_ampacity), isCableAvailable ? cable.ampacity : null, "A"),
+                        comparisonRow("Length & Drop", "—", isCableAvailable ? `${cable.length_m || cable.length || 0} m (Drop: ${formatNumber(cable.voltage_drop_pct || cable.voltage_drop_percent || 0, 2)}%)` : null),
+                        comparisonRow("Configuration", "—", isCableAvailable ? "Single-core flexible copper conductor" : null),
+                        comparisonRow("Estimated Price", "—", isCableAvailable && cable.total_cost ? formatMoney(cable.total_cost, DATA.pricing?.currency) : null)
+                    ], cableName, isCableAvailable)
                 );
             });
 
@@ -6556,129 +6283,54 @@ PRINT
            ========================================================= */
 
         function renderCables() {
+            const body = byId("cable-table-body");
+            if (!body) return;
 
-            const body =
-                byId("cable-table-body");
-
-            if (!body) {
-                return;
-            }
-
-            const circuits =
-                DATA.cables;
+            const circuits = DATA.cables;
 
             if (!circuits.length) {
-
-                body.innerHTML =
-                    `
+                body.innerHTML = `
                 <tr>
-                    <td
-                        colspan="8"
-                        class="table-empty"
-                    >
+                    <td colspan="8" class="table-empty">
                         No cable configurations available.
                     </td>
                 </tr>
                 `;
-
+                setText("cable-total-cost", "—");
                 return;
             }
 
+            let totalCableCost = 0;
 
-            body.innerHTML =
-                circuits.map(cable => {
+            body.innerHTML = circuits.map((cable, index) => {
+                const circuit = cable.circuit
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, char => char.toUpperCase());
 
-                    const circuit =
-                        cable.circuit
-                            .replace(
-                                /_/g,
-                                " "
-                            )
-                            .replace(
-                                /\b\w/g,
-                                char =>
-                                    char.toUpperCase()
-                            );
+                const cost = number(cable.totalCost || 0);
+                if (cost > 0) {
+                    totalCableCost += cost;
+                }
 
+                const animDelay = (index * 0.05) + 's';
 
-                    return `
-                    <tr>
-
-                        <td>
-                            <strong>
-                                ${escapeHTML(
-                        circuit
-                    )}
-                            </strong>
-                        </td>
-
-                        <td>
-                            ${escapeHTML(
-                        cable.name
-                    )}
-                        </td>
-
-                        <td>
-                            ${formatNumber(
-                        cable.size,
-                        1
-                    )} mm²
-                        </td>
-
-                        <td>
-                            ${formatNumber(
-                        cable.length,
-                        1
-                    )} m
-                        </td>
-
-                        <td>
-                            ${formatNumber(
-                        cable.ampacity,
-                        1
-                    )} A
-                        </td>
-
-                        <td>
-                            ${cable.voltageRating
-                            ? formatNumber(
-                                cable.voltageRating,
-                                0
-                            ) + " V"
-                            : "—"
-                        }
-                        </td>
-
-                        <td>
-                            ${cable.voltageDrop
-                            ? formatNumber(
-                                cable.voltageDrop,
-                                2
-                            ) +
-                            " V (" +
-                            formatNumber(
-                                cable.voltageDropPercent,
-                                2
-                            ) +
-                            "%)"
-                            : "—"
-                        }
-                        </td>
-
-                        <td>
-                            ${cable.totalCost
-                            ? formatMoney(
-                                cable.totalCost,
-                                DATA.pricing.currency
-                            )
-                            : "—"
-                        }
-                        </td>
-
-                    </tr>
+                return `
+                <tr style="animation: fadeInUp 0.4s ease both ${animDelay};">
+                    <td><strong>${escapeHTML(circuit)}</strong></td>
+                    <td>${escapeHTML(cable.name)}</td>
+                    <td><strong>${formatNumber(cable.size, 1)} mm²</strong></td>
+                    <td>${formatNumber(cable.length, 1)} m</td>
+                    <td><strong>${formatNumber(cable.ampacity, 1)} A</strong></td>
+                    <td>${cable.voltageRating ? formatNumber(cable.voltageRating, 0) + " V" : "—"}</td>
+                    <td>${cable.voltageDrop ? formatNumber(cable.voltageDrop, 2) + " V (" + formatNumber(cable.voltageDropPercent, 2) + "%)" : "—"}</td>
+                    <td class="${cost > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
+                        ${cost > 0 ? formatMoney(cost, DATA.pricing.currency) : 'Pending'}
+                    </td>
+                </tr>
                 `;
+            }).join("");
 
-                }).join("");
+            setText("cable-total-cost", totalCableCost > 0 ? formatMoney(totalCableCost, DATA.pricing.currency) : "—");
         }
 
 
@@ -6801,259 +6453,186 @@ PRINT
             const pricingStatus = document.getElementById("pricing-status");
             const boqErrors = Array.isArray(RAW.boq?.errors) ? RAW.boq.errors : [];
             const pricingErrors = Array.isArray(RAW.pricing?.errors) ? RAW.pricing.errors : [];
-            if (boqStatus && RAW.boq?.success === false) {
+
+            if (boqStatus && RAW.boq?.success === false && !DATA.boq.items.length) {
                 boqStatus.textContent = "BOQ unavailable: " + (boqErrors.join(" ") || RAW.boq.message || "Complete the missing engineering selections, then recalculate.");
                 boqStatus.classList.add("is-warning");
+            } else if (boqStatus) {
+                boqStatus.textContent = "";
+                boqStatus.classList.remove("is-warning");
             }
-            if (pricingStatus && RAW.pricing?.success === false) {
+
+            if (pricingStatus && RAW.pricing?.success === false && !DATA.boq.items.length) {
                 pricingStatus.textContent = "Pricing unavailable: " + (pricingErrors.join(" ") || RAW.pricing.message || "A complete priced BOQ is required.");
                 pricingStatus.classList.add("is-warning");
             } else if (pricingStatus && DATA.boq.items.some(item => number(item.unit_price || item.price || 0) <= 0)) {
-                pricingStatus.textContent = "Some BOQ lines are not priced in the catalogue. Their unit price and total remain pending until a ProductListing price is added.";
+                pricingStatus.textContent = "Some component prices are pending in the catalogue. Available material prices have been summed below.";
                 pricingStatus.classList.add("is-warning");
+            } else if (pricingStatus) {
+                pricingStatus.textContent = "";
+                pricingStatus.classList.remove("is-warning");
             }
         }
+
         function renderBOQ() {
+            const body = byId("boq-table-body");
+            if (!body) return;
 
-            const body =
-                byId("boq-table-body");
-
-            if (!body) {
-                return;
-            }
-
-            const items =
-                DATA.boq.items;
+            const items = DATA.boq.items;
 
             if (!items.length) {
-
-                body.innerHTML =
-                    `
+                body.innerHTML = `
                 <tr>
-                    <td
-                        colspan="6"
-                        class="table-empty"
-                    >
+                    <td colspan="5" class="table-empty">
                         No BOQ items available.
                     </td>
                 </tr>
                 `;
-
-            } else {
-
-                body.innerHTML =
-                    items.map(item => {
-
-                        const name =
-                            first(
-                                item,
-                                [
-                                    "name",
-                                    "description",
-                                    "item"
-                                ],
-                                "Unnamed Item"
-                            );
-
-                        const category =
-                            first(
-                                item,
-                                [
-                                    "category",
-                                    "group"
-                                ],
-                                "—"
-                            );
-
-                        const quantity =
-                            number(
-                                first(
-                                    item,
-                                    [
-                                        "quantity",
-                                        "qty"
-                                    ],
-                                    0
-                                )
-                            );
-
-                        const unit =
-                            first(
-                                item,
-                                [
-                                    "unit",
-                                    "uom"
-                                ],
-                                "unit"
-                            );
-
-                        const unitPrice =
-                            number(
-                                first(
-                                    item,
-                                    [
-                                        "unit_price",
-                                        "price"
-                                    ],
-                                    0
-                                )
-                            );
-
-                        const total =
-                            number(
-                                first(
-                                    item,
-                                    [
-                                        "total_price",
-                                        "total_cost",
-                                        "amount"
-                                    ],
-                                    quantity * unitPrice
-                                )
-                            );
-
-
-                        return `
-                        <tr>
-
-                            <td>
-                                <strong>
-                                    ${escapeHTML(
-                            name
-                        )}
-                                </strong>
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                            category
-                        )}
-                            </td>
-
-                            <td>
-                                ${formatNumber(
-                            quantity,
-                            2
-                        )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                            unit
-                        )}
-                            </td>
-
-                            <td>
-                                ${formatMoney(
-                            unitPrice,
-                            DATA.pricing.currency
-                        )}
-                            </td>
-
-                            <td>
-                                ${formatMoney(
-                            total,
-                            DATA.pricing.currency
-                        )}
-                            </td>
-
-                        </tr>
-                    `;
-
-                    }).join("");
+                setText("boq-total", "—");
+                return;
             }
 
+            let availableTotal = 0;
 
+            body.innerHTML = items.map((item, index) => {
+                const name = first(item, ["name", "description", "item"], "Unnamed Item");
+                const specification = first(item, ["specification", "category", "group"], "—");
+                const quantity = number(first(item, ["quantity", "qty"], 0));
+                const unitPrice = number(first(item, ["unit_price", "price"], 0));
+                const total = number(first(item, ["total_price", "total_cost", "amount"], quantity * unitPrice));
+
+                if (total > 0) {
+                    availableTotal += total;
+                }
+
+                const animDelay = (index * 0.04) + 's';
+
+                return `
+                    <tr style="animation: fadeInUp 0.4s ease both ${animDelay};">
+                        <td>
+                            <strong>${escapeHTML(name)}</strong>
+                        </td>
+                        <td>
+                            <span class="boq-specification">${escapeHTML(specification)}</span>
+                        </td>
+                        <td>
+                            ${formatNumber(quantity, 2)}
+                        </td>
+                        <td class="${unitPrice > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
+                            ${unitPrice > 0 ? formatMoney(unitPrice, DATA.pricing.currency) : 'Pending'}
+                        </td>
+                        <td class="${total > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
+                            ${total > 0 ? formatMoney(total, DATA.pricing.currency) : '—'}
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+
+            const grandBOQTotal = DATA.boq.total > 0 ? DATA.boq.total : availableTotal;
             setText(
                 "boq-total",
-                formatMoney(
-                    DATA.boq.total,
-                    DATA.pricing.currency
-                )
+                grandBOQTotal > 0 ? formatMoney(grandBOQTotal, DATA.pricing.currency) : "—"
             );
         }
-
 
         /* =========================================================
            PRICING
            ========================================================= */
 
+        function setupSolarDeliveryQuote() {
+            const picker = document.querySelector(".solar-delivery-picker");
+            const addressInput = byId("solar-delivery-address");
+            const suggestions = byId("solar-delivery-addresses");
+            const updateButton = byId("solar-update-delivery");
+            const status = byId("solar-delivery-status");
+            if (!picker || !addressInput || !updateButton || !status) return;
+
+            let suggestionTimer;
+            addressInput.addEventListener("input", () => {
+                clearTimeout(suggestionTimer);
+                const term = addressInput.value.split(/[\s,]+/).filter(Boolean).pop() || "";
+                if (term.length < 2 || !suggestions) return;
+                suggestionTimer = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`/logistics/api/city-lookup/?q=${encodeURIComponent(term)}`);
+                        const payload = await response.json();
+                        suggestions.replaceChildren(...(payload.results || []).map(row => {
+                            const option = document.createElement("option");
+                            option.value = row.city;
+                            return option;
+                        }));
+                    } catch (_) { /* City suggestions are optional; quote errors are shown on submit. */ }
+                }, 180);
+            });
+
+            const updateQuote = async () => {
+                const address = addressInput.value.trim();
+                if (!address) {
+                    status.textContent = "Enter or select a delivery address first.";
+                    return;
+                }
+                updateButton.disabled = true;
+                status.textContent = "Calculating vendor distance and delivery cost…";
+                try {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+                    const response = await fetch(picker.dataset.quoteUrl, {
+                        method: "POST",
+                        headers: { "X-CSRFToken": csrf, "X-Requested-With": "XMLHttpRequest" },
+                        body: new URLSearchParams({ address })
+                    });
+                    const payload = await response.json();
+                    if (!response.ok) throw new Error(payload.error || "Delivery quote failed.");
+                    RAW.boq = payload.boq;
+                    RAW.pricing = payload.pricing;
+                    DATA.boq = normalizeBOQ(RAW.boq);
+                    DATA.pricing = normalizePricing(RAW.pricing);
+                    renderBOQ();
+                    renderPricing();
+                    setText("kpi-grand-total", formatMoney(DATA.pricing.grandTotal, DATA.pricing.currency));
+                    const location = document.querySelector(".project-meta [data-project-location]");
+                    if (location) location.innerHTML = `<i class="bi bi-geo-alt"></i> ${escapeHTML(address)}`;
+                    status.textContent = `Delivery and project total updated for ${address}.`;
+                } catch (error) {
+                    status.textContent = error.message || "Could not update the delivery quote.";
+                } finally {
+                    updateButton.disabled = false;
+                }
+            };
+            updateButton.addEventListener("click", updateQuote);
+            addressInput.addEventListener("change", updateQuote);
+        }
+
+
+        function applyGeneratorOnlyView() {
+            if (!RAW.inverter?.solar_generator_option) return;
+            document.body.classList.add("solar-generator-only");
+            document.querySelectorAll(".result-section").forEach(section => {
+                const title = section.querySelector("h2")?.textContent.trim().toLowerCase() || "";
+                section.hidden = !["bill of quantities", "pricing summary", "engineering warnings"].some(label => title.includes(label));
+            });
+            document.querySelector(".kpi-grid")?.setAttribute("hidden", "");
+            byId("design-status")?.setAttribute("hidden", "");
+            const heading = document.querySelector(".component-comparison-section h2");
+            const subtitle = document.querySelector(".component-comparison-section p");
+            if (heading) heading.textContent = "Selected Solar Generator";
+            if (subtitle) subtitle.textContent = "Integrated generator details, delivery and installation pricing.";
+            const eyebrow = document.querySelector(".component-comparison-section .section-kicker");
+            if (eyebrow) eyebrow.textContent = "GENERATOR SOLUTION";
+        }
+
         function renderPricing() {
+            const pricing = DATA.pricing;
+            const items = DATA.boq.items;
+            const isTransport = item => `${item.category || ""} ${item.item_type || ""}`.toLowerCase().includes("transport");
+            const lineTotal = item => number(first(item, ["total_price", "total_cost", "amount"], number(item.quantity || item.qty || 0) * number(item.unit_price || item.price || 0)));
+            const availableMaterials = items.filter(item => !isTransport(item)).reduce((sum, item) => sum + lineTotal(item), 0);
+            const availableTransport = items.filter(isTransport).reduce((sum, item) => sum + lineTotal(item), 0);
+            const materialCost = pricing.material > 0 ? pricing.material : availableMaterials;
+            const transportCost = pricing.transport > 0 ? pricing.transport : availableTransport;
 
-            const pricing =
-                DATA.pricing;
-
-            setText(
-                "price-material",
-                formatMoney(
-                    pricing.material,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-labour",
-                formatMoney(
-                    pricing.labour,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-transport",
-                formatMoney(
-                    pricing.transport,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-subtotal",
-                formatMoney(
-                    pricing.subtotal,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-installation",
-                formatMoney(
-                    pricing.installation,
-                    pricing.currency
-                )
-            );
-
-            // setText(
-            //     "price-profit",
-            //     formatMoney(
-            //         pricing.profit,
-            //         pricing.currency
-            //     )
-            // );
-
-            setText(
-                "price-discount",
-                formatMoney(
-                    pricing.discount,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-vat",
-                formatMoney(
-                    pricing.vat,
-                    pricing.currency
-                )
-            );
-
-            setText(
-                "price-grand-total",
-                formatMoney(
-                    pricing.grandTotal,
-                    pricing.currency
-                )
-            );
+            setText("price-material", formatMoney(materialCost, pricing.currency));
+            setText("price-transport", formatMoney(transportCost, pricing.currency));
+            setText("price-installation", formatMoney(pricing.installation, pricing.currency));
         }
 
 
@@ -7115,7 +6694,7 @@ PRINT
                 ],
 
                 [
-                    "PV Array",
+                    "Solar Panel",
                     RAW.panel
                 ],
 
@@ -7244,17 +6823,15 @@ PRINT
            ========================================================= */
 
         function renderWarnings() {
+            const container = byId("warnings-container");
+            if (!container) return;
 
-            const container =
-                byId("warnings-container");
+            const warnings = normalizeWarnings();
 
-            if (!container) {
-                return;
+            const countBadge = byId("warnings-count");
+            if (countBadge) {
+                countBadge.textContent = warnings.length;
             }
-
-            const warnings =
-                normalizeWarnings();
-
 
             if (!warnings.length) {
 
@@ -7497,6 +7074,8 @@ PRINT
                 renderBattery();
 
                 renderComponentComparisons();
+                setupSolarDeliveryQuote();
+                applyGeneratorOnlyView();
 
                 renderPV();
 
@@ -7687,6 +7266,34 @@ PRINT
     .section-eyebrow {
         letter-spacing: .11em !important;
         font-weight: 800 !important
+    }
+
+    .boq-section .result-table thead th {
+        color: #fff;
+        background: linear-gradient(115deg, #087f5b, #0d6efd 58%, #6f42c1);
+    }
+
+    .boq-section .result-table tbody tr:nth-child(odd) {
+        background: #f0fdfa;
+    }
+
+    .boq-section .result-table tbody tr:nth-child(even) {
+        background: #f5f8ff;
+    }
+
+    .boq-section .result-table tbody tr:hover {
+        background: #e0f2fe;
+        transform: translateY(-1px);
+    }
+
+    .boq-section .result-table tbody tr {
+        transition: background-color .2s ease, transform .2s ease;
+    }
+
+    .boq-section .result-table .badge {
+        color: #075985;
+        background: #cffafe !important;
+        padding: .45rem .65rem;
     }
 
     .result-table {
@@ -7952,6 +7559,34 @@ PRINT
         .table-wrapper {
             margin: 0 -2px !important;
             border-radius: 12px !important
+        }
+
+        .boq-section .result-table thead th {
+            color: #fff;
+            background: linear-gradient(115deg, #087f5b, #0d6efd 58%, #6f42c1);
+        }
+
+        .boq-section .result-table tbody tr:nth-child(odd) {
+            background: #f0fdfa;
+        }
+
+        .boq-section .result-table tbody tr:nth-child(even) {
+            background: #f5f8ff;
+        }
+
+        .boq-section .result-table tbody tr:hover {
+            background: #e0f2fe;
+            transform: translateY(-1px);
+        }
+
+        .boq-section .result-table tbody tr {
+            transition: background-color .2s ease, transform .2s ease;
+        }
+
+        .boq-section .result-table .badge {
+            color: #075985;
+            background: #cffafe !important;
+            padding: .45rem .65rem;
         }
 
         .result-table {
