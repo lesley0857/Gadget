@@ -2,6 +2,39 @@
 {% load static %}
 
 {% block content %}
+<div class="result-view-prompt" id="result-view-prompt" hidden>
+    <div class="result-view-prompt__card" role="dialog" aria-modal="true" aria-labelledby="result-view-prompt-title">
+        <h2 id="result-view-prompt-title">Choose how to view your results</h2>
+        <p>This page can use a layout designed for your phone or the full desktop layout.</p>
+        <div class="result-view-prompt__actions">
+            <button type="button" class="result-view-prompt__button result-view-prompt__button--mobile" data-result-view="mobile">Mobile version</button>
+            <button type="button" class="result-view-prompt__button result-view-prompt__button--desktop" data-result-view="desktop">Desktop version</button>
+        </div>
+    </div>
+</div>
+<style>
+    .result-view-prompt[hidden] { display: none !important; }
+    .result-view-prompt {
+        position: fixed; inset: auto 0 0; z-index: 1000000;
+        padding: 14px; background: rgba(15, 23, 42, .48);
+        backdrop-filter: blur(5px);
+    }
+    .result-view-prompt__card {
+        width: min(100%, 620px); margin: 0 auto; padding: 20px;
+        color: #172033; background: #fff; border: 1px solid #dbe3ee;
+        border-radius: 18px; box-shadow: 0 12px 40px rgba(15, 23, 42, .24);
+    }
+    .result-view-prompt__card h2 { margin: 0 0 8px; color: #172033; font-size: 1.15rem; }
+    .result-view-prompt__card p { margin: 0 0 16px; color: #475569; }
+    .result-view-prompt__actions { display: flex; gap: 10px; }
+    .result-view-prompt__button {
+        flex: 1; min-height: 48px; padding: 10px 14px; border: 0;
+        border-radius: 10px; font-weight: 800; cursor: pointer;
+    }
+    .result-view-prompt__button--mobile { color: #fff; background: #0f766e; }
+    .result-view-prompt__button--desktop { color: #fff; background: #1e293b; }
+    @media (min-width: 769px) { .result-view-prompt { display: none !important; } }
+</style>
 
 
 <div id="solar-results-page" class="solar-results-page" data-design-id="{{ design.id }}">
@@ -4404,132 +4437,60 @@ PRINT
            ========================================================= */
 
         function normalizeProtection(result) {
+            const devices = isObject(result.devices) ? result.devices : {};
+            const selectedRoot = isObject(result.selected) ? result.selected : {};
+            const labels = {
+                pv_fuse: "PV Fuse",
+                battery_breaker: "Battery Breaker",
+                ac_breaker: "AC Breaker",
+                pv_isolator: "PV Isolator",
+                ac_isolator: "AC Isolator",
+                dc_spd: "DC SPD",
+                ac_spd: "AC SPD"
+            };
+            const keys = new Set([...Object.keys(labels), ...Object.keys(devices), ...Object.keys(selectedRoot)]);
+            const labelFor = key => labels[key] || key.replace(/[_-]+/g, " ").replace(/\b\w/g, char => char.toUpperCase());
 
-            const devices =
-                isObject(result.devices)
-                    ? result.devices
-                    : {};
-
-            const keys = [
-
-                ["pv_fuse", "PV Fuse"],
-
-                ["battery_breaker", "Battery Breaker"],
-
-                ["ac_breaker", "AC Breaker"],
-
-                ["pv_isolator", "PV Isolator"],
-
-                ["ac_isolator", "AC Isolator"],
-
-                ["dc_spd", "DC SPD"],
-
-                ["ac_spd", "AC SPD"]
-            ];
-
-            return keys.map(([key, label]) => {
-
-                const device =
-                    isObject(devices[key])
-                        ? devices[key]
-                        : {};
-
-                const item =
-                    isObject(device.selected)
-                        ? device.selected
-                        : {};
-
+            return Array.from(keys, key => {
+                const device = isObject(devices[key]) ? devices[key] : (isObject(result[key]) ? result[key] : {});
+                const item = isObject(device.selected) ? device.selected : (isObject(selectedRoot[key]) ? selectedRoot[key] : (isObject(device.device) ? device.device : {}));
+                const label = labelFor(key);
                 return {
-
                     key,
-
                     label,
-
-                    selected:
-                        Boolean(
-                            device.selected ||
-                            Object.keys(item).length
-                        ),
-
-                    name:
-                        text(
-                            first(
-                                device,
-                                ["name"],
-                                first(
-                                    item,
-                                    [
-                                        "type",
-                                        "name"
-                                    ],
-                                    label
-                                )
-                            ),
-                            label
-                        ),
-
-                    rating:
-                        number(
-                            first(
-                                device,
-                                [
-                                    "rating_a",
-                                    "current_rating_a"
-                                ],
-                                first(
-                                    item,
-                                    [
-                                        "rating_a",
-                                        "current_rating_a",
-                                        "current_rating"
-                                    ],
-                                    0
-                                )
-                            )
-                        ),
-
-                    voltage:
-                        number(
-                            first(
-                                device,
-                                [
-                                    "voltage_rating_v",
-                                    "voltage_rating",
-                                    "ucpv_v",
-                                    "uc_v"
-                                ],
-                                first(
-                                    item,
-                                    [
-                                        "voltage_rating_v",
-                                        "voltage_rating"
-                                    ],
-                                    0
-                                )
-                            )
-                        )
+                    selected: Object.keys(item).length > 0 || device.selected === true || selectedRoot[key] === true,
+                    name: text(first(item, ["name", "model", "type", "description"], first(device, ["name"], label)), label),
+                    rating: number(first(device, ["rating_a", "current_rating_a", "current", "rating"], first(item, ["rating_a", "current_rating_a", "current_rating", "rating"], 0))),
+                    voltage: number(first(device, ["voltage_rating_v", "voltage_rating", "ucpv_v", "uc_v"], first(item, ["voltage_rating_v", "voltage_rating", "voltage", "ucpv_v", "uc_v"], 0)))
                 };
             });
         }
-
 
         /* =========================================================
            BOQ NORMALIZATION
            ========================================================= */
 
         function normalizeBOQ(result) {
-            const items = Array.isArray(result.items)
+            const allItems = Array.isArray(result.items)
                 ? result.items
                 : (Array.isArray(result.boq_items) ? result.boq_items : (Array.isArray(result.lines) ? result.lines : []));
+            const itemTotal = item => number(first(item, ["total_price", "total_cost", "amount"], number(item.quantity || item.qty || 0) * number(item.unit_price || item.price || 0)));
+            const isEarthingItem = item => {
+                const description = [item.category, item.item_type, item.description, item.name, item.specification]
+                    .filter(Boolean).join(" ").replace(/[_-]+/g, " ").toLowerCase();
+                return /\b(?:earthing|earth\s+(?:rod|cable|electrode|pit|bar|mat|grid|strip|enhancement)|ground(?:ing)?\s+(?:rod|cable|electrode|pit|bar|mat|grid|strip|enhancement)|bentonite)\b/.test(description);
+            };
+            const items = allItems.filter(item => !isEarthingItem(item));
+            const excludedTotal = allItems.filter(isEarthingItem).reduce((sum, item) => sum + itemTotal(item), 0);
             const totals = isObject(result.totals) ? result.totals : {};
-            const calculatedTotal = items.reduce((sum, item) => sum + number(first(item, ["total_price", "total_cost", "amount"], number(item.quantity || item.qty || 0) * number(item.unit_price || item.price || 0))), 0);
+            const calculatedTotal = items.reduce((sum, item) => sum + itemTotal(item), 0);
+            const reportedTotal = number(first(totals, ["total_price", "grand_total", "total_cost"], first(result, ["total_price", "grand_total", "total_cost"], calculatedTotal + excludedTotal)));
             return {
                 items,
-                lineCount: number(first(totals, ["line_count", "item_count"], items.length)),
-                total: number(first(totals, ["total_price", "grand_total", "total_cost"], first(result, ["total_price", "grand_total", "total_cost"], calculatedTotal)))
+                lineCount: items.length,
+                total: Math.max(0, reportedTotal - excludedTotal)
             };
         }
-
 
         /* =========================================================
            PRICING NORMALIZATION
@@ -5736,15 +5697,10 @@ PRINT
                 return "";
             }
 
-            const headerBadge = isAvailable
-                ? (selectedName ? `<span class=\"badge bg-light text-dark fw-bold px-3 py-2 fs-6 shadow-sm border\"><i class=\"bi bi-check-circle-fill text-success me-1\"></i>${escapeHTML(selectedName)}</span>` : "")
-                : `<span class=\"badge bg-warning text-dark fw-bold px-3 py-2 fs-6 shadow-sm border border-warning\"><i class=\"bi bi-exclamation-triangle-fill text-danger me-1\"></i>NO ${escapeHTML(title)} available</span>`;
-
             return `
         <article class=\"comparison-card mb-4 shadow-sm rounded border\" style=\"animation: fadeInUp 0.7s ease both;\">
             <div class=\"card-header bg-primary text-white p-3 rounded-top d-flex justify-content-between align-items-center flex-wrap gap-2\">
                 <h3 class=\"h5 mb-0 text-white\"><i class=\"bi bi-gear-fill me-2\"></i>${escapeHTML(title)}</h3>
-                ${headerBadge}
             </div>
             <div class=\"table-responsive\">
                 <table class=\"table table-hover table-striped comparison-table mb-0\">
@@ -6307,7 +6263,7 @@ PRINT
                     .replace(/_/g, " ")
                     .replace(/\b\w/g, char => char.toUpperCase());
 
-                const cost = number(cable.totalCost || 0);
+                const cost = number(cable.totalCost || (cable.unitPrice * cable.length) || 0);
                 if (cost > 0) {
                     totalCableCost += cost;
                 }
@@ -6347,8 +6303,15 @@ PRINT
                 return;
             }
 
+            const selectedDevices = DATA.protection.filter(device => device.selected);
+
+            if (!selectedDevices.length) {
+                container.innerHTML = `<div class="table-empty">No protection devices were selected.</div>`;
+                return;
+            }
+
             container.innerHTML =
-                DATA.protection.map(device => {
+                selectedDevices.map(device => {
 
                     const selected =
                         device.selected;
@@ -8333,8 +8296,36 @@ PRINT
         });
 
         if (!localStorage.getItem('solar_res_tour_seen')) {
-            setTimeout(showResTour, 1200);
+            const startTour = () => setTimeout(showResTour, 1200);
+            const viewPrompt = document.getElementById('result-view-prompt');
+            if (viewPrompt && window.matchMedia('(max-width: 768px)').matches) {
+                window.addEventListener('result-view-selected', startTour, { once: true });
+            } else {
+                startTour();
+            }
         }
+    })();
+</script>
+<script>
+    (() => {
+        const prompt = document.getElementById('result-view-prompt');
+        if (!prompt || !window.matchMedia('(max-width: 768px)').matches) return;
+        const viewport = document.querySelector('meta[name="viewport"]');
+        prompt.hidden = false;
+        prompt.querySelectorAll('[data-result-view]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const view = button.dataset.resultView;
+                document.documentElement.dataset.solarResultsView = view;
+                if (viewport) {
+                    viewport.setAttribute('content', view === 'desktop'
+                        ? 'width=1024, initial-scale=1'
+                        : 'width=device-width, initial-scale=1');
+                }
+                prompt.hidden = true;
+                window.dispatchEvent(new Event('result-view-selected'));
+            });
+        });
+        prompt.querySelector('[data-result-view="mobile"]')?.focus({ preventScroll: true });
     })();
 </script>
 

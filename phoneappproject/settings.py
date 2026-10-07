@@ -164,16 +164,6 @@ DATABASES = {
 }
 
 
-# DATABASES = {
-#     'default': dj_database_url.parse(
-
-#         url="postgresql://neondb_owner:npg_TJ02eojwrcXZ@ep-gentle-wave-aplz2z82-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
-#         url = "postgresql://oluoma:7veqWjqVPPwXtvIh4EqFIWJqrIuiAibs@dpg-d6tsf85m5p6s73bj9ht0-a.oregon-postgres.render.com/phoneappdb_7e6i",
-#         conn_max_age=600,    # optional: connection pooling
-#         ssl_require=True     # forces SSL
-#     )
-# }
-
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 

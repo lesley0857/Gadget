@@ -1743,9 +1743,18 @@ def _extract_accessory_items(
 
 
 def _is_earthing_boq_item(item: Dict[str, Any]) -> bool:
-    text = " ".join(str(item.get(key, "")) for key in ("category", "item_type", "description", "specification")).lower()
-    markers = ("earthing", "earth rod", "earth cable", "earth electrode", "earth pit", "ground rod", "grounding")
-    return any(marker in text for marker in markers)
+    normalized = " ".join(
+        str(item.get(key, "")).replace("_", " ").replace("-", " ").lower()
+        for key in ("category", "item_type", "description", "specification")
+    )
+    markers = (
+        "earthing", "earth rod", "earth cable", "earth electrode", "earth pit",
+        "earth bar", "earth mat", "earth grid", "earth strip", "earth enhancement",
+        "ground rod", "ground cable", "ground electrode", "ground pit", "ground bar",
+        "ground mat", "ground grid", "grounding", "bentonite",
+    )
+    return any(marker in normalized for marker in markers)
+
 def _build_all_items(
     *,
     battery_result: Optional[Dict[str, Any]] = None,
