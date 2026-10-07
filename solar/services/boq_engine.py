@@ -525,16 +525,11 @@ def _extract_unit_price(
         "price_per_unit",
     ):
         if key in value:
-            price = to_decimal(value.get(key))
-            if price > ZERO:
-                return price
+            price = to_decimal(
+                value.get(key)
+            )
 
-    # Component serializers nest catalogue price under the component.
-    for key in ("battery", "panel", "inverter", "controller", "product", "equipment", "item"):
-        nested = value.get(key)
-        if isinstance(nested, dict):
-            price = _extract_unit_price(nested)
-            if price > ZERO:
+            if price >= ZERO:
                 return price
 
     return ZERO
@@ -580,7 +575,6 @@ def _build_battery_item(
         selected,
         "quantity",
         "battery_quantity",
-        "total_quantity",
         default=0,
     )
 
@@ -726,7 +720,6 @@ def _build_panel_item(
         "quantity",
         "panel_quantity",
         "module_quantity",
-        "total_quantity",
         "count",
         default=0,
     )
@@ -967,7 +960,7 @@ def _build_inverter_item(
         quantity=quantity,
         unit_price=unit_price,
         source="Inverter Engine",
-        object_value=inverter or (selected if selected.get("id") is not None else None),
+        object_value=inverter or None,
     )
 
 
@@ -1110,7 +1103,7 @@ def _build_controller_item(
         quantity=quantity,
         unit_price=unit_price,
         source="Controller Engine",
-        object_value=controller or (selected if selected.get("id") is not None else None),
+        object_value=controller or None,
     )
 
 
@@ -1318,20 +1311,6 @@ def _extract_cable_items(
             circuit_selected
         )
 
-        if unit_price <= ZERO:
-            try:
-                from solar.services import product_bridge
-                cables = product_bridge.get_active_cables()
-                req_s = float(size or 0)
-                matching = [c for c in cables if getattr(c, 'cable_type', '') == circuit]
-                valid = [c for c in matching if float(getattr(c, 'size_mm', 0) or 0) >= req_s]
-                best = min(valid or matching or cables, key=lambda c: float(getattr(c, 'size_mm', 0) or 0)) if cables else None
-                if best:
-                    unit_price = to_decimal(best.price)
-                    name = best.name
-            except Exception:
-                pass
-
         # Cable prices are normally per metre.
         unit = _get(
             circuit_selected,
@@ -1533,43 +1512,6 @@ def _extract_protection_items(
             selected
         )
 
-        if unit_price <= ZERO:
-            try:
-                from solar.services import product_bridge
-                req_cur = float(current or 0)
-                req_volt = float(voltage or 0)
-                matched_product = None
-                d_name = default_name.lower()
-                if 'fuse' in d_name:
-                    fuses = product_bridge.get_active_fuses()
-                    valid = [c for c in fuses if float(getattr(c, 'current_rating', 0) or 0) >= req_cur]
-                    matched_product = min(valid or fuses, key=lambda c: float(getattr(c, 'current_rating', 0) or 0)) if fuses else None
-                elif 'battery' in d_name or 'dc_breaker' in d_name or 'dc breaker' in d_name:
-                    breakers = [c for c in product_bridge.get_active_breakers() if getattr(c, 'breaker_type', '') == 'dc']
-                    valid = [c for c in breakers if float(getattr(c, 'current_rating', 0) or 0) >= req_cur]
-                    matched_product = min(valid or breakers, key=lambda c: float(getattr(c, 'current_rating', 0) or 0)) if breakers else None
-                elif 'ac breaker' in d_name or 'ac_breaker' in d_name:
-                    breakers = [c for c in product_bridge.get_active_breakers() if getattr(c, 'breaker_type', '') == 'ac']
-                    valid = [c for c in breakers if float(getattr(c, 'current_rating', 0) or 0) >= req_cur]
-                    matched_product = min(valid or breakers, key=lambda c: float(getattr(c, 'current_rating', 0) or 0)) if breakers else None
-                elif 'dc spd' in d_name or 'dc_spd' in d_name:
-                    spds = [c for c in product_bridge.get_active_spds() if getattr(c, 'spd_type', '') == 'dc']
-                    matched_product = spds[0] if spds else None
-                elif 'ac spd' in d_name or 'ac_spd' in d_name:
-                    spds = [c for c in product_bridge.get_active_spds() if getattr(c, 'spd_type', '') == 'ac']
-                    matched_product = spds[0] if spds else None
-                elif 'isolator' in d_name:
-                    isolators = product_bridge.get_active_isolators()
-                    matched_product = isolators[0] if isolators else None
-
-                if matched_product:
-                    unit_price = to_decimal(matched_product.price)
-                    name = f'{matched_product.brand} {matched_product.name}'.strip() or matched_product.name
-                    if not specification:
-                        specification = f'{matched_product.name} ({matched_product.model})'
-            except Exception:
-                pass
-
         items.append(
             _build_item(
                 description=str(name),
@@ -1741,81 +1683,76 @@ def _extract_accessory_items(
 # CATEGORY BUILDERS
 # ======================================================================
 
-
-def _is_earthing_boq_item(item: Dict[str, Any]) -> bool:
-    text = " ".join(str(item.get(key, "")) for key in ("category", "item_type", "description", "specification")).lower()
-    markers = ("earthing", "earth rod", "earth cable", "earth electrode", "earth pit", "ground rod", "grounding")
-    return any(marker in text for marker in markers)
 def _build_all_items(
     *,
-    battery_result: Optional[Dict[str, Any]] = None,
-    panel_result: Optional[Dict[str, Any]] = None,
-    controller_result: Optional[Dict[str, Any]] = None,
-    inverter_result: Optional[Dict[str, Any]] = None,
-    protection_result: Optional[Dict[str, Any]] = None,
-    cable_result: Optional[Dict[str, Any]] = None,
-    accessory_result: Optional[Dict[str, Any]] = None,
+    battery_result: Dict[str, Any],
+    panel_result: Dict[str, Any],
+    controller_result: Dict[str, Any],
+    inverter_result: Dict[str, Any],
+    protection_result: Dict[str, Any],
+    cable_result: Dict[str, Any],
+    accessory_result: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """
     Build the complete engineering BOQ.
-    Safely extracts items from every available result stage.
     """
 
     items: List[Dict[str, Any]] = []
 
-    try:
-        if isinstance(battery_result, dict):
-            battery = _build_battery_item(battery_result)
-            if battery:
-                items.append(battery)
-    except Exception:
-        pass
+    battery = _build_battery_item(
+        battery_result
+    )
 
-    try:
-        if isinstance(panel_result, dict):
-            panel = _build_panel_item(panel_result)
-            if panel:
-                items.append(panel)
-    except Exception:
-        pass
+    if battery:
+        items.append(
+            battery
+        )
 
-    try:
-        if isinstance(inverter_result, dict):
-            inverter = _build_inverter_item(inverter_result)
-            if inverter:
-                items.append(inverter)
-    except Exception:
-        pass
+    panel = _build_panel_item(
+        panel_result
+    )
 
-    try:
-        if isinstance(controller_result, dict):
-            controller = _build_controller_item(controller_result)
-            if controller:
-                items.append(controller)
-    except Exception:
-        pass
+    if panel:
+        items.append(
+            panel
+        )
 
-    try:
-        if isinstance(cable_result, dict):
-            items.extend(_extract_cable_items(cable_result))
-    except Exception:
-        pass
+    inverter = _build_inverter_item(
+        inverter_result
+    )
 
-    try:
-        if isinstance(protection_result, dict):
-            items.extend(_extract_protection_items(protection_result))
-    except Exception:
-        pass
+    if inverter:
+        items.append(
+            inverter
+        )
 
-    try:
-        if isinstance(accessory_result, dict):
-            items.extend(_extract_accessory_items(accessory_result))
-    except Exception:
-        pass
+    controller = _build_controller_item(
+        controller_result
+    )
 
-    # Earthing is handled through the dedicated earthing assessment and
-    # is deliberately excluded from the solar equipment/material BOQ.
-    items = [item for item in items if not _is_earthing_boq_item(item)]
+    if controller:
+        items.append(
+            controller
+        )
+
+    items.extend(
+        _extract_cable_items(
+            cable_result
+        )
+    )
+
+    items.extend(
+        _extract_protection_items(
+            protection_result
+        )
+    )
+
+    items.extend(
+        _extract_accessory_items(
+            accessory_result
+        )
+    )
+
     # Add final sequential line numbers.
     for index, item in enumerate(
         items,
@@ -2163,18 +2100,49 @@ def calculate_boq(
     errors = []
 
     for name, result in upstream_results.items():
+
         error = _validate_upstream_result(
             name,
             result,
         )
+
         if error:
-            errors.append(error)
+            errors.append(
+                error
+            )
+
+    if errors:
+
+        return {
+            "success": False,
+            "status": "invalid_upstream_results",
+            "items": [],
+            "categories": {},
+            "category_summary": {},
+            "totals": {
+                "line_count": 0,
+                "total_quantity": 0,
+                "total_price": 0,
+            },
+            "engineering_summary": {},
+            "warnings": [],
+            "messages": [],
+            "errors": errors,
+            "message": (
+                "BOQ generation could not be completed "
+                "because one or more upstream engineering "
+                "results are invalid."
+            ),
+            "engine": ENGINE_NAME,
+            "engine_version": ENGINE_VERSION,
+        }
 
     # --------------------------------------------------------------
-    # BUILD ITEMS (Always extract available components)
+    # BUILD ITEMS
     # --------------------------------------------------------------
 
     try:
+
         items = _build_all_items(
             battery_result=battery_result,
             panel_result=panel_result,
@@ -2184,9 +2152,37 @@ def calculate_boq(
             cable_result=cable_result,
             accessory_result=accessory_result,
         )
-    except Exception as exc:
-        items = []
-        errors.append(str(exc))
+
+    except (
+        TypeError,
+        ValueError,
+        InvalidOperation,
+    ) as exc:
+
+        return {
+            "success": False,
+            "status": "boq_generation_error",
+            "items": [],
+            "categories": {},
+            "category_summary": {},
+            "totals": {
+                "line_count": 0,
+                "total_quantity": 0,
+                "total_price": 0,
+            },
+            "engineering_summary": {},
+            "warnings": [],
+            "messages": [],
+            "errors": [
+                str(exc)
+            ],
+            "message": (
+                "An error occurred while constructing "
+                "the Bill of Quantities."
+            ),
+            "engine": ENGINE_NAME,
+            "engine_version": ENGINE_VERSION,
+        }
 
     # --------------------------------------------------------------
     # CATEGORY SUMMARY

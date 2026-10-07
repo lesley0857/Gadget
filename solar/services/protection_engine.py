@@ -2086,52 +2086,8 @@ class ProtectionEngine:
     ) -> Dict[str, Any]:
         """
         Validate the minimum electrical inputs required by Phase 8.
-
-        If inverter DC / AC currents are missing but power and
-        voltage data are available, derive the currents rather
-        than failing outright.
         """
 
-        # ----------------------------------------------------------
-        # Attempt to derive missing inverter currents from power
-        # ----------------------------------------------------------
-        inv_power = to_decimal(
-            inputs.get("inverter_power", 0)
-        )
-        sys_v = to_decimal(
-            inputs.get("system_voltage", 0)
-        )
-        bat_v = to_decimal(
-            inputs.get("actual_battery_voltage", 0)
-        )
-        ac_v = to_decimal(
-            inputs.get("inverter_ac_voltage", 0)
-        )
-        eff = to_decimal(
-            inputs.get("inverter_efficiency", Decimal("0.95"))
-        )
-        if eff <= ZERO:
-            eff = Decimal("0.95")
-
-        dc_v = bat_v if bat_v > ZERO else sys_v
-
-        if to_decimal(inputs.get("inverter_dc_current", 0)) <= ZERO:
-            if inv_power > ZERO and dc_v > ZERO:
-                inputs["inverter_dc_current"] = (
-                    inv_power / (dc_v * eff)
-                )
-
-        if to_decimal(inputs.get("inverter_ac_current", 0)) <= ZERO:
-            if ac_v <= ZERO:
-                ac_v = Decimal("230")
-            if inv_power > ZERO:
-                inputs["inverter_ac_current"] = (
-                    inv_power / ac_v
-                )
-
-        # ----------------------------------------------------------
-        # Now validate all required values
-        # ----------------------------------------------------------
         missing = []
 
         required_values = (

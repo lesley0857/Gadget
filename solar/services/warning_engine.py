@@ -1150,16 +1150,15 @@ def _validate_panel(
         and
         required_pv_voltage
         and
-        array_voltage < required_pv_voltage * Decimal("0.80")
+        array_voltage < required_pv_voltage
     ):
         warnings.append(
             _warning(
                 code="PV_VOLTAGE_BELOW_CONTROLLER_REQUIREMENT",
-                severity=SEVERITY_ADVISORY,
+                severity=SEVERITY_CRITICAL,
                 message=(
-                    "The PV array operating voltage is below the "
-                    "charge controller's minimum PV voltage "
-                    "(with 20% tolerance for Vmp vs Voc)."
+                    "The PV array voltage is below the charge "
+                    "controller's required PV voltage."
                 ),
                 category="pv_controller",
                 source=ENGINE_NAME,

@@ -689,20 +689,61 @@ def calculate_pricing(
         }
 
     # ==============================================================
-    # EXTRACT BOQ ITEMS (Always attempt extraction)
+    # CHECK BOQ SUCCESS
+    # ==============================================================
+
+    if boq_result.get(
+        "success"
+    ) is False:
+
+        boq_message = boq_result.get(
+            "message",
+            "The BOQ engine did not complete successfully.",
+        )
+
+        return {
+            "success": False,
+            "status": "boq_failed",
+            "engine": ENGINE_NAME,
+            "engine_version": ENGINE_VERSION,
+            "currency": CURRENCY,
+            "items": [],
+            "category_summary": {},
+            "settings": {},
+            "material_cost": 0,
+            "labour_cost": 0,
+            "transport_cost": 0,
+            "subtotal": 0,
+            "installation_cost": 0,
+            "cost_before_profit": 0,
+            "profit": 0,
+            "discount": 0,
+            "taxable_amount": 0,
+            "vat": 0,
+            "tax": 0,
+            "grand_total": 0,
+            "summary": {},
+            "warnings": [],
+            "messages": [],
+            "errors": [
+                str(boq_message)
+            ],
+            "message": (
+                "Pricing could not be calculated because "
+                "the BOQ engine failed."
+            ),
+        }
+
+    # ==============================================================
+    # EXTRACT BOQ ITEMS
     # ==============================================================
 
     boq_items = _extract_boq_items(
         boq_result
     )
 
-    if not boq_items and boq_result.get("success") is False:
-        boq_message = boq_result.get(
-            "message",
-            "The BOQ engine returned no items.",
-        )
-        warnings.append(str(boq_message))
-    elif not boq_items:
+    if not boq_items:
+
         warnings.append(
             "The BOQ contains no pricing lines."
         )

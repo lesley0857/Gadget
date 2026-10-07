@@ -37,9 +37,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
 from catalog.models import ProductListing
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
 from .forms import (
     ApplianceLoadForm,
     BatteryPreferenceForm,
@@ -170,121 +169,6 @@ def _engine_success(
             return
         raise ValueError(str(message))
 
-
-def _solar_transport_item(boq_items: list[dict[str, Any]], project_location: str) -> dict[str, Any] | None:
-    """Quote delivery with checkout's vendor-distance and live rate logic."""
-    from logistics.utils import estimate_cart_shipping_fee, lookup_city, lookup_state_centroid
-
-    location = str(project_location or "").strip()
-    coordinates = lookup_city(location) if location else None
-    if not coordinates and location:
-        for part in location.replace(",", " ").replace("-", " ").split():
-            coordinates = lookup_city(part) or lookup_state_centroid(part)
-            if coordinates:
-                break
-        if not coordinates:
-            coordinates = lookup_state_centroid(location)
-    if not coordinates:
-        return None
-
-    quantities_by_listing: dict[int, Decimal] = {}
-    for item in boq_items:
-        if not isinstance(item, dict) or item.get("item_type") == "transport":
-            continue
-        component = item.get("object")
-        if not isinstance(component, dict):
-            continue
-        try:
-            listing_id = int(component.get("id"))
-        except (TypeError, ValueError):
-            continue
-        quantities_by_listing[listing_id] = quantities_by_listing.get(listing_id, Decimal("0")) + Decimal(str(item.get("quantity", 1) or 1))
-    if not quantities_by_listing:
-        return None
-
-    listings = list(ProductListing.objects.filter(pk__in=quantities_by_listing).select_related("vendor"))
-    vendors_by_id = {listing.vendor_id: listing.vendor for listing in listings}
-    if not vendors_by_id:
-        return None
-    total_weight = sum(
-        (Decimal(str(listing.weight or 0)) * quantities_by_listing.get(listing.pk, Decimal("1")) for listing in listings),
-        Decimal("0"),
-    )
-    quote = estimate_cart_shipping_fee(
-        list(vendors_by_id.values()),
-        coordinates[0],
-        coordinates[1],
-        float(max(total_weight, Decimal("1"))),
-    )
-    cost = Decimal(str(quote["total"]))
-    distance = float(quote["distance_km"])
-    vendor_name = quote.get("farthest_vendor") or "Selected product vendor"
-    return {
-        "description": f"Solar delivery from {vendor_name} ({distance:.1f} km)",
-        "category": "Transport",
-        "item_type": "transport",
-        "specification": f"Checkout logistics quote · {distance:.1f} km",
-        "unit": "trip",
-        "quantity": 1,
-        "unit_price": float(cost),
-        "total_price": float(cost),
-        "source": "Checkout Logistics Calculator",
-        "reference": None,
-        "object": _json_safe(quote),
-        "notes": f"Live logistics rate for {distance:.1f} km from selected product vendor(s) to {location}.",
-    }
-
-def _generator_option(inverter_result: Any) -> dict[str, Any] | None:
-    if not isinstance(inverter_result, dict):
-        return None
-    option = inverter_result.get("solar_generator_option")
-    return option if isinstance(option, dict) else None
-
-
-def _selected_generator(inverter_result: Any) -> dict[str, Any] | None:
-    option = _generator_option(inverter_result)
-    if not option or option.get("available") is False:
-        return None
-    selected = option.get("selected_generator")
-    if isinstance(selected, dict):
-        return selected
-    return option if option.get("product_id") else None
-
-
-def _apply_generator_only_boq(boq: dict[str, Any], inverter_result: Any) -> None:
-    """Replace component lines with the selected integrated generator line."""
-    option = _generator_option(inverter_result)
-    if option is None:
-        return
-    generator = _selected_generator(inverter_result)
-    items: list[dict[str, Any]] = []
-    if generator:
-        try:
-            unit_price = max(Decimal("0"), Decimal(str(generator.get("price", generator.get("unit_price", 0)) or 0)))
-        except Exception:
-            unit_price = Decimal("0")
-        name = " ".join(str(part).strip() for part in (generator.get("brand"), generator.get("name") or generator.get("model")) if part).strip() or "Solar Generator"
-        items.append({
-            "description": name,
-            "category": "Solar Generator",
-            "item_type": "solar_generator",
-            "specification": f"Integrated solar generator · {generator.get('inverter_rated_power', generator.get('rated_power_w', ''))} W inverter · {generator.get('battery_capacity_kwh', '')} kWh storage",
-            "unit": "unit",
-            "quantity": 1,
-            "unit_price": float(unit_price),
-            "total_price": float(unit_price),
-            "source": "Solar Generator Catalogue",
-            "reference": generator.get("product_id") or generator.get("id"),
-            "object": {"id": generator.get("product_id") or generator.get("id")},
-            "notes": generator.get("note", "Integrated solar generator selected for this design."),
-            "line_number": 1,
-        })
-    boq["items"] = items
-    total_price = sum((Decimal(str(item.get("total_price", 0) or 0)) for item in items), Decimal("0"))
-    boq.setdefault("totals", {})
-    boq["totals"].update({"line_count": len(items), "total_quantity": len(items), "total_price": float(total_price)})
-    boq["categories"] = {"Solar Generator": items} if items else {}
-    boq["category_summary"] = {"Solar Generator": {"line_count": len(items), "total_quantity": len(items), "total_price": float(total_price)}} if items else {}
 
 def _system_voltage(result: Dict[str, Any]) -> Decimal:
     """Extract the canonical system voltage from the voltage engine result."""
@@ -615,7 +499,6 @@ def run_design_pipeline(
     require_hybrid_battery: bool = False,
     installation_type: str = "residential",
     offer_solar_generator: bool = False,
-    project_location: str = "",
     settings: DesignSetting | None = None,
 ) -> Dict[str, Any]:
     """
@@ -648,36 +531,6 @@ def run_design_pipeline(
 
     voltage_result = determine_system_voltage(load_result)
     _engine_success(voltage_result, "System Voltage Engine")
-
-    # Align system voltage with active catalogue capabilities for the requested mode and phase
-    target_inverters = product_bridge.get_active_inverters()
-    if operating_mode == "hybrid":
-        hybrid_inverters = [candidate for candidate in target_inverters if candidate.hybrid]
-        if hybrid_inverters:
-            target_inverters = hybrid_inverters
-    if installation_type == "industrial":
-        three_phase = [candidate for candidate in target_inverters if getattr(candidate, "phase", "single_phase") == "three_phase"]
-        if three_phase:
-            target_inverters = three_phase
-    else:
-        single_phase = [candidate for candidate in target_inverters if getattr(candidate, "phase", "single_phase") == "single_phase"]
-        if single_phase:
-            target_inverters = single_phase
-
-    if target_inverters:
-        active_voltages = sorted(list(set(int(float(getattr(c, "dc_voltage", 0) or 0)) for c in target_inverters if float(getattr(c, "dc_voltage", 0) or 0) > 0)))
-        if active_voltages:
-            current_v = int(float(voltage_result.get("system_voltage", 0) or 0))
-            if current_v not in active_voltages:
-                valid_higher = [v for v in active_voltages if v >= current_v]
-                target_v = min(valid_higher) if valid_higher else max(active_voltages)
-                voltage_result["system_voltage"] = target_v
-                voltage_result["selected_voltage"] = target_v
-                voltage_result["recommended_system_voltage"] = target_v
-                if isinstance(voltage_result.get("required"), dict):
-                    voltage_result["required"]["system_voltage"] = target_v
-                    voltage_result["required"]["nominal_system_voltage"] = target_v
-                    voltage_result["required"]["minimum_system_voltage"] = target_v
 
     system_voltage = _system_voltage(voltage_result)
 
@@ -746,17 +599,13 @@ def run_design_pipeline(
     # ---------------------------------------------------------------
 
     inverter_candidates = product_bridge.get_active_inverters()
-    # Prefer catalogue entries matching the requested operating mode and
-    # phase, but retain the active catalogue if metadata is incomplete or
-    # no exact match exists. Phase 5 evaluates electrical compatibility.
     if operating_mode == "hybrid":
-        hybrid_candidates = [candidate for candidate in inverter_candidates if getattr(candidate, "hybrid", False)]
-        if hybrid_candidates:
-            inverter_candidates = hybrid_candidates
-    requested_phase = "three_phase" if installation_type == "industrial" else "single_phase"
-    phase_candidates = [candidate for candidate in inverter_candidates if getattr(candidate, "phase", "single_phase") == requested_phase]
-    if phase_candidates:
-        inverter_candidates = phase_candidates
+        inverter_candidates = [candidate for candidate in inverter_candidates if candidate.hybrid]
+    if installation_type == "industrial":
+        inverter_candidates = [
+            candidate for candidate in inverter_candidates
+            if getattr(candidate, "phase", "single_phase") == "three_phase"
+        ]
 
     inverter_result = _call_engine(
         calculate_inverter,
@@ -764,26 +613,14 @@ def run_design_pipeline(
         voltage_result=voltage_result,
         battery_result=battery_result,
         inverters=inverter_candidates,
-        phase=requested_phase,
     )
     _engine_success(inverter_result, "Inverter Engine", allow_catalogue_gap=True)
 
     if offer_solar_generator:
         calculations = load_result.get("calculations", {})
-        inverter_requirements = inverter_result.get("required", {}) if isinstance(inverter_result.get("required"), dict) else {}
-        required_power = Decimal(str(inverter_requirements.get("minimum_rated_power_w", calculations.get("peak_design_load_w", 0)) or 0))
-        required_surge = Decimal(str(inverter_requirements.get("minimum_surge_power_w", calculations.get("surge_peak_load_w", 0)) or 0))
+        required_power = Decimal(str(calculations.get("peak_design_load_w", 0)))
         required_energy = Decimal(str(calculations.get("daily_energy_kwh", 0))) * Decimal(str(autonomy_days))
         phase = "three_phase" if installation_type == "industrial" else "single_phase"
-        required_capacity = {
-            "minimum_rated_power_w": required_power,
-            "minimum_surge_power_w": required_surge,
-            "minimum_battery_capacity_wh": required_energy * Decimal("1000"),
-            "minimum_battery_capacity_kwh": required_energy,
-            "battery_voltage": inverter_requirements.get("system_voltage", system_voltage),
-            "phase": phase,
-            "unit_quantity": 1,
-        }
         compatible_generators = [
             generator for generator in product_bridge.get_active_solar_generators()
             if Decimal(str(generator.inverter_rated_power)) >= required_power
@@ -795,7 +632,7 @@ def run_design_pipeline(
                 compatible_generators,
                 key=lambda item: (Decimal(str(item.inverter_rated_power)), Decimal(str(item.price))),
             )
-            generator_payload = {
+            inverter_result["solar_generator_option"] = {
                 "product_id": generator.product_id,
                 "name": generator.name,
                 "brand": generator.brand,
@@ -803,27 +640,14 @@ def run_design_pipeline(
                 "price": generator.price,
                 "battery_capacity_kwh": generator.battery_capacity_kwh,
                 "inverter_rated_power": generator.inverter_rated_power,
-                "rated_power_w": generator.inverter_rated_power,
                 "inverter_surge_power": generator.inverter_surge_power,
-                "surge_power_w": generator.inverter_surge_power,
-                "battery_capacity_wh": Decimal(str(generator.battery_capacity_kwh)) * Decimal("1000"),
                 "phase": generator.phase,
-                "output_voltage": generator.output_voltage,
                 "hybrid": generator.hybrid,
-                "note": "Integrated solar generator selected; confirm PV input and runtime with the supplier.",
-            }
-            inverter_result["solar_generator_option"] = {
-                "available": True,
-                "preferred": True,
-                "required_capacity": _json_safe(required_capacity),
-                "selected_generator": generator_payload,
-                **generator_payload,
+                "note": "Alternative integrated solar-generator option; confirm PV input and runtime with the supplier.",
             }
         else:
             inverter_result["solar_generator_option"] = {
                 "available": False,
-                "preferred": True,
-                "required_capacity": _json_safe(required_capacity),
                 "note": "No active catalogue solar generator meets this load, energy and phase requirement.",
             }
 
@@ -902,32 +726,9 @@ def run_design_pipeline(
         accessory_result=accessory_result,
     )
     _engine_success(boq_result, "BOQ Engine", allow_catalogue_gap=True)
-    _apply_generator_only_boq(boq_result, inverter_result)
-    # Price transport with the same live vendor-distance calculation as checkout.
-    transport_item = _solar_transport_item(boq_result.get("items", []), project_location)
-    if transport_item and isinstance(boq_result.get("items"), list):
-        transport_item["line_number"] = len(boq_result["items"]) + 1
-        boq_result["items"].append(transport_item)
-
-    # Nigerian installer labour benchmark: ₦30,000 per kVA, with a
-    # ₦100,000 minimum. A configured fixed installation price wins.
-    inverter_selected = inverter_result.get("selected") or {}
-    inverter_info = inverter_selected.get("inverter") or {}
-    selected_generator = _selected_generator(inverter_result)
-    if _generator_option(inverter_result) is not None:
-        inverter_watts = (selected_generator or {}).get("inverter_rated_power", 0)
-    else:
-        inverter_watts = inverter_selected.get("rated_power") or inverter_info.get("rated_power") or 0
-    inverter_kva = Decimal(str(inverter_watts)) / Decimal("1000")
-    labour_allowance = max(Decimal("100000"), inverter_kva * Decimal("30000"))
-    installation_price = (
-        Decimal("0") if _generator_option(inverter_result) is not None and not selected_generator
-        else settings.installation_price or labour_allowance
-    )
-
     boq_result["settings"] = {
         "installation_percentage": settings.installation_percentage,
-        "installation_price": installation_price,
+        "installation_price": settings.installation_price,
         "profit_percentage": settings.profit_percentage,
         "vat_percentage": settings.vat_percentage,
     }
@@ -1173,7 +974,6 @@ def solar_design(request: HttpRequest) -> HttpResponse:
             require_hybrid_battery=battery_data["require_hybrid_battery"],
             installation_type=design_data["installation_type"],
             offer_solar_generator=(battery_data["solution_preference"] == "generator"),
-            project_location=design_data.get("project_location", ""),
         )
 
     except Exception as exc:
@@ -1380,38 +1180,6 @@ def solar_design_result(
         designs = designs.filter(user__isnull=True, id__in=request.session.get("guest_solar_design_ids", []))
     design = get_object_or_404(designs)
 
-    # Rebuild display pricing from saved component selections. Older designs
-    # may predate the BOQ support for nested prices and total_quantity.
-    boq = design.boq_result if isinstance(design.boq_result, dict) else {}
-    pricing = design.pricing_result if isinstance(design.pricing_result, dict) else {}
-    try:
-        refreshed_boq = generate_boq(
-            battery_result=design.battery_result,
-            panel_result=design.panel_result,
-            controller_result=design.controller_result,
-            inverter_result=design.inverter_result,
-            protection_result=design.protection_result,
-            cable_result=design.cable_result,
-            accessory_result=design.accessory_result,
-        )
-        _apply_generator_only_boq(refreshed_boq, design.inverter_result)
-        transport_item = _solar_transport_item(refreshed_boq.get("items", []), design.project_location)
-        if transport_item:
-            transport_item["line_number"] = len(refreshed_boq["items"]) + 1
-            refreshed_boq["items"].append(transport_item)
-        refreshed_boq["settings"] = boq.get("settings", {})
-        if _generator_option(design.inverter_result) is not None and not _selected_generator(design.inverter_result):
-            refreshed_boq["settings"]["installation_price"] = 0
-        refreshed_boq["totals"]["line_count"] = len(refreshed_boq["items"])
-        refreshed_boq["totals"]["total_price"] = sum(
-            Decimal(str(item.get("total_price", 0) or 0))
-            for item in refreshed_boq["items"]
-        )
-        boq = _json_safe(refreshed_boq)
-        pricing = _json_safe(calculate_pricing(boq_result=refreshed_boq))
-    except Exception:
-        # Keep the saved response if catalogue refresh is unavailable.
-        pass
     return render(
         request,
         "solar/design_result.html",
@@ -1426,72 +1194,12 @@ def solar_design_result(
             "protection": design.protection_result,
             "cables": design.cable_result,
             "accessories": design.accessory_result,
-            "boq": boq,
-            "pricing": pricing,
+            "boq": design.boq_result,
+            "pricing": design.pricing_result,
             "warnings": design.warnings_result,
         },
     )
 
-
-
-@require_POST
-def solar_shipping_quote(request: HttpRequest, design_id: int) -> HttpResponse:
-    """Update a saved solar design location and checkout-style delivery quote."""
-    designs = SolarDesign.objects.filter(id=design_id)
-    if request.user.is_authenticated:
-        designs = designs.filter(user=request.user)
-    else:
-        designs = designs.filter(user__isnull=True, id__in=request.session.get("guest_solar_design_ids", []))
-    design = get_object_or_404(designs)
-    address = str(request.POST.get("address", "")).strip()
-    if not address:
-        return JsonResponse({"error": "Select or enter a delivery address."}, status=400)
-
-    try:
-        refreshed_boq = generate_boq(
-            battery_result=design.battery_result,
-            panel_result=design.panel_result,
-            controller_result=design.controller_result,
-            inverter_result=design.inverter_result,
-            protection_result=design.protection_result,
-            cable_result=design.cable_result,
-            accessory_result=design.accessory_result,
-        )
-        _apply_generator_only_boq(refreshed_boq, design.inverter_result)
-        transport_item = _solar_transport_item(refreshed_boq.get("items", []), address)
-        if not transport_item:
-            return JsonResponse({"error": "Choose a supported city or state so delivery distance can be calculated."}, status=400)
-        transport_item["line_number"] = len(refreshed_boq["items"]) + 1
-        refreshed_boq["items"].append(transport_item)
-
-        saved_boq = design.boq_result if isinstance(design.boq_result, dict) else {}
-        settings_data = dict(saved_boq.get("settings", {}))
-        option = _generator_option(design.inverter_result)
-        generator = _selected_generator(design.inverter_result)
-        if option is not None and not generator:
-            settings_data["installation_price"] = 0
-        elif option is not None and not settings_data.get("installation_price"):
-            watts = Decimal(str(generator.get("inverter_rated_power", 0) or 0))
-            settings_data["installation_price"] = float(max(Decimal("100000"), watts / Decimal("1000") * Decimal("30000")))
-        refreshed_boq["settings"] = settings_data
-        refreshed_boq["totals"]["line_count"] = len(refreshed_boq["items"])
-        refreshed_boq["totals"]["total_price"] = sum(
-            (Decimal(str(item.get("total_price", 0) or 0)) for item in refreshed_boq["items"]),
-            Decimal("0"),
-        )
-        pricing = calculate_pricing(boq_result=refreshed_boq)
-        design.project_location = address
-        design.boq_result = _json_safe(refreshed_boq)
-        design.pricing_result = _json_safe(pricing)
-        design.save(update_fields=["project_location", "boq_result", "pricing_result", "updated_at"])
-        return JsonResponse({
-            "address": address,
-            "transport_cost": float(transport_item["total_price"]),
-            "boq": design.boq_result,
-            "pricing": design.pricing_result,
-        })
-    except Exception:
-        return JsonResponse({"error": "The delivery quote could not be updated. Please try again."}, status=500)
 
 # ---------------------------------------------------------------------
 # HISTORY / DASHBOARD
@@ -1943,7 +1651,6 @@ def update_solar_design(
             require_hybrid_battery=battery_data["require_hybrid_battery"],
             installation_type=design_data["installation_type"],
             offer_solar_generator=(battery_data["solution_preference"] == "generator"),
-            project_location=design_data.get("project_location", ""),
         )
 
         for field in ENGINE_KEYS:

@@ -107,7 +107,6 @@ urlpatterns = [
     ),
     path("tools/in-progress/", views.tool_in_progress, name="tool_in_progress"),
     path("design/<int:design_id>/maintenance/", views.request_maintenance, name="request_maintenance"),
-    path("design/<int:design_id>/shipping-quote/", views.solar_shipping_quote, name="solar_shipping_quote"),
     path("earthing/", include("earthing.urls")),
 
 
