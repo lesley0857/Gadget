@@ -96,7 +96,7 @@ INSTALLED_APPS = [
     'services',
     'remarobeprojects',
     'testimonials',
-    'blog',
+    'blog.apps.BlogConfig',
     'solar',
     'earthing',
 ]
@@ -163,6 +163,11 @@ DATABASES = {
     }
 }
 
+# Optional LinkedIn publishing credentials. Configure these in the deployment environment.
+LINKEDIN_ACCESS_TOKEN = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+LINKEDIN_AUTHOR_URN = os.getenv("LINKEDIN_AUTHOR_URN", "")
+LINKEDIN_API_VERSION = os.getenv("LINKEDIN_API_VERSION", "202610")
+PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", "").rstrip("/")
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

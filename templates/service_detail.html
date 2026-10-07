@@ -326,7 +326,7 @@
 
                 <div class="rfq-right">
 
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" class="service-rfq-form">
 
                         {% csrf_token %}
 
@@ -371,6 +371,13 @@
         </div>
 
     </div>
+
+<script>
+document.querySelector(".service-rfq-form")?.addEventListener("submit", function () {
+    const button = this.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+});
+</script>
 
 </section>
 

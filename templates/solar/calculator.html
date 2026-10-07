@@ -5,6 +5,28 @@
 
 {% block content %}
 
+<div class="calculator-view-prompt" id="calculator-view-prompt" hidden>
+    <div class="calculator-view-prompt__card" role="dialog" aria-modal="true" aria-labelledby="calculator-view-prompt-title">
+        <h2 id="calculator-view-prompt-title">Choose how to use the calculator</h2>
+        <p>Select the layout you prefer for this visit.</p>
+        <div class="calculator-view-prompt__actions">
+            <button type="button" data-calculator-view="mobile">Mobile view</button>
+            <button type="button" data-calculator-view="desktop">Desktop view</button>
+        </div>
+    </div>
+</div>
+<style>
+    .calculator-view-prompt[hidden] { display: none !important; }
+    .calculator-view-prompt { position: fixed; inset: auto 0 0; z-index: 1000000; padding: 14px; background: rgba(15,23,42,.48); }
+    .calculator-view-prompt__card { width: min(100%,620px); margin: 0 auto; padding: 20px; color: #172033; background: #fff; border-radius: 16px; box-shadow: 0 12px 40px rgba(15,23,42,.24); }
+    .calculator-view-prompt__card h2 { color: #172033; margin: 0 0 8px; }
+    .calculator-view-prompt__card p { color: #334155; margin: 0 0 16px; }
+    .calculator-view-prompt__actions { display: flex; gap: 10px; }
+    .calculator-view-prompt__actions button { flex: 1; min-height: 48px; border: 0; border-radius: 10px; color: #fff; background: #0f766e; font-weight: 800; cursor: pointer; }
+    .calculator-view-prompt__actions button:last-child { background: #1e293b; }
+    @media (min-width: 769px) { .calculator-view-prompt { display: none !important; } }
+</style>
+
 <!-- SOLAR ONBOARDING TOUR MODAL -->
 <div id="solar-tour-overlay" class="st-overlay" style="display:none;">
     <div class="st-modal">
@@ -1940,15 +1962,6 @@
 
                         </div>
 
-
-                        <button type="button" id="addApplianceButton" class="solar-add-button">
-
-                            <span>＋</span>
-
-                            Add Appliance
-
-                        </button>
-
                     </div>
 
 
@@ -2113,6 +2126,7 @@
 
                                 </tr>
 
+                                <tr class="solar-add-appliance-row"><td colspan="5"><button type="button" class="solar-add-button" aria-label="Add an appliance below this appliance"><span>+</span> Add Appliance</button></td></tr>
                                 {% endfor %}
 
 
@@ -2334,7 +2348,7 @@
 
         const form = document.getElementById("solarDesignForm");
         const rowsContainer = document.getElementById("applianceRows");
-        const addButton = document.getElementById("addApplianceButton");
+        const addButton = rowsContainer;
         const emptyTemplate = document.getElementById("emptyApplianceTemplate");
 
         const totalForms = document.getElementById("id_form-TOTAL_FORMS");
@@ -2643,6 +2657,10 @@
 
 
             rowsContainer.appendChild(newRow);
+            const addRow = document.createElement("tr");
+            addRow.className = "solar-add-appliance-row";
+            addRow.innerHTML = '<td colspan="5"><button type="button" class="solar-add-button" aria-label="Add an appliance below this appliance"><span>+</span> Add Appliance</button></td>';
+            rowsContainer.appendChild(addRow);
 
 
             /*
@@ -2723,7 +2741,9 @@
 
             setTimeout(function () {
 
+                const followingAddRow = row.nextElementSibling;
                 row.remove();
+                if (followingAddRow?.classList.contains("solar-add-appliance-row")) followingAddRow.remove();
 
                 rebuildFormIndexes();
 
@@ -2799,11 +2819,9 @@
         ============================================================ */
 
         if (addButton) {
-
-            addButton.addEventListener(
-                "click",
-                addAppliance
-            );
+            addButton.addEventListener("click", function (event) {
+                if (event.target.closest(".solar-add-button")) addAppliance();
+            });
         }
 
 
@@ -3371,4 +3389,21 @@
         });
     })();
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const prompt = document.getElementById("calculator-view-prompt");
+    if (!prompt || !window.matchMedia("(max-width: 768px)").matches) return;
+    const viewport = document.querySelector('meta[name="viewport"]');
+    prompt.hidden = false;
+    prompt.querySelectorAll("[data-calculator-view]").forEach((button) => {
+        button.addEventListener("click", function () {
+            const desktop = button.dataset.calculatorView === "desktop";
+            document.documentElement.dataset.solarCalculatorView = desktop ? "desktop" : "mobile";
+            if (viewport) viewport.setAttribute("content", desktop ? "width=1024, initial-scale=1" : "width=device-width, initial-scale=1");
+            prompt.hidden = true;
+        });
+    });
+});
+</script>
+
 {% endblock %}

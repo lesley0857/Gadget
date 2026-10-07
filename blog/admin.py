@@ -19,8 +19,10 @@ class BlogPostAdmin(
     list_display = (
         "title",
         "category",
-        "created_at"
+        "created_at",
+        "linkedin_post_id",
     )
+    readonly_fields = ("linkedin_post_id", "linkedin_publish_error")
 
 
 admin.site.register(

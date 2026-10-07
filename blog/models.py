@@ -67,6 +67,10 @@ class BlogPost(models.Model):
         blank=True
     )
 
+    linkedin_post_id = models.CharField(max_length=255, blank=True)
+    linkedin_publish_error = models.TextField(blank=True)
+    linkedin_publish_started_at = models.DateTimeField(null=True, blank=True)
+
     def save(self, *args, **kwargs):
 
         if not self.slug:

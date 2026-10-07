@@ -111,10 +111,16 @@ def home(request):
     trending_products = ProductListing.objects.filter(
         is_active=True).order_by("-units_sold")[:15]
  
-    if request.method == "POST":
+    if request.method == "POST" and request.POST.get("rfq_submit") == "1":
+
+        service_id = request.POST.get("service")
+        service = Service.objects.filter(id=service_id, is_active=True).first() if service_id else Service.objects.filter(is_active=True).first()
+        if not service:
+            messages.error(request, "Please select a valid service for your quotation request.")
+            return redirect("home")
 
         ServiceRFQ.objects.create(
-            service = Service.objects.filter().first(),
+            service=service,
             name=request.POST.get("name"),
             email=request.POST.get("email"),
 

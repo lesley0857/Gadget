@@ -112,7 +112,7 @@ urlpatterns = [
 
 
     path(
-        "design/<int:design_id>/",
+        "design/<slug:customer_slug>-<int:design_id>/",
         views.solar_design_result,
         name="design_result",
     ),

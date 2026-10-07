@@ -39,6 +39,7 @@ from django.db.models import Q
 from catalog.models import ProductListing
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from .forms import (
     ApplianceLoadForm,
@@ -1364,21 +1365,30 @@ def solar_design(request: HttpRequest) -> HttpResponse:
         ids = set(request.session.get("guest_solar_design_ids", []))
         ids.add(design.id)
         request.session["guest_solar_design_ids"] = list(ids)
-    return redirect("design_result", design_id=design.id)
+    return _redirect_to_solar_result(design)
 # ---------------------------------------------------------------------
 # RESULT
 # ---------------------------------------------------------------------
 
+def _redirect_to_solar_result(design: SolarDesign) -> HttpResponse:
+    customer_slug = slugify(design.client_name or design.project_name) or "customer"
+    return redirect("design_result", customer_slug=customer_slug, design_id=design.id)
+
+
 def solar_design_result(
     request: HttpRequest,
+    customer_slug: str,
     design_id: int,
 ) -> HttpResponse:
     designs = SolarDesign.objects.filter(id=design_id)
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         designs = designs.filter(user=request.user)
-    else:
+    elif not request.user.is_authenticated:
         designs = designs.filter(user__isnull=True, id__in=request.session.get("guest_solar_design_ids", []))
     design = get_object_or_404(designs)
+    expected_slug = slugify(design.client_name or design.project_name) or "customer"
+    if customer_slug != expected_slug:
+        return _redirect_to_solar_result(design)
 
     # Rebuild display pricing from saved component selections. Older designs
     # may predate the BOQ support for nested prices and total_quantity.
@@ -1585,10 +1595,7 @@ def favorite_design(
     design.favorite = not design.favorite
     design.save(update_fields=["favorite", "updated_at"])
 
-    return redirect(
-        "solar_design_result",
-        design_id=design.id,
-    )
+    return _redirect_to_solar_result(design)
 
 
 @login_required
@@ -1660,10 +1667,7 @@ def duplicate_solar_design(
         "Solar design duplicated successfully.",
     )
 
-    return redirect(
-        "solar_design_result",
-        design_id=duplicate.id,
-    )
+    return _redirect_to_solar_result(duplicate)
 
 
 # ---------------------------------------------------------------------
@@ -1690,10 +1694,7 @@ def archive_design(
             "Design archived successfully.",
         )
 
-    return redirect(
-        "solar_design_result",
-        design_id=design.id,
-    )
+    return _redirect_to_solar_result(design)
 
 
 @login_required
@@ -1715,10 +1716,7 @@ def restore_design(
         "Design restored successfully.",
     )
 
-    return redirect(
-        "solar_design_result",
-        design_id=design.id,
-    )
+    return _redirect_to_solar_result(design)
 
 
 @login_required
@@ -1849,10 +1847,7 @@ def restore_project_version(
         f"Version {version.version} restored successfully.",
     )
 
-    return redirect(
-        "solar_design_result",
-        design_id=design.id,
-    )
+    return _redirect_to_solar_result(design)
 
 
 # ---------------------------------------------------------------------
@@ -1970,10 +1965,7 @@ def update_solar_design(
             "Solar design updated successfully.",
         )
 
-        return redirect(
-            "solar_design_result",
-            design_id=design.id,
-        )
+        return _redirect_to_solar_result(design)
 
     except Exception as exc:
         messages.error(
@@ -2008,7 +2000,7 @@ def request_maintenance(request: HttpRequest, design_id: int) -> HttpResponse:
             priority=request.POST.get("priority", "normal"),
         )
         messages.success(request, "Your maintenance request has been sent to the REMAROBE service team.")
-        return redirect("design_result", design_id=design.id)
+        return _redirect_to_solar_result(design)
     return render(request, "solar/maintenance_request.html", {"design": design})
 
 def earthing_assessment(request: HttpRequest):

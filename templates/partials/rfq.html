@@ -1817,9 +1817,10 @@ SELECTED FILES
 
                 </div>
 
-                <form method="POST" enctype="multipart/form-data" class="rfq-form">
+                <form method="POST" action="{% url 'home' %}" enctype="multipart/form-data" class="rfq-form">
 
                     {% csrf_token %}
+                    <input type="hidden" name="rfq_submit" value="1">
 
                     <!-- NAME -->
                     <div class="rfq-input-group">
@@ -1976,6 +1977,13 @@ SELECTED FILES
             FILE INPUT CHANGE
             =========================================
             */
+
+            if (!fileInput || !uploadBox || !status) return;
+            const rfqForm = fileInput.closest("form");
+            rfqForm?.addEventListener("submit", function () {
+                const button = rfqForm.querySelector('[type="submit"]');
+                if (button) button.disabled = true;
+            });
 
             fileInput.addEventListener("change", function () {
 
