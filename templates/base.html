@@ -1381,14 +1381,18 @@
     <!--
         Electrical & Solar background watermark overlay.
         - pointer-events:none  → never blocks clicks or interactions
-        - z-index:1            → overlays the page with a subtle, fixed pattern
+        - z-index:-1           → keeps the colored pattern behind page text
         - opacity controlled by watermark.css (.electrical-watermark)
         - background-image set here so Django's static tag resolves the SVG path
     -->
     <div class="electrical-watermark"
-        style="background-image: url('{% static 'svg/electrical-watermark.svg' %}'); background-size: 420px 420px; background-position: center center; z-index: 1;"
+        style="background-image: url('{% static 'svg/electrical-watermark.svg' %}'); background-size: 420px 420px; background-position: center center; z-index: -1; opacity: 0.12; filter: invert(38%) sepia(56%) saturate(620%) hue-rotate(165deg); animation: none;"
         aria-hidden="true" role="presentation">
     </div>
+    <style>
+        body { background-color: rgba(248, 250, 252, 0.92); }
+        section, main, .section { background-color: rgba(248, 250, 252, 0.88) !important; }
+    </style>
 
     <!-- ###### Product Style #### -->
     <style>
