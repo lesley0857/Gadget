@@ -160,11 +160,32 @@ class PanelCandidate(ProductCandidate):
 
 
 class InverterCandidate(ProductCandidate):
-    pass
+    @property
+    def rated_power_w(self):
+        return getattr(self._spec, "rated_power", 0)
+
+    @property
+    def surge_power_w(self):
+        return getattr(self._spec, "surge_power", 0)
+
+    @property
+    def battery_voltage(self):
+        return getattr(self._spec, "dc_voltage", 0)
 
 
 class SolarGeneratorCandidate(ProductCandidate):
-    pass
+    @property
+    def rated_power_w(self):
+        return getattr(self._spec, "inverter_rated_power", 0)
+
+    @property
+    def surge_power_w(self):
+        return getattr(self._spec, "inverter_surge_power", 0)
+
+    @property
+    def battery_capacity_wh(self):
+        kwh = getattr(self._spec, "battery_capacity_kwh", 0)
+        return float(kwh) * 1000 if kwh else 0
 
 
 class ControllerCandidate(ProductCandidate):
@@ -172,23 +193,57 @@ class ControllerCandidate(ProductCandidate):
 
 
 class CableCandidate(ProductCandidate):
-    pass
+    @property
+    def size_mm2(self):
+        return getattr(self._spec, 'size_mm', 0)
+
+    @property
+    def current_rating(self):
+        return getattr(self._spec, 'ampacity', 0)
 
 
 class FuseCandidate(ProductCandidate):
-    pass
+    @property
+    def rating_a(self):
+        return getattr(self._spec, 'current_rating', 0)
+
+    @property
+    def voltage_rating_v(self):
+        return getattr(self._spec, 'voltage_rating', 0)
 
 
 class BreakerCandidate(ProductCandidate):
-    pass
+    @property
+    def rating_a(self):
+        return getattr(self._spec, 'current_rating', 0)
+
+    @property
+    def voltage_rating_v(self):
+        return getattr(self._spec, 'voltage_rating', 0)
 
 
 class SPDCandidate(ProductCandidate):
-    pass
+    @property
+    def uc_v(self):
+        return getattr(self._spec, 'voltage_rating', 0)
+
+    @property
+    def ucpv_v(self):
+        return getattr(self._spec, 'voltage_rating', 0)
 
 
 class IsolatorCandidate(ProductCandidate):
-    pass
+    @property
+    def rating_a(self):
+        return getattr(self._spec, 'current_rating', 0)
+
+    @property
+    def current_rating_a(self):
+        return getattr(self._spec, 'current_rating', 0)
+
+    @property
+    def voltage_rating_v(self):
+        return getattr(self._spec, 'voltage_rating', 0)
 
 
 class MountingStructureCandidate(ProductCandidate):

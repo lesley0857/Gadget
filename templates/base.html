@@ -40,6 +40,9 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
+    <!-- Electrical & Solar background watermark -->
+    <link type="text/css" rel="stylesheet" href="{% static 'css/watermark.css' %}" />
+
 </head>
 <style>
     .product-detail-wrapper {
@@ -1375,6 +1378,18 @@
 </script>
 
 <body>
+    <!--
+        Electrical & Solar background watermark overlay.
+        - pointer-events:none  → never blocks clicks or interactions
+        - z-index:1            → overlays the page with a subtle, fixed pattern
+        - opacity controlled by watermark.css (.electrical-watermark)
+        - background-image set here so Django's static tag resolves the SVG path
+    -->
+    <div class="electrical-watermark"
+        style="background-image: url('{% static 'svg/electrical-watermark.svg' %}'); background-size: 420px 420px; background-position: center center; z-index: 1;"
+        aria-hidden="true" role="presentation">
+    </div>
+
     <!-- ###### Product Style #### -->
     <style>
         /* =========================================
