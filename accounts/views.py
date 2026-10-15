@@ -1,4 +1,5 @@
 import random
+import json
 from django.shortcuts import render,redirect
 from django.core.paginator import Paginator
 
@@ -18,6 +19,38 @@ from orders.models import *
 from withdrawals.views import *
 from services.models import *
 from blog.models import *
+
+
+from collections import Counter
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+
+@staff_member_required
+def visitor_analytics_view(request):
+    events = []
+    try:
+        with open('/var/www/Gadget/visitor_events.log', 'r') as f:
+            for line in f:
+                if line.strip():
+                    events.append(json.loads(line))
+    except FileNotFoundError:
+        pass
+
+    # Reverse so newest are first
+    events.reverse()
+    
+    total_requests = len(events)
+    unique_visitors = len(set(e.get('visitor_id') for e in events))
+    top_paths = Counter(e.get('path') for e in events).most_common(10)
+    recent_events = events[:50]  # Last 50 events
+
+    context = {
+        'total_requests': total_requests,
+        'unique_visitors': unique_visitors,
+        'top_paths': top_paths,
+        'recent_events': recent_events,
+    }
+    return render(request, 'analytics_dashboard.html', context)
 
 def custom_404(request, exception):
     return render(request, "404.html", status=404)
