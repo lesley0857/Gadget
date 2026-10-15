@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block content %}
+<link rel="modulepreload" href="{% static 'js/three/three.module.js' %}">
+<link rel="modulepreload" href="{% static 'js/three/OrbitControls.js' %}">
+<link rel="stylesheet" href="{% static 'css/solar3d.css' %}">
 <div class="result-view-prompt" id="result-view-prompt" hidden>
     <div class="result-view-prompt__card" role="dialog" aria-modal="true" aria-labelledby="result-view-prompt-title">
         <h2 id="result-view-prompt-title">Choose how to view your results</h2>
@@ -383,6 +385,139 @@
             </article>
 
         </section>
+
+        <!-- =========================================================
+             3D SOLAR SYSTEM EQUIPMENT VISUALISER
+        ========================================================== -->
+        <section class="solar-3d-section" id="solar-3d-visualiser" aria-label="3D Equipment Visualiser">
+            <div class="solar-3d-header">
+                <div class="solar-3d-header__title">
+                    <i class="bi bi-box"></i>
+                    <span>Your Solar System in 3D</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.25); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">Interactive 3D</span>
+                </div>
+                <div class="solar-3d-header__hint hidden-xs">
+                    <i class="bi bi-arrows-move"></i> Drag to rotate &bull; <i class="bi bi-mouse"></i> Scroll to zoom &bull; Right-click to pan
+                </div>
+                <div class="solar-3d-header__controls">
+                    <button type="button" class="solar-3d-btn" data-solar3d-action="zoom-in" title="Zoom In" aria-label="Zoom in">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <button type="button" class="solar-3d-btn" data-solar3d-action="zoom-out" title="Zoom Out" aria-label="Zoom out">
+                        <i class="bi bi-dash-lg"></i>
+                    </button>
+                    <button type="button" class="solar-3d-btn" data-solar3d-action="reset" title="Reset View" aria-label="Reset 3D camera view">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button type="button" class="solar-3d-btn" data-solar3d-action="fullscreen" title="Fullscreen" aria-label="Toggle fullscreen mode">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="solar-3d-container">
+                <div class="solar-3d-loading">
+                    <div class="solar-3d-spinner"></div>
+                    <div class="solar-3d-loading-text">Loading 3D Solar Equipment...</div>
+                </div>
+                <div class="solar-3d-fallback">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div class="solar-3d-fallback-msg">Interactive 3D visualization could not be loaded.</div>
+                </div>
+                <div class="solar-3d-canvas-wrapper" style="width: 100%; height: 100%; min-height: 460px;"></div>
+            </div>
+
+            <!-- Equipment Summary Cards -->
+            <div class="solar-3d-summary">
+                {% if visualizer_data.equipment.panels.quantity %}
+                <div class="solar-3d-equip-card">
+                    <div class="solar-3d-equip-icon solar-3d-equip-icon--panel">
+                        <i class="bi bi-sun-fill"></i>
+                    </div>
+                    <div class="solar-3d-equip-info">
+                        <div class="solar-3d-equip-label">Solar Panels</div>
+                        <div class="solar-3d-equip-value">
+                            {{ visualizer_data.equipment.panels.quantity }} &times; <strong>{{ visualizer_data.equipment.panels.rating }}</strong>
+                        </div>
+                        <div class="solar-3d-equip-name" title="{{ visualizer_data.equipment.panels.name }}">
+                            {{ visualizer_data.equipment.panels.name }}
+                        </div>
+                        <div style="font-size: 0.72rem; color: #16a34a; font-weight: 600; margin-top: 3px;">
+                            Total: <strong>{{ visualizer_data.equipment.panels.total_power_kw }} kW</strong>
+                            &bull;
+                            <span style="color: #64748b;">{{ visualizer_data.equipment.panels.asset.status_label }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if visualizer_data.equipment.batteries.quantity %}
+                <div class="solar-3d-equip-card">
+                    <div class="solar-3d-equip-icon solar-3d-equip-icon--battery">
+                        <i class="bi bi-battery-charging"></i>
+                    </div>
+                    <div class="solar-3d-equip-info">
+                        <div class="solar-3d-equip-label">Battery Bank</div>
+                        <div class="solar-3d-equip-value">
+                            {{ visualizer_data.equipment.batteries.quantity }} &times; <strong>{{ visualizer_data.equipment.batteries.rating }}</strong>
+                        </div>
+                        <div class="solar-3d-equip-name" title="{{ visualizer_data.equipment.batteries.name }}">
+                            {{ visualizer_data.equipment.batteries.name }}
+                        </div>
+                        <div style="font-size: 0.72rem; color: #16a34a; font-weight: 600; margin-top: 3px;">
+                            {% if visualizer_data.equipment.batteries.usable_energy_kwh %}Storage: <strong>{{ visualizer_data.equipment.batteries.usable_energy_kwh }} kWh</strong> &bull; {% endif %}
+                            <span style="color: #64748b;">{{ visualizer_data.equipment.batteries.asset.status_label }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if visualizer_data.equipment.inverter.quantity %}
+                <div class="solar-3d-equip-card">
+                    <div class="solar-3d-equip-icon solar-3d-equip-icon--inverter">
+                        <i class="bi bi-plug-fill"></i>
+                    </div>
+                    <div class="solar-3d-equip-info">
+                        <div class="solar-3d-equip-label">Inverter</div>
+                        <div class="solar-3d-equip-value">
+                            {{ visualizer_data.equipment.inverter.quantity }} &times; <strong>{{ visualizer_data.equipment.inverter.rating }}</strong>
+                        </div>
+                        <div class="solar-3d-equip-name" title="{{ visualizer_data.equipment.inverter.name }}">
+                            {{ visualizer_data.equipment.inverter.name }}
+                        </div>
+                        <div style="font-size: 0.72rem; color: #16a34a; font-weight: 600; margin-top: 3px;">
+                            {{ visualizer_data.equipment.inverter.phase|title }} &bull;
+                            <span style="color: #64748b;">{{ visualizer_data.equipment.inverter.asset.status_label }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if visualizer_data.equipment.controller.quantity %}
+                <div class="solar-3d-equip-card">
+                    <div class="solar-3d-equip-icon solar-3d-equip-icon--controller">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+                    <div class="solar-3d-equip-info">
+                        <div class="solar-3d-equip-label">Charge Controller</div>
+                        <div class="solar-3d-equip-value">
+                            {{ visualizer_data.equipment.controller.quantity }} &times; <strong>{{ visualizer_data.equipment.controller.rating }}</strong>
+                        </div>
+                        <div class="solar-3d-equip-name" title="{{ visualizer_data.equipment.controller.name }}">
+                            {{ visualizer_data.equipment.controller.name }}
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px;">
+                            {{ visualizer_data.equipment.controller.asset.status_label }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Dynamic JSON Data for Three.js Visualiser -->
+        <script id="solar-3d-data" type="application/json">{{ visualizer_json|safe }}</script>
+        <script type="module" src="{% static 'js/solar3d/visualizer.js' %}"></script>
 
         <section class="component-comparison-section">
             <div class="section-heading">

@@ -1192,3 +1192,129 @@ class EarthingDesign(models.Model):
 
     def __str__(self):
         return f"Earthing — {self.project_name}"
+
+
+# ================================================================
+# PRODUCT 3D MODEL ASSET MAPPING
+# ================================================================
+
+class Product3DModel(models.Model):
+    """
+    Maps a sellable ProductListing to its 3D model asset (GLB/GLTF),
+    verified physical dimensions, scale/orientation corrections, and
+    asset verification status.
+    """
+
+    EQUIPMENT_CATEGORIES = (
+        ("panel", "Solar Panel"),
+        ("battery", "Battery"),
+        ("inverter", "Inverter"),
+        ("controller", "Charge Controller"),
+        ("solar_generator", "Solar Generator"),
+        ("other", "Other Equipment"),
+    )
+
+    STATUS_CHOICES = (
+        ("unverified", "Unverified / Awaiting Manufacturer CAD"),
+        ("placeholder", "Procedural 3D Model"),
+        ("verified", "Verified Exact Branded 3D Model"),
+    )
+
+    product = models.OneToOneField(
+        PRODUCT_LISTING_MODEL,
+        on_delete=models.CASCADE,
+        related_name="model_3d",
+        help_text="Product listing this 3D model belongs to.",
+    )
+
+    equipment_category = models.CharField(
+        max_length=30,
+        choices=EQUIPMENT_CATEGORIES,
+        default="other",
+        help_text="Primary equipment category for visualizer positioning.",
+    )
+
+    model_file = models.FileField(
+        upload_to="models3d/",
+        blank=True,
+        null=True,
+        help_text="Uploaded GLB/GLTF model file stored in media/models3d/.",
+    )
+
+    asset_url = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Static or CDN path to 3D asset if not uploaded as a media file.",
+    )
+
+    width_m = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Verified physical width in metres (X axis).",
+    )
+
+    height_m = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Verified physical height in metres (Y axis).",
+    )
+
+    depth_m = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Verified physical depth/thickness in metres (Z axis).",
+    )
+
+    scale_factor = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        default=1.0,
+        help_text="Scale correction factor if imported model is not 1:1 scale.",
+    )
+
+    rotation_offset_y = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        default=0.0,
+        help_text="Rotation offset around Y axis in degrees.",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="placeholder",
+        help_text="Verification status of the 3D asset.",
+    )
+
+    notes = models.TextField(
+        blank=True,
+        help_text="Notes on asset provenance, manufacturer CAD source, or licensing.",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["equipment_category", "product__name"]
+        verbose_name = "Product 3D Model Asset"
+        verbose_name_plural = "Product 3D Model Assets"
+
+    def __str__(self):
+        status_badge = "✓" if self.status == "verified" else "○"
+        return f"[{status_badge}] {self.product.name} ({self.get_equipment_category_display()})"
+
+    def get_asset_url(self) -> str:
+        """Safely return the resolved URL of the 3D model, or empty string."""
+        if self.model_file:
+            try:
+                return self.model_file.url
+            except Exception:
+                pass
+        return self.asset_url or ""

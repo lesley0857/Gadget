@@ -26,6 +26,8 @@ Load
 
 from __future__ import annotations
 
+import json
+from .services.visualizer_service import build_visualizer_data
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from functools import lru_cache
@@ -1422,10 +1424,14 @@ def solar_design_result(
     except Exception:
         # Keep the saved response if catalogue refresh is unavailable.
         pass
+    visualizer_data = build_visualizer_data(design)
+    visualizer_json = json.dumps(visualizer_data)
     return render(
         request,
         "solar/design_result.html",
         {
+            "visualizer_data": visualizer_data,
+            "visualizer_json": visualizer_json,
             "design": design,
             "load": design.load_result,
             "system_voltage": design.voltage_result,

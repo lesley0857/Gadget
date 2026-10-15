@@ -23,6 +23,7 @@ from .models import (
     IsolatorSpecification,
     MountingStructureSpecification,
     AccessorySpecification,
+    Product3DModel,
     # --- unchanged ---
     DesignSetting,
     BOQItem,
@@ -962,3 +963,15 @@ class ServiceRequestAdmin(ImportExportModelAdmin):
         ),
     )
 
+
+
+@admin.register(Product3DModel)
+class Product3DModelAdmin(admin.ModelAdmin):
+    list_display = ('product', 'equipment_category', 'status', 'has_asset', 'width_m', 'height_m', 'depth_m')
+    list_filter = ('equipment_category', 'status')
+    search_fields = ('product__name', 'product__brand', 'product__model_number')
+    autocomplete_fields = ('product',)
+
+    @admin.display(boolean=True, description='Asset Available')
+    def has_asset(self, obj):
+        return bool(obj.get_asset_url())
