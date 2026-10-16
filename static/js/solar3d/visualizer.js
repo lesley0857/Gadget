@@ -116,32 +116,32 @@ function safeFloat(v, fallback = 0) {
    ================================================================ */
 
 function createLabelTexture(lines, opts = {}) {
-    const fontSize = opts.fontSize || 26;
-    const padding = opts.padding || 14;
+    const fontSize = opts.fontSize || 42;
+    const padding = opts.padding || 20;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
-    ctx.font = `bold ${fontSize}px "Montserrat", Arial, sans-serif`;
+    ctx.font = `900 ${fontSize}px "Montserrat", Arial, sans-serif`;
     const maxWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
     canvas.width = Math.ceil(maxWidth + padding * 2);
     canvas.height = Math.ceil((fontSize * 1.35) * lines.length + padding * 2);
 
     // Pill background
-    ctx.fillStyle = opts.bg || '#ffffff';
+    ctx.fillStyle = opts.bg || '#fff7d6';
     ctx.beginPath();
-    ctx.roundRect(0, 0, canvas.width, canvas.height, 10);
+    ctx.roundRect(0, 0, canvas.width, canvas.height, 14);
     ctx.fill();
 
     // Border
-    ctx.strokeStyle = opts.border || '#16a34a';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = opts.border || '#92400e';
+    ctx.lineWidth = 4;
     ctx.stroke();
 
     // Text rendering
     ctx.textBaseline = 'top';
     lines.forEach((line, i) => {
-        ctx.font = i === 0 ? `bold ${fontSize}px "Montserrat", Arial, sans-serif` : `${fontSize * 0.85}px "Montserrat", Arial, sans-serif`;
-        ctx.fillStyle = i === 0 ? (opts.titleColor || '#0f172a') : '#475569';
+        ctx.font = i === 0 ? `900 ${fontSize}px "Montserrat", Arial, sans-serif` : `700 ${fontSize * 0.85}px "Montserrat", Arial, sans-serif`;
+        ctx.fillStyle = i === 0 ? (opts.titleColor || '#0f172a') : '#1e293b';
         ctx.fillText(line, padding, padding + i * fontSize * 1.35);
     });
 
@@ -158,7 +158,7 @@ function createLabelSprite(lines, position, scale = 1.0) {
         depthTest: false,
     });
     const sprite = new THREE.Sprite(material);
-    const h = 0.55 * scale;
+    const h = 0.88 * scale;
     sprite.scale.set(h * aspect, h, 1);
     sprite.position.copy(position);
     return sprite;
@@ -692,8 +692,8 @@ class SolarVisualizer {
             ];
 
             const pBox = new THREE.Box3().setFromObject(panelGroup);
-            const pLabelPos = new THREE.Vector3(0, pBox.max.y + 0.85, 0);
-            panelGroup.add(createLabelSprite(pLines, pLabelPos, 1.15));
+            const pLabelPos = new THREE.Vector3(0, pBox.max.y + 1.0, 0);
+            panelGroup.add(createLabelSprite(pLines, pLabelPos, 1.35));
 
             panelGroup.position.z = currentZ;
             this.scene.add(panelGroup);
@@ -747,8 +747,8 @@ class SolarVisualizer {
                 `${bSpec.name || 'LiFePO4 Storage'} (${bSpec.rating || ''})`,
                 bStatus,
             ];
-            const bLabelPos = new THREE.Vector3(0, bBox.max.y + 0.65, 0);
-            batteryGroup.add(createLabelSprite(bLines, bLabelPos, 1.05));
+            const bLabelPos = new THREE.Vector3(0, bBox.max.y + 0.85, 0);
+            batteryGroup.add(createLabelSprite(bLines, bLabelPos, 1.25));
 
             this.scene.add(batteryGroup);
             groups.push(batteryGroup);
@@ -797,8 +797,8 @@ class SolarVisualizer {
                 `${iSpec.name || 'Hybrid Inverter'} (${iSpec.rating || ''})`,
                 iStatus,
             ];
-            const iLabelPos = new THREE.Vector3(0, iBox.max.y + 0.65, 0);
-            inverterGroup.add(createLabelSprite(iLines, iLabelPos, 1.05));
+            const iLabelPos = new THREE.Vector3(0, iBox.max.y + 0.85, 0);
+            inverterGroup.add(createLabelSprite(iLines, iLabelPos, 1.25));
 
             this.scene.add(inverterGroup);
             groups.push(inverterGroup);
@@ -844,8 +844,8 @@ class SolarVisualizer {
                 `${cSpec.name || 'MPPT Controller'} (${cSpec.rating || ''})`,
                 cStatus,
             ];
-            const cLabelPos = new THREE.Vector3(0, cBox.max.y + 0.65, 0);
-            ctrlGroup.add(createLabelSprite(cLines, cLabelPos, 1.05));
+            const cLabelPos = new THREE.Vector3(0, cBox.max.y + 0.85, 0);
+            ctrlGroup.add(createLabelSprite(cLines, cLabelPos, 1.25));
 
             this.scene.add(ctrlGroup);
             groups.push(ctrlGroup);

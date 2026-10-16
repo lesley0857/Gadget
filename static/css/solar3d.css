@@ -228,29 +228,30 @@
 }
 
 .solar-3d-equip-label {
-    font-size: 0.78rem;
-    color: #64748b;
+    font-size: 0.88rem;
+    color: #334155;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.04em;
     margin-bottom: 2px;
 }
 
 .solar-3d-equip-value {
-    font-size: 1.1rem;
-    font-weight: 800;
+    font-size: 1.3rem;
+    font-weight: 900;
     color: #0f172a;
-    line-height: 1.2;
+    line-height: 1.25;
 }
 
 .solar-3d-equip-value .unit {
-    font-weight: 700;
-    color: #16a34a;
+    font-weight: 800;
+    color: #15803d;
 }
 
 .solar-3d-equip-name {
-    font-size: 0.78rem;
-    color: #475569;
+    font-size: 0.82rem;
+    color: #334155;
+    font-weight: 600;
     margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;

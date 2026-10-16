@@ -4,6 +4,7 @@
 <link rel="modulepreload" href="{% static 'js/three/three.module.js' %}">
 <link rel="modulepreload" href="{% static 'js/three/OrbitControls.js' %}">
 <link rel="stylesheet" href="{% static 'css/solar3d.css' %}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <div class="result-view-prompt" id="result-view-prompt" hidden>
     <div class="result-view-prompt__card" role="dialog" aria-modal="true" aria-labelledby="result-view-prompt-title">
         <h2 id="result-view-prompt-title">Choose how to view your results</h2>
@@ -107,6 +108,12 @@
                 <button type="button" class="result-btn result-btn-primary" id="print-results-btn">
                     <i class="bi bi-printer"></i>
                     Print
+                </button>
+
+                <button type="button" class="result-btn result-btn-success" id="download-pdf-btn"
+                    title="Download executive summary and solar results as PDF">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Download PDF
                 </button>
 
                 <a class="result-btn" href="{% url 'earthing_assessment' %}?solar_design={{ design.id }}"
@@ -560,18 +567,20 @@
 
             .comparison-card {
                 overflow: hidden;
-                border: 1px solid #e2e8f0;
+                border: 1.5px solid #cbd5e1;
                 border-radius: 14px;
                 background: #fff;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             }
 
             .comparison-card h3 {
                 margin: 0;
-                padding: 15px 18px;
-                color: #0f3d63;
-                font-size: 1rem;
-                background: #f3f8fc;
-                border-bottom: 1px solid #e2e8f0;
+                padding: 16px 20px;
+                color: #092c4c;
+                font-size: 1.25rem;
+                font-weight: 800;
+                background: #eaf2f9;
+                border-bottom: 2px solid #cbd5e1;
             }
 
             .comparison-table {
@@ -581,29 +590,39 @@
 
             .comparison-table th,
             .comparison-table td {
-                padding: 11px 14px;
+                padding: 13px 16px;
                 text-align: left;
-                border-bottom: 1px solid #edf2f7;
+                border-bottom: 1px solid #e2e8f0;
             }
 
             .comparison-table th {
-                color: #64748b;
-                font-size: .72rem;
+                color: #0f172a;
+                font-size: 0.95rem;
+                font-weight: 800;
                 text-transform: uppercase;
-                letter-spacing: .04em;
+                letter-spacing: .05em;
+                background: #f8fafc;
             }
 
             .comparison-table td {
-                font-size: .9rem;
+                font-size: 1.15rem;
+                line-height: 1.6;
+                color: #1e293b;
+            }
+
+            .comparison-table td:first-child {
+                font-weight: 700;
+                color: #0f172a;
             }
 
             .comparison-table td:nth-child(2) {
-                color: #a16207;
+                color: #b45309;
+                font-weight: 700;
             }
 
             .comparison-table td:nth-child(3) {
                 color: #15803d;
-                font-weight: 700;
+                font-weight: 800;
             }
 
             .comparison-table tr:last-child td {
@@ -1740,7 +1759,7 @@ HEADER
 
         color: var(--solar-primary);
 
-        font-size: 0.72rem;
+        font-size: 0.92rem;
         font-weight: 800;
 
         letter-spacing: 0.11em;
@@ -1752,8 +1771,8 @@ HEADER
 
         color: var(--solar-dark);
 
-        font-size: clamp(1.45rem, 2.4vw, 2rem);
-        font-weight: 800;
+        font-size: clamp(1.85rem, 2.8vw, 2.4rem);
+        font-weight: 900;
 
         line-height: 1.15;
 
@@ -1765,7 +1784,8 @@ HEADER
 
         color: var(--solar-muted);
 
-        font-size: 0.92rem;
+        font-size: 1.15rem;
+        font-weight: 500;
     }
 
     .project-meta {
@@ -1779,11 +1799,12 @@ HEADER
     .project-meta span {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
 
-        color: #647184;
+        color: #475569;
 
-        font-size: 0.78rem;
+        font-size: 0.98rem;
+        font-weight: 600;
     }
 
     .project-meta i {
@@ -1793,7 +1814,7 @@ HEADER
     .result-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 9px;
+        gap: 10px;
 
         flex-shrink: 0;
     }
@@ -1802,15 +1823,15 @@ HEADER
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 7px;
+        gap: 8px;
 
-        min-height: 42px;
-        padding: 9px 16px;
+        min-height: 44px;
+        padding: 10px 18px;
 
         border-radius: 10px;
 
-        font-size: 0.84rem;
-        font-weight: 700;
+        font-size: 0.98rem;
+        font-weight: 750;
 
         text-decoration: none;
 
@@ -1838,6 +1859,20 @@ HEADER
 
         box-shadow:
             0 6px 16px rgba(13, 110, 253, 0.22);
+    }
+
+    .result-btn-success {
+        border-color: #198754;
+        background: #198754;
+        color: #fff;
+
+        box-shadow:
+            0 6px 16px rgba(25, 135, 84, 0.22);
+    }
+
+    .result-btn-success:hover {
+        background: #157347;
+        color: #fff;
     }
 
     .result-btn-secondary {
@@ -1918,24 +1953,25 @@ STATUS
     }
 
     .status-content strong {
-        font-size: 0.88rem;
+        font-size: 1.15rem;
+        font-weight: 800;
     }
 
     .status-content span {
-        font-size: 0.79rem;
-        opacity: 0.82;
+        font-size: 1rem;
+        opacity: 0.9;
     }
 
     .status-badge {
         margin-left: auto;
 
-        padding: 5px 10px;
+        padding: 6px 14px;
 
         border-radius: 20px;
 
-        background: rgba(255, 255, 255, 0.72);
+        background: rgba(255, 255, 255, 0.85);
 
-        font-size: 0.68rem;
+        font-size: 0.85rem;
         font-weight: 800;
 
         letter-spacing: 0.05em;
@@ -1986,18 +2022,18 @@ KPI GRID
     }
 
     .kpi-icon {
-        width: 45px;
-        height: 45px;
+        width: 48px;
+        height: 48px;
 
         display: flex;
         align-items: center;
         justify-content: center;
 
-        flex: 0 0 45px;
+        flex: 0 0 48px;
 
         border-radius: 12px;
 
-        font-size: 20px;
+        font-size: 22px;
     }
 
     .kpi-energy {
@@ -2049,17 +2085,17 @@ KPI GRID
 
         margin-bottom: 3px;
 
-        color: var(--solar-muted);
+        color: #475569;
 
-        font-size: 0.72rem;
-        font-weight: 650;
+        font-size: 0.92rem;
+        font-weight: 750;
     }
 
     .kpi-value {
         color: var(--solar-dark);
 
-        font-size: 1.4rem;
-        font-weight: 800;
+        font-size: 1.85rem;
+        font-weight: 900;
 
         line-height: 1.1;
 
@@ -2071,12 +2107,13 @@ KPI GRID
 
         color: var(--solar-muted);
 
-        font-size: 0.68rem;
-        font-weight: 650;
+        font-size: 0.92rem;
+        font-weight: 800;
     }
 
     .kpi-price-value {
-        font-size: 1.18rem;
+        font-size: 1.55rem;
+        font-weight: 900;
     }
 
 
@@ -2110,8 +2147,8 @@ SECTIONS
 
         color: var(--solar-dark);
 
-        font-size: 1.35rem;
-        font-weight: 800;
+        font-size: 1.65rem;
+        font-weight: 900;
     }
 
     .section-header p {
@@ -2119,10 +2156,10 @@ SECTIONS
 
         margin: 0;
 
-        color: var(--solar-muted);
+        color: #475569;
 
-        font-size: 0.83rem;
-        line-height: 1.55;
+        font-size: 1.05rem;
+        line-height: 1.6;
     }
 
 
@@ -2142,7 +2179,7 @@ EQUIPMENT
     .equipment-card {
         min-width: 0;
 
-        padding: 20px;
+        padding: 22px;
 
         background: #fbfcfe;
 
@@ -2159,18 +2196,18 @@ EQUIPMENT
     }
 
     .equipment-icon {
-        width: 43px;
-        height: 43px;
+        width: 48px;
+        height: 48px;
 
         display: flex;
         align-items: center;
         justify-content: center;
 
-        flex: 0 0 43px;
+        flex: 0 0 48px;
 
         border-radius: 12px;
 
-        font-size: 19px;
+        font-size: 22px;
     }
 
     .battery-icon {
@@ -2196,9 +2233,9 @@ EQUIPMENT
     .equipment-label {
         display: block;
 
-        color: var(--solar-muted);
+        color: #475569;
 
-        font-size: 0.66rem;
+        font-size: 0.88rem;
         font-weight: 800;
 
         letter-spacing: 0.08em;
@@ -2209,7 +2246,7 @@ EQUIPMENT
 
         color: var(--solar-dark);
 
-        font-size: 1rem;
+        font-size: 1.25rem;
         font-weight: 800;
     }
 
@@ -2218,8 +2255,8 @@ EQUIPMENT
 
         color: var(--solar-primary);
 
-        font-size: 1.6rem;
-        font-weight: 800;
+        font-size: 1.95rem;
+        font-weight: 900;
     }
 
     .equipment-name {
@@ -2227,7 +2264,7 @@ EQUIPMENT
 
         color: var(--solar-dark);
 
-        font-size: 0.9rem;
+        font-size: 1.15rem;
         font-weight: 750;
     }
 
@@ -2237,11 +2274,11 @@ EQUIPMENT
         grid-template-columns:
             repeat(3, minmax(0, 1fr));
 
-        gap: 9px;
+        gap: 10px;
     }
 
     .equipment-detail {
-        padding: 10px;
+        padding: 12px;
 
         background: #fff;
 
@@ -2254,15 +2291,17 @@ EQUIPMENT
 
         margin-bottom: 4px;
 
-        color: var(--solar-muted);
+        color: #475569;
 
-        font-size: 0.68rem;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
 
     .equipment-detail strong {
         color: var(--solar-dark);
 
-        font-size: 0.78rem;
+        font-size: 1.05rem;
+        font-weight: 800;
     }
 
     .equipment-empty {
@@ -2274,7 +2313,7 @@ EQUIPMENT
 
         color: var(--solar-muted);
 
-        font-size: 0.8rem;
+        font-size: 1.05rem;
 
         text-align: center;
     }
@@ -2284,7 +2323,7 @@ EQUIPMENT
 
         color: var(--solar-muted);
 
-        font-size: 0.8rem;
+        font-size: 1.05rem;
         text-align: center;
     }
 
@@ -2320,14 +2359,14 @@ METRIC GRID
 
         color: var(--solar-muted);
 
-        font-size: 0.73rem;
-        font-weight: 650;
+        font-size: 0.95rem;
+        font-weight: 700;
     }
 
     .metric-card strong {
         color: var(--solar-dark);
 
-        font-size: 1.25rem;
+        font-size: 1.65rem;
         font-weight: 800;
     }
 
@@ -2336,7 +2375,7 @@ METRIC GRID
 
         color: var(--solar-muted);
 
-        font-size: 0.68rem;
+        font-size: 0.92rem;
     }
 
 
@@ -2375,8 +2414,8 @@ DETAIL GRID
 
         color: var(--solar-muted);
 
-        font-size: 0.7rem;
-        font-weight: 650;
+        font-size: 0.92rem;
+        font-weight: 700;
     }
 
     .detail-card strong {
@@ -2384,7 +2423,7 @@ DETAIL GRID
 
         color: var(--solar-dark);
 
-        font-size: 0.88rem;
+        font-size: 1.18rem;
         font-weight: 800;
 
         overflow-wrap: anywhere;
@@ -2451,15 +2490,16 @@ LOAD RISK
 
         margin-bottom: 3px;
 
-        font-size: 0.82rem;
+        font-size: 1.15rem;
+        font-weight: 800;
     }
 
     .load-risk span {
         display: block;
 
-        font-size: 0.76rem;
+        font-size: 1.0rem;
 
-        opacity: 0.82;
+        opacity: 0.88;
     }
 
 
@@ -2521,7 +2561,7 @@ TABLES
 
         color: #596779;
 
-        font-size: 0.68rem;
+        font-size: 0.95rem;
         font-weight: 800;
 
         text-align: left;
@@ -2537,9 +2577,10 @@ TABLES
 
         border-bottom: 1px solid #f0f2f5;
 
-        color: var(--solar-dark);
+        color: #1e293b;
 
-        font-size: 0.77rem;
+        font-size: 1.15rem;
+        font-weight: 600;
 
         vertical-align: middle;
     }
@@ -2557,6 +2598,7 @@ TABLES
 
         color: var(--solar-muted) !important;
 
+        font-size: 1.10rem;
         text-align: center;
     }
 
@@ -2570,7 +2612,7 @@ BADGES
         align-items: center;
         justify-content: center;
 
-        padding: 4px 8px;
+        padding: 5px 10px;
 
         border-radius: 20px;
 
@@ -2578,8 +2620,8 @@ BADGES
 
         color: #526071;
 
-        font-size: 0.65rem;
-        font-weight: 750;
+        font-size: 0.88rem;
+        font-weight: 800;
 
         white-space: nowrap;
     }
@@ -2635,7 +2677,7 @@ PROTECTION
     .protection-name {
         color: var(--solar-dark);
 
-        font-size: 0.86rem;
+        font-size: 1.18rem;
         font-weight: 800;
     }
 
@@ -2644,7 +2686,7 @@ PROTECTION
 
         color: var(--solar-muted);
 
-        font-size: 0.68rem;
+        font-size: 0.92rem;
     }
 
     .spec-list {
@@ -2669,13 +2711,15 @@ PROTECTION
     .spec-row span {
         color: var(--solar-muted);
 
-        font-size: 0.68rem;
+        font-size: 0.92rem;
+        font-weight: 600;
     }
 
     .spec-row strong {
         color: var(--solar-dark);
 
-        font-size: 0.72rem;
+        font-size: 1.08rem;
+        font-weight: 750;
 
         text-align: right;
     }
@@ -2701,12 +2745,12 @@ BOQ
     }
 
     .boq-total span {
-        font-size: 0.78rem;
-        font-weight: 650;
+        font-size: 1.15rem;
+        font-weight: 700;
     }
 
     .boq-total strong {
-        font-size: 1.15rem;
+        font-size: 1.65rem;
         font-weight: 800;
     }
 
@@ -2796,13 +2840,14 @@ PRICING
     .pricing-row span {
         color: var(--solar-muted);
 
-        font-size: 0.8rem;
+        font-size: 1.12rem;
+        font-weight: 600;
     }
 
     .pricing-row strong {
         color: var(--solar-dark);
 
-        font-size: 0.83rem;
+        font-size: 1.25rem;
         font-weight: 750;
     }
 
@@ -2824,12 +2869,12 @@ PRICING
     }
 
     .pricing-grand-total span {
-        font-size: 0.88rem;
+        font-size: 1.25rem;
         font-weight: 700;
     }
 
     .pricing-grand-total strong {
-        font-size: 1.35rem;
+        font-size: 1.85rem;
         font-weight: 850;
     }
 
@@ -2879,12 +2924,12 @@ STAGES
     .stage-name {
         color: var(--solar-dark);
 
-        font-size: 0.76rem;
+        font-size: 1.05rem;
         font-weight: 800;
     }
 
     .stage-status {
-        font-size: 0.61rem;
+        font-size: 0.85rem;
         font-weight: 800;
 
         text-transform: uppercase;
@@ -2901,7 +2946,7 @@ STAGES
     .stage-message {
         color: var(--solar-muted);
 
-        font-size: 0.68rem;
+        font-size: 0.92rem;
         line-height: 1.45;
     }
 
@@ -2980,7 +3025,7 @@ WARNINGS
     .warning-title {
         color: var(--solar-dark);
 
-        font-size: 0.78rem;
+        font-size: 1.10rem;
         font-weight: 800;
     }
 
@@ -2989,7 +3034,7 @@ WARNINGS
 
         color: #596779;
 
-        font-size: 0.74rem;
+        font-size: 0.98rem;
         line-height: 1.5;
     }
 
@@ -2998,7 +3043,7 @@ WARNINGS
 
         color: var(--solar-muted);
 
-        font-size: 0.7rem;
+        font-size: 0.92rem;
         line-height: 1.45;
     }
 
@@ -3044,13 +3089,14 @@ FINAL MESSAGE
 
         margin-bottom: 3px;
 
-        font-size: 0.82rem;
+        font-size: 1.15rem;
+        font-weight: 800;
     }
 
     .final-message p {
         margin: 0;
 
-        font-size: 0.76rem;
+        font-size: 1.02rem;
         line-height: 1.5;
     }
 
@@ -3070,7 +3116,7 @@ FOOTER
 
         color: var(--solar-muted);
 
-        font-size: 0.72rem;
+        font-size: 0.95rem;
     }
 
     .result-footer strong {
@@ -6000,7 +6046,7 @@ PRINT
                         comparisonRow("Ampacity", first(req, ["required_ampacity", "required_current"], cable.required_ampacity), isCableAvailable ? cable.ampacity : null, "A"),
                         comparisonRow("Length & Drop", "—", isCableAvailable ? `${cable.length_m || cable.length || 0} m (Drop: ${formatNumber(cable.voltage_drop_pct || cable.voltage_drop_percent || 0, 2)}%)` : null),
                         comparisonRow("Configuration", "—", isCableAvailable ? "Single-core flexible copper conductor" : null),
-                        comparisonRow("Estimated Price", "—", isCableAvailable && cable.total_cost ? formatMoney(cable.total_cost, DATA.pricing?.currency) : null)
+                        comparisonRow("Estimated Price", "—", isCableAvailable && cable.total_cost ? formatMoney(cable.total_cost, DATA.pricing?.currency) : (isCableAvailable ? "Cable not available" : null))
                     ], cableName, isCableAvailable)
                 );
             });
@@ -6399,8 +6445,31 @@ PRINT
                     .replace(/_/g, " ")
                     .replace(/\b\w/g, char => char.toUpperCase());
 
-                const unitPrice = number(cable.unitPrice || 0);
-                const cost = number(cable.totalCost || (unitPrice * cable.length) || 0);
+                let unitPrice = number(cable.unitPrice || cable.price_per_meter || 0);
+                let cost = number(cable.totalCost || cable.total_price || (unitPrice * (cable.length || 0)) || 0);
+
+                // If cable price not directly in cable object, cross-reference BOQ items
+                if (unitPrice <= 0 && DATA.boq && Array.isArray(DATA.boq.items)) {
+                    const circuitLower = (cable.circuit || "").toLowerCase();
+                    const boqMatch = DATA.boq.items.find(b => {
+                        const bType = (b.item_type || "").toLowerCase();
+                        const bName = (b.name || "").toLowerCase();
+                        return bType.includes(circuitLower) || bName.includes(circuitLower);
+                    });
+                    if (boqMatch) {
+                        unitPrice = number(boqMatch.unit_price || boqMatch.price || 0);
+                        cost = number(boqMatch.total || boqMatch.total_price || (unitPrice * (cable.length || 1)) || 0);
+                        if (!cable.name || cable.name === 'Cable' || cable.name === 'Not selected' || cable.name === 'Cable not available') {
+                            cable.name = boqMatch.name;
+                        }
+                    }
+                }
+
+                if (cost <= 0 && unitPrice > 0 && cable.length > 0) {
+                    cost = unitPrice * cable.length;
+                }
+
+                const isAvailable = cable.selected && cable.size > 0;
                 if (cost > 0) {
                     totalCableCost += cost;
                 }
@@ -6410,21 +6479,21 @@ PRINT
                 return `
                 <tr style="animation: fadeInUp 0.4s ease both ${animDelay};">
                     <td><strong>${escapeHTML(circuit)}</strong></td>
-                    <td>${escapeHTML(cable.name)}</td>
+                    <td>${escapeHTML(isAvailable ? cable.name : 'Cable not available')}</td>
                     <td><strong>${formatNumber(cable.size, 1)} mm²</strong></td>
                     <td>${formatNumber(cable.length, 1)} m</td>
-                    <td class="${unitPrice > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">${unitPrice > 0 ? formatMoney(unitPrice, DATA.pricing.currency) : 'Pending'}</td>
+                    <td class="${unitPrice > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">${unitPrice > 0 ? formatMoney(unitPrice, DATA.pricing.currency) : 'Cable not available'}</td>
                     <td><strong>${formatNumber(cable.ampacity, 1)} A</strong></td>
                     <td>${cable.voltageRating ? formatNumber(cable.voltageRating, 0) + " V" : "—"}</td>
                     <td>${cable.voltageDrop ? formatNumber(cable.voltageDrop, 2) + " V (" + formatNumber(cable.voltageDropPercent, 2) + "%)" : "—"}</td>
                     <td class="${cost > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
-                        ${cost > 0 ? formatMoney(cost, DATA.pricing.currency) : 'Pending'}
+                        ${cost > 0 ? formatMoney(cost, DATA.pricing.currency) : 'Cable not available'}
                     </td>
                 </tr>
                 `;
             }).join("");
 
-            setText("cable-total-cost", totalCableCost > 0 ? formatMoney(totalCableCost, DATA.pricing.currency) : "—");
+            setText("cable-total-cost", totalCableCost > 0 ? formatMoney(totalCableCost, DATA.pricing.currency) : "Cable not available");
         }
 
 
@@ -6567,7 +6636,7 @@ PRINT
                 pricingStatus.textContent = "Pricing unavailable: " + (pricingErrors.join(" ") || RAW.pricing.message || "A complete priced BOQ is required.");
                 pricingStatus.classList.add("is-warning");
             } else if (pricingStatus && DATA.boq.items.some(item => number(item.unit_price || item.price || 0) <= 0)) {
-                pricingStatus.textContent = "Some component prices are pending in the catalogue. Available material prices have been summed below.";
+                pricingStatus.textContent = "Some component prices are not available in the catalogue. Available material prices have been summed below.";
                 pricingStatus.classList.add("is-warning");
             } else if (pricingStatus) {
                 pricingStatus.textContent = "";
@@ -6620,10 +6689,10 @@ PRINT
                             ${formatNumber(quantity, 2)}
                         </td>
                         <td class="${unitPrice > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
-                            ${unitPrice > 0 ? formatMoney(unitPrice, DATA.pricing.currency) : 'Pending'}
+                            ${unitPrice > 0 ? formatMoney(unitPrice, DATA.pricing.currency) : (name.toLowerCase().includes('cable') ? 'Cable not available' : 'Price unavailable')}
                         </td>
                         <td class="${total > 0 ? 'text-success fw-bold' : 'text-muted fst-italic'}">
-                            ${total > 0 ? formatMoney(total, DATA.pricing.currency) : '—'}
+                            ${total > 0 ? formatMoney(total, DATA.pricing.currency) : (name.toLowerCase().includes('cable') ? 'Cable not available' : '—')}
                         </td>
                     </tr>
                 `;
@@ -7149,6 +7218,258 @@ PRINT
             );
         }
 
+        /* =========================================================
+           PDF DOWNLOAD
+           ========================================================= */
+
+        function setupPDFDownload() {
+
+            const button = byId("download-pdf-btn");
+
+            if (!button) {
+                return;
+            }
+
+            button.addEventListener("click", function () {
+
+                const originalHTML = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating PDF...`;
+
+                if (typeof html2pdf === "undefined") {
+                    console.warn("html2pdf library unavailable, falling back to print dialog.");
+                    window.print();
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                    return;
+                }
+
+                try {
+                    const projectName = "{{ design.project_name|default:'Solar PV Engineering Design'|escapejs }}";
+                    const clientName = "{{ design.client_name|default:''|escapejs }}";
+                    const projectLocation = "{{ design.project_location|default:''|escapejs }}";
+                    const operatingMode = "{{ design.operating_mode|default:'Off-Grid'|title|escapejs }}";
+
+                    const container = document.createElement("div");
+                    container.style.padding = "24px 30px";
+                    container.style.fontFamily = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
+                    container.style.color = "#1e293b";
+                    container.style.backgroundColor = "#ffffff";
+                    container.style.width = "780px";
+
+                    const systemVoltage = DATA.voltage?.voltage ? DATA.voltage.voltage + " V DC" : "—";
+                    const dailyEnergy = DATA.load?.dailyEnergy ? (DATA.load.dailyEnergy / 1000).toFixed(2) + " kWh/day" : "—";
+                    const connectedLoad = DATA.load?.connectedLoad ? (DATA.load.connectedLoad / 1000).toFixed(2) + " kW" : "—";
+
+                    const panelName = DATA.pv?.model || DATA.pv?.manufacturer || DATA.pv?.name || "Solar PV Array";
+                    const panelQty = DATA.pv?.moduleCount || 0;
+                    const panelWatt = DATA.pv?.moduleWattage ? DATA.pv.moduleWattage + " W" : "";
+                    const arrayKw = DATA.pv?.arrayCapacityKw ? DATA.pv.arrayCapacityKw.toFixed(2) + " kW" : "";
+
+                    const batteryName = DATA.battery?.model || DATA.battery?.brand || DATA.battery?.name || "Energy Storage";
+                    const batteryQty = DATA.battery?.quantity || 0;
+                    const batteryAh = DATA.battery?.capacityAh ? DATA.battery.capacityAh + " Ah" : "";
+                    const storageKwh = DATA.battery?.storageKwh ? DATA.battery.storageKwh.toFixed(2) + " kWh" : "";
+
+                    const inverterName = DATA.inverter?.model || DATA.inverter?.brand || DATA.inverter?.name || "Hybrid Inverter";
+                    const inverterQty = DATA.inverter?.quantity || 1;
+                    const inverterKva = DATA.inverter?.kva ? DATA.inverter.kva.toFixed(1) + " kVA" : (DATA.inverter?.ratedPower ? (DATA.inverter.ratedPower / 1000).toFixed(1) + " kVA" : "");
+
+                    const controllerName = DATA.controller?.name || DATA.controller?.model || "MPPT Charge Controller";
+
+                    const cableRows = (DATA.cables?.circuits || []).map(c => `
+                        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+                            <td style="padding: 7px 9px; font-weight: 700;">${escapeHTML(c.circuitName || c.circuit || "Circuit")}</td>
+                            <td style="padding: 7px 9px;">${c.cableSizeMm2 ? c.cableSizeMm2 + " mm²" : "—"}</td>
+                            <td style="padding: 7px 9px;">${c.cableLengthM ? c.cableLengthM + " m" : "—"}</td>
+                            <td style="padding: 7px 9px;">${c.voltageDropPercent ? Number(c.voltageDropPercent).toFixed(2) + "%" : "—"}</td>
+                            <td style="padding: 7px 9px; text-align: right; font-weight: 700;">${c.totalCost > 0 ? formatMoney(c.totalCost, DATA.pricing?.currency) : "Cable not available"}</td>
+                        </tr>
+                    `).join("");
+
+                    const boqRows = (DATA.boq?.items || []).map(item => `
+                        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+                            <td style="padding: 7px 9px; font-weight: 700;">${escapeHTML(item.category || item.name || "Item")}</td>
+                            <td style="padding: 7px 9px;">${escapeHTML(item.specification || item.description || "—")}</td>
+                            <td style="padding: 7px 9px; text-align: center;">${item.quantity || 1} ${item.unit || 'units'}</td>
+                            <td style="padding: 7px 9px; text-align: right;">${item.unit_price > 0 ? formatMoney(item.unit_price, DATA.pricing?.currency) : '—'}</td>
+                            <td style="padding: 7px 9px; text-align: right; font-weight: 700;">${item.total_cost > 0 ? formatMoney(item.total_cost, DATA.pricing?.currency) : '—'}</td>
+                        </tr>
+                    `).join("");
+
+                    const materialsCost = DATA.pricing?.equipmentCost ? formatMoney(DATA.pricing.equipmentCost, DATA.pricing.currency) : "—";
+                    const transportCost = DATA.pricing?.logisticsCost ? formatMoney(DATA.pricing.logisticsCost, DATA.pricing.currency) : "—";
+                    const installCost = DATA.pricing?.installationCost ? formatMoney(DATA.pricing.installationCost, DATA.pricing.currency) : "—";
+                    const grandTotal = DATA.pricing?.grandTotal ? formatMoney(DATA.pricing.grandTotal, DATA.pricing.currency) : (byId("pricing-grand-total-value")?.textContent || "—");
+
+                    container.innerHTML = `
+                        <div style="border-bottom: 3px solid #16a34a; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <h1 style="margin: 0; color: #16a34a; font-size: 22px; font-weight: 900; letter-spacing: 0.5px;">REMAROBE NIGERIA LIMITED</h1>
+                                <p style="margin: 3px 0 0; color: #475569; font-size: 12px; font-weight: 600;">Renewable Energy & Solar PV Engineering System Results</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="display: inline-block; background: #eaf7ef; color: #146c43; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1px solid #c9ead6; text-transform: uppercase;">Official Solar PV Report</span>
+                                <p style="margin: 4px 0 0; color: #64748b; font-size: 11px;">Generated: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;">
+                            <h2 style="margin: 0 0 8px; color: #0f172a; font-size: 15px; font-weight: 800;">${escapeHTML(projectName)}</h2>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px; color: #334155;">
+                                ${clientName ? `<div><strong>Client:</strong> ${escapeHTML(clientName)}</div>` : ''}
+                                ${projectLocation ? `<div><strong>Location:</strong> ${escapeHTML(projectLocation)}</div>` : ''}
+                                <div><strong>Operating Mode:</strong> ${escapeHTML(operatingMode)}</div>
+                            </div>
+                        </div>
+
+                        <h3 style="color: #0f172a; font-size: 13px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase;">1. Executive Performance Metrics</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 11px;">
+                            <tr style="background: #f1f5f9;">
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">System Voltage</th>
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">Daily Energy Consumption</th>
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">Connected Peak Load</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${systemVoltage}</td>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${dailyEnergy}</td>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${connectedLoad}</td>
+                            </tr>
+                            <tr style="background: #f1f5f9;">
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">Solar Array Capacity</th>
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">Battery Storage Reserve</th>
+                                <th style="padding: 7px 9px; border: 1px solid #cbd5e1; text-align: left;">Inverter Capacity</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${panelQty} × Panels (${panelWatt}) = ${arrayKw}</td>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${batteryQty} × Batteries (${batteryAh}) = ${storageKwh}</td>
+                                <td style="padding: 7px 9px; border: 1px solid #cbd5e1; font-weight: 800; color: #1e293b;">${inverterQty} × ${inverterKva} Inverter</td>
+                            </tr>
+                        </table>
+
+                        <h3 style="color: #0f172a; font-size: 13px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase;">2. Major Recommended Equipment</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 11px;">
+                            <thead>
+                                <tr style="background: #0f172a; color: #fff;">
+                                    <th style="padding: 7px 9px; text-align: left;">Component</th>
+                                    <th style="padding: 7px 9px; text-align: left;">Selected Model & Specification</th>
+                                    <th style="padding: 7px 9px; text-align: center;">Qty</th>
+                                    <th style="padding: 7px 9px; text-align: left;">Technical Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px 9px; font-weight: 800;">Solar PV Array</td>
+                                    <td style="padding: 7px 9px;">${escapeHTML(panelName)}</td>
+                                    <td style="padding: 7px 9px; text-align: center; font-weight: 800;">${panelQty}</td>
+                                    <td style="padding: 7px 9px;">${panelWatt} per module (${arrayKw} total)</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px 9px; font-weight: 800;">Battery Storage</td>
+                                    <td style="padding: 7px 9px;">${escapeHTML(batteryName)}</td>
+                                    <td style="padding: 7px 9px; text-align: center; font-weight: 800;">${batteryQty}</td>
+                                    <td style="padding: 7px 9px;">${batteryAh} (${storageKwh} usable)</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px 9px; font-weight: 800;">Inverter</td>
+                                    <td style="padding: 7px 9px;">${escapeHTML(inverterName)}</td>
+                                    <td style="padding: 7px 9px; text-align: center; font-weight: 800;">${inverterQty}</td>
+                                    <td style="padding: 7px 9px;">${inverterKva} continuous rated capacity</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px 9px; font-weight: 800;">Charge Controller</td>
+                                    <td style="padding: 7px 9px;">${escapeHTML(controllerName)}</td>
+                                    <td style="padding: 7px 9px; text-align: center; font-weight: 800;">1</td>
+                                    <td style="padding: 7px 9px;">MPPT automated charging logic</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        ${cableRows ? `
+                        <h3 style="color: #0f172a; font-size: 13px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase;">3. Cable Design & Voltage Drop</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                            <thead>
+                                <tr style="background: #334155; color: #fff; font-size: 11px;">
+                                    <th style="padding: 6px 9px; text-align: left;">Circuit</th>
+                                    <th style="padding: 6px 9px; text-align: left;">Cable Size</th>
+                                    <th style="padding: 6px 9px; text-align: left;">Length</th>
+                                    <th style="padding: 6px 9px; text-align: left;">Voltage Drop</th>
+                                    <th style="padding: 6px 9px; text-align: right;">Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>${cableRows}</tbody>
+                        </table>
+                        ` : ''}
+
+                        ${boqRows ? `
+                        <h3 style="color: #0f172a; font-size: 13px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase;">4. Bill of Quantities (BOQ) Summary</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                            <thead>
+                                <tr style="background: #1e293b; color: #fff; font-size: 11px;">
+                                    <th style="padding: 6px 9px; text-align: left;">Item</th>
+                                    <th style="padding: 6px 9px; text-align: left;">Specification</th>
+                                    <th style="padding: 6px 9px; text-align: center;">Qty</th>
+                                    <th style="padding: 6px 9px; text-align: right;">Unit Price</th>
+                                    <th style="padding: 6px 9px; text-align: right;">Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>${boqRows}</tbody>
+                        </table>
+                        ` : ''}
+
+                        <h3 style="color: #0f172a; font-size: 13px; font-weight: 800; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase;">5. Estimated Investment Summary</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 12px;">
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 7px 9px; color: #475569;">Equipment & Materials Cost</td>
+                                <td style="padding: 7px 9px; text-align: right; font-weight: 700; color: #1e293b;">${materialsCost}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 7px 9px; color: #475569;">Transport & Logistics</td>
+                                <td style="padding: 7px 9px; text-align: right; font-weight: 700; color: #1e293b;">${transportCost}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 7px 9px; color: #475569;">Installation & Engineering Labour</td>
+                                <td style="padding: 7px 9px; text-align: right; font-weight: 700; color: #1e293b;">${installCost}</td>
+                            </tr>
+                            <tr style="background: #eaf7ef; border-top: 2px solid #16a34a;">
+                                <td style="padding: 10px 9px; font-size: 14px; font-weight: 800; color: #146c43;">ESTIMATED GRAND TOTAL</td>
+                                <td style="padding: 10px 9px; font-size: 16px; font-weight: 800; text-align: right; color: #146c43;">${grandTotal}</td>
+                            </tr>
+                        </table>
+
+                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 12px; font-size: 10px; color: #64748b; display: flex; justify-content: space-between;">
+                            <div>Remarobe Nigeria Limited · Engineering Division · www.remarobe.com</div>
+                            <div>Confidential Solar Engineering Assessment</div>
+                        </div>
+                    `;
+
+                    const opt = {
+                        margin: [8, 8, 8, 8],
+                        filename: (projectName.replace(/[^a-zA-Z0-9_-]/g, "_") || "Solar_Results") + "_Remarobe.pdf",
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(container).save().then(function () {
+                        button.disabled = false;
+                        button.innerHTML = originalHTML;
+                    }).catch(function (err) {
+                        console.error("PDF generation failed:", err);
+                        button.disabled = false;
+                        button.innerHTML = originalHTML;
+                        window.print();
+                    });
+
+                } catch (err) {
+                    console.error("Error setting up PDF:", err);
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                    window.print();
+                }
+            });
+        }
+
 
         /* =========================================================
            INITIALIZATION
@@ -7200,6 +7521,7 @@ PRINT
                 renderFinalMessage();
 
                 setupPrint();
+                setupPDFDownload();
 
             } catch (error) {
 

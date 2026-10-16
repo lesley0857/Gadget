@@ -1895,6 +1895,8 @@ def _build_selected_cable_result(
 
     selected = selection.get(
         "selected"
+    ) or selection.get(
+        "closest"
     )
 
     if not selected:
@@ -1905,11 +1907,35 @@ def _build_selected_cable_result(
         {},
     )
 
+    unit_price = selected.get(
+        "unit_price"
+    ) or selected.get(
+        "price_per_meter"
+    )
+
+    total_cost = selected.get(
+        "total_cost"
+    ) or selected.get(
+        "total_price"
+    )
+
+    if not total_cost and unit_price and requirement.get("length"):
+        try:
+            total_cost = unit_price * requirement.get("length")
+        except Exception:
+            total_cost = None
+
     return {
         "cable":
             selected.get(
                 "name",
-                "Cable",
+                selected.get("cable", "Cable"),
+            ),
+
+        "name":
+            selected.get(
+                "name",
+                selected.get("cable", "Cable"),
             ),
 
         "manufacturer":
@@ -1924,7 +1950,14 @@ def _build_selected_cable_result(
 
         "size_mm2":
             selected.get(
-                "size_mm"
+                "size_mm2",
+                selected.get("size_mm"),
+            ),
+
+        "size_mm":
+            selected.get(
+                "size_mm2",
+                selected.get("size_mm"),
             ),
 
         "ampacity":
@@ -1963,14 +1996,16 @@ def _build_selected_cable_result(
             ),
 
         "unit_price":
-            selected.get(
-                "price_per_meter"
-            ),
+            unit_price,
+
+        "price_per_meter":
+            unit_price,
 
         "total_cost":
-            selected.get(
-                "total_price"
-            ),
+            total_cost,
+
+        "total_price":
+            total_cost,
 
         "selection_reason":
             selected.get(

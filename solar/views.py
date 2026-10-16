@@ -1145,10 +1145,7 @@ def solar_design(request: HttpRequest) -> HttpResponse:
     # ================================================================
 
     design_data = design_form.cleaned_data
-    mismatched = [row["name"] for row in loads if row.get("installation_type") and row["installation_type"] != design_data["installation_type"]]
-    if mismatched:
-        load_formset._non_form_errors = load_formset.error_class(["Select appliances that match the Project Type: " + ", ".join(mismatched)])
-        return render(request, "solar/calculator.html", _design_context(design_form=design_form, requirements_form=requirements_form, battery_form=battery_form, load_formset=load_formset))
+    # All appliance types are available and valid regardless of project type
     requirement_data = requirements_form.cleaned_data
 
     # Battery preference is intentionally retained as part of the
