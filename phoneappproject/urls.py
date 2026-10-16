@@ -17,6 +17,7 @@ from solar import views
 from logistics.views import *
 
 from django.contrib import admin
+from accounts.views import visitor_analytics_view
 
 admin.site.site_header = "REMAROBE Administration"
 admin.site.site_title = "REMAROBE Admin"
@@ -28,6 +29,8 @@ urlpatterns = [
     path("remarobe_secure_admin/", admin.site.urls),
     path('accounts/login/', login_view, name='account_login'),
     path('accounts/signup/', register_view, name='account_signup'),
+
+    path('internal-analytics/', visitor_analytics_view, name='internal_analytics'),
 
     path('accounts/', include('allauth.urls')),
     path("summernote/", include("django_summernote.urls")),

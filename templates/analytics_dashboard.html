@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remarobe Visitor Analytics</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
+        .card { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background: #f4f4f4; }
+        .stats { display: flex; gap: 20px; }
+        .stat-box { flex: 1; background: #eef2f7; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-box h2 { margin: 0; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h1>Remarobe Lightweight Analytics</h1>
+    <div class="stats">
+        <div class="stat-box">
+            <h2>{{ total_requests }}</h2>
+            <p>Total Logged Requests</p>
+        </div>
+        <div class="stat-box">
+            <h2>{{ unique_visitors }}</h2>
+            <p>Unique Visitors (Cookies)</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Top Visited Paths</h3>
+        <table>
+            <tr><th>Path</th><th>Views</th></tr>
+            {% for path, count in top_paths %}
+            <tr><td>{{ path }}</td><td>{{ count }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Recent Visitor Events</h3>
+        <table>
+            <tr><th>Time (UTC)</th><th>Visitor ID</th><th>User</th><th>Method</th><th>Path</th></tr>
+            {% for ev in recent_events %}
+            <tr>
+                <td>{{ ev.timestamp }}</td>
+                <td><small>{{ ev.visitor_id|slice:":8" }}...</small></td>
+                <td>{{ ev.user }}</td>
+                <td>{{ ev.method }}</td>
+                <td>{{ ev.path }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
